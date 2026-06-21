@@ -1,2 +1,3 @@
 # mvproomie
-MVP UI Layouts for User Testing 
+
+MVP UI layouts for early Roomie user testing.
