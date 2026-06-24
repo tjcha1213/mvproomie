@@ -23,7 +23,7 @@ export interface Listing {
   images: string[];
 }
 
-export const listings: Listing[] = [
+const rawListings: Listing[] = [
   {
     id: 1,
     type: 'Studio',
@@ -209,3 +209,13 @@ export const listings: Listing[] = [
     images: ['/assets/studio_modern.png', '/assets/studio_cozy.png', '/assets/apartment_1br.png'],
   },
 ];
+
+// Prefix image paths with Vite's base URL so they resolve correctly both in
+// dev ('/') and on GitHub Pages ('/mvproomie/').
+const withBase = (p: string) => `${import.meta.env.BASE_URL}${p.replace(/^\//, '')}`;
+
+export const listings: Listing[] = rawListings.map((l) => ({
+  ...l,
+  image: withBase(l.image),
+  images: l.images.map(withBase),
+}));
