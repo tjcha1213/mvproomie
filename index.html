@@ -1,135 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Roomie | MVP UI Layouts</title>
-    <meta
-      name="description"
-      content="A scroll page for three MVP UI layout concepts for the Roomie app."
-    />
-    <link rel="stylesheet" href="styles.css" />
+    <meta name="description" content="Roomie — Find your space. Feel at home. Room and bedspace finder in the Philippines." />
+    <title>Roomie | Find your space. Feel at home.</title>
   </head>
   <body>
-    <main class="page">
-      <section class="hero">
-        <p class="eyebrow">Roomie</p>
-        <h1>Three MVP UI layouts for early product testing</h1>
-        <p class="copy intro-copy">
-          This page is a lightweight scroll surface for presenting three
-          separate MVP interface directions for Roomie. Each layout focuses on
-          a different product behavior that can be used in wireframe reviews,
-          user interviews, and early feedback sessions.
-        </p>
-      </section>
-
-      <section class="layout-section">
-        <div class="section-copy-wrap">
-          <p class="eyebrow">Layout 01</p>
-          <h2>Discovery-first renter flow</h2>
-          <p class="copy">
-            This concept emphasizes browsing, map-aware location judgment, and
-            fast scanning of listings. It is useful for testing whether users
-            understand price, neighborhood context, and shortlist actions with
-            minimal friction.
-          </p>
-        </div>
-        <div class="phone-frame">
-          <div class="phone-screen">
-            <div class="app-topbar">
-              <span class="brand-chip">Roomie</span>
-              <span class="tiny-chip">MVP 01</span>
-            </div>
-            <div class="search-bar">Search by district, rail stop, or budget</div>
-            <div class="map-strip">
-              <span>Makati</span>
-              <span>Taft</span>
-              <span>BGC</span>
-              <span>Ortigas</span>
-            </div>
-            <div class="listing-card">
-              <p class="listing-title">Studio near Taft</p>
-              <p class="listing-meta">PHP 8,500 • 14 sqm • 6 min to rail</p>
-            </div>
-            <div class="listing-card">
-              <p class="listing-title">Shared micro-unit in Makati</p>
-              <p class="listing-meta">PHP 7,200 • Furnished • Verified host</p>
-            </div>
-            <div class="listing-card">
-              <p class="listing-title">Compact room in Sampaloc</p>
-              <p class="listing-meta">PHP 6,900 • Near universities</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="layout-section alt-layout">
-        <div class="section-copy-wrap">
-          <p class="eyebrow">Layout 02</p>
-          <h2>Trust and listing-detail flow</h2>
-          <p class="copy">
-            This concept focuses on a single listing detail page with stronger
-            verification, neighborhood, and operator signals. It is useful for
-            testing whether Roomie can increase confidence before inquiry or
-            booking intent.
-          </p>
-        </div>
-        <div class="phone-frame">
-          <div class="phone-screen">
-            <div class="hero-image">Listing photo / wireframe image</div>
-            <div class="detail-block">
-              <p class="listing-title">Verified micro-unit in Makati</p>
-              <p class="listing-meta">PHP 9,200 • 18 sqm • Private bath</p>
-            </div>
-            <div class="signal-grid">
-              <div class="signal-card">Identity verified</div>
-              <div class="signal-card">Near rail access</div>
-              <div class="signal-card">Hospital within 500m</div>
-              <div class="signal-card">High-demand district</div>
-            </div>
-            <div class="detail-note">
-              Neighborhood summary, transport confidence, and quick trust cues.
-            </div>
-            <div class="primary-button">Request viewing</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="layout-section">
-        <div class="section-copy-wrap">
-          <p class="eyebrow">Layout 03</p>
-          <h2>Operator and listing-management flow</h2>
-          <p class="copy">
-            This concept is designed for owners or operators managing inventory.
-            It can test whether listing setup, unit updates, and response tasks
-            are understandable in a compact workflow before dashboard buildout.
-          </p>
-        </div>
-        <div class="phone-frame">
-          <div class="phone-screen">
-            <div class="app-topbar">
-              <span class="brand-chip">Roomie Host</span>
-              <span class="tiny-chip">MVP 03</span>
-            </div>
-            <div class="dashboard-stat">
-              <p class="dashboard-number">12</p>
-              <p class="dashboard-label">Active listings</p>
-            </div>
-            <div class="task-card">
-              <p class="listing-title">Update listing availability</p>
-              <p class="listing-meta">3 units need new occupancy dates</p>
-            </div>
-            <div class="task-card">
-              <p class="listing-title">Respond to renter inquiries</p>
-              <p class="listing-meta">8 messages waiting</p>
-            </div>
-            <div class="task-card">
-              <p class="listing-title">Review trust checklist</p>
-              <p class="listing-meta">2 listings missing verification items</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
