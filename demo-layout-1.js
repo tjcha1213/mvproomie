@@ -86,6 +86,16 @@ const detailDescription = document.querySelector("#detail-description");
 let activeId = 1;
 let savedIds = new Set([1, 2, 3, 4, 5]);
 
+if (listingGrid) {
+  renderListings();
+}
+if (savedStack) {
+  renderSaved();
+}
+if (detailHero) {
+  renderDetail();
+}
+
 function renderListings() {
   listingGrid.innerHTML = "";
   listings.forEach((listing) => {
@@ -153,7 +163,3 @@ function renderDetail() {
   detailSize.textContent = listing.size;
   detailDescription.textContent = listing.description;
 }
-
-renderListings();
-renderSaved();
-renderDetail();

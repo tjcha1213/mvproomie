@@ -123,6 +123,13 @@ h2 {
   box-shadow: none;
 }
 
+.button-like {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .intro-copy {
   max-width: 72ch;
 }
@@ -280,6 +287,12 @@ h2 {
 
 .demo-page {
   width: min(1480px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 24px 0 40px;
+}
+
+.single-demo-page {
+  width: min(1080px, calc(100% - 28px));
   margin: 0 auto;
   padding: 24px 0 40px;
 }
@@ -825,6 +838,59 @@ h2 {
   width: min(920px, calc(100% - 28px));
   margin: 28px auto;
   padding: 48px 36px;
+}
+
+.single-demo-header {
+  margin-bottom: 20px;
+  padding: 22px 6px 0;
+}
+
+.single-demo-header .demo-copy {
+  max-width: 60ch;
+  margin-bottom: 18px;
+}
+
+.phone-stage {
+  display: grid;
+  place-items: center;
+}
+
+.single-phone {
+  width: min(100%, 390px);
+}
+
+.single-listing-grid {
+  grid-template-columns: 1fr;
+}
+
+.single-listing-grid .demo-listing-card {
+  display: block;
+}
+
+.icon-link,
+.tab-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.full-width-link,
+.full-width-demo-link {
+  display: flex;
+  width: 100%;
+}
+
+.placeholder-phone {
+  min-height: 760px;
+}
+
+.internal-section {
+  margin-bottom: 0;
+}
+
+.internal-preview {
+  display: grid;
+  align-content: start;
+  gap: 14px;
 }
 
 @media (max-width: 1180px) {
