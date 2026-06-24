@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Roomie | MVP Demo 01</title>
+    <meta
+      name="description"
+      content="Interactive product demo for Roomie MVP layout 01."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="demo-body">
+    <main class="demo-page">
+      <header class="demo-header">
+        <div>
+          <p class="eyebrow">MVP Demo 01</p>
+          <h1 class="demo-title">Discovery-first renter flow</h1>
+          <p class="copy demo-copy">
+            Click listings on the left mockup to update the detail page and
+            saved-listings panel. This demo mirrors the blue-and-white Roomie
+            UI direction shown in the reference.
+          </p>
+        </div>
+        <a class="demo-button secondary-button" href="index.html">Back to layout overview</a>
+      </header>
+
+      <section class="reference-shell">
+        <aside class="brand-panel">
+          <div class="roomie-logo">
+            <span class="roof-mark"></span>
+            <span class="wordmark">roomie</span>
+          </div>
+          <p class="brand-tagline">Find your space.<br />Feel at <span>home.</span></p>
+
+          <div class="info-card">
+            <p class="card-label">Color palette</p>
+            <div class="swatch-row"><span class="swatch swatch-1"></span><div><strong>#3B82F6</strong><p>Primary Blue</p></div></div>
+            <div class="swatch-row"><span class="swatch swatch-2"></span><div><strong>#93C5FD</strong><p>Light Blue</p></div></div>
+            <div class="swatch-row"><span class="swatch swatch-3"></span><div><strong>#F8FAFC</strong><p>Background</p></div></div>
+            <div class="swatch-row"><span class="swatch swatch-4"></span><div><strong>#1F2937</strong><p>Text</p></div></div>
+            <div class="swatch-row"><span class="swatch swatch-5"></span><div><strong>#10B981</strong><p>Success Green</p></div></div>
+          </div>
+
+          <div class="info-card">
+            <p class="card-label">Feature highlights</p>
+            <div class="feature-row"><span>🛡️</span><p><strong>Verified Listings</strong><br />All listings are verified for your peace of mind.</p></div>
+            <div class="feature-row"><span>🔒</span><p><strong>Secure Payments</strong><br />Pay your rent securely through our platform.</p></div>
+            <div class="feature-row"><span>💬</span><p><strong>Easy Conversations</strong><br />Chat with landlords directly in the app.</p></div>
+            <div class="feature-row"><span>♡</span><p><strong>Save Favorites</strong><br />Save listings you love and view them anytime.</p></div>
+          </div>
+        </aside>
+
+        <section class="phone-grid">
+          <article class="app-phone">
+            <div class="status-bar"><span>9:41</span><span>▮▮▮</span></div>
+            <div class="demo-app-header">
+              <div class="mini-logo">roomie</div>
+              <div class="header-icons"><span>◌</span><span>☰</span></div>
+            </div>
+            <div class="search-wrap">
+              <div class="search-input">Search location or property</div>
+              <button class="filter-fab" type="button">⌘</button>
+            </div>
+            <div class="section-row">
+              <h3>Nearby Listings</h3>
+              <button class="text-link" type="button">See all</button>
+            </div>
+            <div class="listing-grid" id="listing-grid"></div>
+            <div class="tabbar">
+              <span class="active">Home</span>
+              <span>Search</span>
+              <span>Add Listing</span>
+              <span>Inbox</span>
+              <span>Profile</span>
+            </div>
+          </article>
+
+          <article class="app-phone detail-phone">
+            <div class="status-bar"><span>9:41</span><span>▮▮▮</span></div>
+            <div class="detail-topline">
+              <span>‹</span>
+              <div class="header-icons"><span>♡</span><span>⇪</span></div>
+            </div>
+            <div class="detail-hero" id="detail-hero"></div>
+            <div class="thumbnail-row">
+              <div class="thumb active"></div>
+              <div class="thumb"></div>
+              <div class="thumb"></div>
+              <div class="thumb"></div>
+              <div class="thumb more">+8</div>
+            </div>
+            <div class="pill-label" id="detail-type"></div>
+            <h2 class="detail-title" id="detail-title"></h2>
+            <p class="detail-location" id="detail-location"></p>
+            <p class="detail-price" id="detail-price"></p>
+            <div class="amenity-strip">
+              <div><strong id="detail-bed"></strong><span>Bed</span></div>
+              <div><strong id="detail-bath"></strong><span>Bath</span></div>
+              <div><strong id="detail-size"></strong><span>Sqm</span></div>
+              <div><strong>Yes</strong><span>Furnished</span></div>
+              <div><strong>Wi-Fi</strong><span>Internet</span></div>
+            </div>
+            <div class="landlord-card">
+              <div class="avatar">JD</div>
+              <div class="landlord-meta">
+                <p class="verified">Verified Landlord</p>
+                <h4>Juan Dela Cruz</h4>
+                <p>Member since 2021</p>
+                <p class="rating">★ 4.9 (128 reviews)</p>
+              </div>
+              <div class="contact-actions">
+                <button class="ghost-btn" type="button">Message</button>
+                <button class="solid-btn" type="button">Call</button>
+              </div>
+            </div>
+            <div class="about-card">
+              <h4>About this property</h4>
+              <p id="detail-description"></p>
+            </div>
+            <button class="inquiry-btn" type="button">Send Inquiry</button>
+          </article>
+
+          <article class="app-phone saved-phone">
+            <div class="status-bar"><span>9:41</span><span>▮▮▮</span></div>
+            <div class="demo-app-header">
+              <div class="mini-logo">roomie</div>
+              <div class="header-icons"><span>◌</span><span>☰</span></div>
+            </div>
+            <div class="search-wrap">
+              <div class="search-input">Search location or property</div>
+              <button class="filter-fab" type="button">⌘</button>
+            </div>
+            <div class="section-row">
+              <h3>Saved Listings</h3>
+              <button class="text-link" type="button">Edit</button>
+            </div>
+            <div class="saved-stack" id="saved-stack"></div>
+            <div class="alert-card">
+              <div>
+                <strong>Can't find what you're looking for?</strong>
+                <p>Create an alert and get notified when new listings match.</p>
+              </div>
+              <button class="ghost-btn" type="button">Create Alert</button>
+            </div>
+            <div class="tabbar">
+              <span class="active">Home</span>
+              <span>Search</span>
+              <span>Add Listing</span>
+              <span>Inbox</span>
+              <span>Profile</span>
+            </div>
+          </article>
+        </section>
+      </section>
+    </main>
+    <script src="demo-layout-1.js"></script>
+  </body>
+</html>
