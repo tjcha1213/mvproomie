@@ -6,6 +6,8 @@ export interface Listing {
   title: string;
   location: string;
   district: string;
+  lat: number;
+  lng: number;
   price: number;
   image: string;
   beds: number;
@@ -30,6 +32,8 @@ const rawListings: Listing[] = [
     title: 'Cozy Studio Unit',
     location: 'Katipunan, Quezon City',
     district: 'QC',
+    lat: 14.6386,
+    lng: 121.0760,
     price: 6000,
     image: '/assets/studio_cozy.png',
     beds: 1,
@@ -53,6 +57,8 @@ const rawListings: Listing[] = [
     title: 'Male Bedspace',
     location: 'Espana, Manila',
     district: 'Manila',
+    lat: 14.6090,
+    lng: 120.9930,
     price: 2600,
     image: '/assets/bedspace_male.png',
     beds: 1,
@@ -76,6 +82,8 @@ const rawListings: Listing[] = [
     title: '1BR Apartment',
     location: 'Cubao, QC',
     district: 'QC',
+    lat: 14.6190,
+    lng: 121.0510,
     price: 13500,
     image: '/assets/apartment_1br.png',
     beds: 1,
@@ -99,6 +107,8 @@ const rawListings: Listing[] = [
     title: 'Modern Studio',
     location: 'Timog, QC',
     district: 'QC',
+    lat: 14.6330,
+    lng: 121.0340,
     price: 7000,
     image: '/assets/studio_modern.png',
     beds: 1,
@@ -122,6 +132,8 @@ const rawListings: Listing[] = [
     title: 'Female Bedspace',
     location: 'Sampaloc, Manila',
     district: 'Manila',
+    lat: 14.6150,
+    lng: 121.0000,
     price: 2500,
     image: '/assets/bedspace_female.png',
     beds: 1,
@@ -145,6 +157,8 @@ const rawListings: Listing[] = [
     title: 'Bright Studio',
     location: 'Poblacion, Makati',
     district: 'Makati',
+    lat: 14.5650,
+    lng: 121.0290,
     price: 8500,
     image: '/assets/studio_cozy.png',
     beds: 1,
@@ -168,6 +182,8 @@ const rawListings: Listing[] = [
     title: '2BR Apartment',
     location: 'Ortigas, Pasig',
     district: 'Pasig',
+    lat: 14.5860,
+    lng: 121.0610,
     price: 18000,
     image: '/assets/apartment_2br.png',
     beds: 2,
@@ -191,6 +207,8 @@ const rawListings: Listing[] = [
     title: 'Minimalist Studio',
     location: 'Makati, Metro Manila',
     district: 'Makati',
+    lat: 14.5547,
+    lng: 121.0244,
     price: 7500,
     image: '/assets/studio_modern.png',
     beds: 1,
@@ -219,3 +237,10 @@ export const listings: Listing[] = rawListings.map((l) => ({
   image: withBase(l.image),
   images: l.images.map(withBase),
 }));
+
+// Compact price for map pins, e.g. 6000 -> "₱6K", 13500 -> "₱13.5K".
+export function formatPriceShort(price: number): string {
+  const k = price / 1000;
+  const num = Number.isInteger(k) ? k.toString() : k.toFixed(1);
+  return `₱${num}K`;
+}

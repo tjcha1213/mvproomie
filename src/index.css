@@ -1573,3 +1573,183 @@ img {
   color: var(--primary);
   flex-shrink: 0;
 }
+
+/* ─── Home map + synced carousel ─── */
+.home-map-wrap {
+  flex: 1;
+  position: relative;
+  min-height: 180px;
+  overflow: hidden;
+}
+
+.home-map {
+  position: absolute;
+  inset: 0;
+  background: #e8edf2;
+}
+
+/* Leaflet uses <img> tiles — neutralise the app's global img sizing. */
+.leaflet-container { font-family: inherit; background: #e8edf2; }
+.leaflet-container img { width: auto; height: auto; }
+
+.home-map-count {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 99px;
+  box-shadow: var(--shadow-md);
+  z-index: 500;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Price pins */
+.map-pin-wrap { background: transparent; border: none; }
+
+.map-pin {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  transform: translate(-50%, -100%);
+  background: var(--surface);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  border-radius: 99px;
+  padding: 4px 9px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.map-pin::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--surface);
+}
+
+.map-pin.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  transform: translate(-50%, -100%) scale(1.14);
+}
+
+.map-pin.active::after { border-top-color: var(--primary); }
+
+.leaflet-control-zoom a {
+  border-radius: 8px !important;
+  color: var(--text) !important;
+}
+
+.leaflet-control-attribution {
+  font-size: 9px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.home-carousel {
+  flex-shrink: 0;
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  background: var(--bg);
+  border-top: 1px solid var(--border-light);
+}
+
+.carousel-card {
+  flex: 0 0 86%;
+  scroll-snap-align: center;
+  display: flex;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.carousel-card.active {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+}
+
+.carousel-card-img {
+  position: relative;
+  width: 118px;
+  flex-shrink: 0;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.carousel-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carousel-card-body {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+
+.carousel-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.carousel-card-location {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.carousel-card-location svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.carousel-card-price {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-top: 2px;
+}
+
+.carousel-card-price span {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
