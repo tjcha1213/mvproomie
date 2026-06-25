@@ -38,6 +38,8 @@ jobs:
         run: |
           cp -f index.html user-surveys.html styles.css demo-layout-1.js dist/
           mkdir -p dist/mvp1
+          mkdir -p dist/assets
+          cp -f assets/logo-draft.png dist/assets/
           cp -f mvp1/detail.html mvp1/saved.html mvp1/internal.html dist/mvp1/
 
       - name: Setup Pages
