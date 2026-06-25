@@ -1,6 +1,9 @@
 import { useState } from 'react';
-import type { Listing } from '../data/listings';
+import type { Listing, ListingType } from '../data/listings';
 import ListingCard from '../components/ListingCard';
+import FilterSheet from '../components/FilterSheet';
+import type { Filters } from '../filters';
+import { defaultFilters, applyFilters, activeFilterCount } from '../filters';
 
 interface Props {
   listings: Listing[];
@@ -10,20 +13,22 @@ interface Props {
   onShowToast: (msg: string) => void;
 }
 
-type FilterType = 'All' | 'Studio' | 'Bedspace' | 'Apartment';
+const QUICK_TYPES: ListingType[] = ['Studio', 'Bedspace', 'Apartment'];
 
-const FILTERS: FilterType[] = ['All', 'Studio', 'Bedspace', 'Apartment'];
-
-export default function SearchScreen({ listings, onSelectListing, onToggleSave, onOpenMenu, onShowToast }: Props) {
+export default function SearchScreen({ listings, onSelectListing, onToggleSave, onOpenMenu }: Props) {
   const [query, setQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<FilterType>('All');
+  const [filters, setFilters] = useState<Filters>(defaultFilters);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
-  const filtered = listings.filter(l => {
-    const matchType = activeFilter === 'All' || l.type === activeFilter;
-    const q = query.toLowerCase();
-    const matchQuery = !q || l.title.toLowerCase().includes(q) || l.location.toLowerCase().includes(q) || l.district.toLowerCase().includes(q);
-    return matchType && matchQuery;
-  });
+  const filtered = applyFilters(listings, query, filters);
+  const activeCount = activeFilterCount(filters);
+
+  // The quick chip row is a convenient single-select view of filters.types.
+  const setQuickType = (t: ListingType | null) => {
+    setFilters((f) => ({ ...f, types: t ? [t] : [] }));
+  };
+  const quickActive = (t: ListingType | null) =>
+    t === null ? filters.types.length === 0 : filters.types.length === 1 && filters.types[0] === t;
 
   return (
     <>
@@ -72,24 +77,28 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
             </button>
           )}
         </div>
-        <button className="filter-btn" onClick={() => onShowToast('More filters — coming soon')} aria-label="Filters">
+        <button className="filter-btn" onClick={() => setSheetOpen(true)} aria-label="Filters">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <line x1="4" y1="6" x2="20" y2="6"/>
             <line x1="8" y1="12" x2="16" y2="12"/>
             <line x1="11" y1="18" x2="13" y2="18"/>
           </svg>
+          {activeCount > 0 && <span className="filter-btn-badge">{activeCount}</span>}
         </button>
       </div>
 
-      {/* Filter chips */}
+      {/* Quick type chips */}
       <div className="search-filter-chips">
-        {FILTERS.map(f => (
+        <button className={`filter-chip ${quickActive(null) ? 'active' : ''}`} onClick={() => setQuickType(null)}>
+          All
+        </button>
+        {QUICK_TYPES.map((t) => (
           <button
-            key={f}
-            className={`filter-chip ${activeFilter === f ? 'active' : ''}`}
-            onClick={() => setActiveFilter(f)}
+            key={t}
+            className={`filter-chip ${quickActive(t) ? 'active' : ''}`}
+            onClick={() => setQuickType(t)}
           >
-            {f}
+            {t}
           </button>
         ))}
       </div>
@@ -97,6 +106,11 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
       <div className="scroll-area">
         <div className="section-header">
           <span className="section-title">{filtered.length} listings found</span>
+          {activeCount > 0 && (
+            <button className="see-all-btn" onClick={() => setFilters(defaultFilters)}>
+              Clear filters
+            </button>
+          )}
         </div>
 
         {filtered.length === 0 ? (
@@ -108,11 +122,11 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
               </svg>
             </div>
             <div className="empty-title">No results found</div>
-            <div className="empty-sub">Try a different keyword or filter</div>
+            <div className="empty-sub">Try adjusting your filters or keyword</div>
           </div>
         ) : (
           <div className="listing-grid">
-            {filtered.map(listing => (
+            {filtered.map((listing) => (
               <ListingCard
                 key={listing.id}
                 listing={listing}
@@ -123,6 +137,14 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
           </div>
         )}
       </div>
+
+      <FilterSheet
+        open={sheetOpen}
+        filters={filters}
+        countFor={(f) => applyFilters(listings, query, f).length}
+        onApply={setFilters}
+        onClose={() => setSheetOpen(false)}
+      />
     </>
   );
 }

@@ -1,0 +1,145 @@
+import { useState, useEffect } from 'react';
+import type { ListingType } from '../data/listings';
+import type { Filters } from '../filters';
+import { PRICE_MIN, PRICE_MAX, PRICE_STEP, defaultFilters } from '../filters';
+
+interface Props {
+  open: boolean;
+  filters: Filters;
+  countFor: (f: Filters) => number;
+  onApply: (f: Filters) => void;
+  onClose: () => void;
+}
+
+const TYPES: ListingType[] = ['Studio', 'Bedspace', 'Apartment'];
+
+function pct(v: number): number {
+  return ((v - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100;
+}
+
+function priceLabel(v: number, isMax: boolean): string {
+  return `₱${v.toLocaleString()}${isMax && v >= PRICE_MAX ? '+' : ''}`;
+}
+
+export default function FilterSheet({ open, filters, countFor, onApply, onClose }: Props) {
+  const [draft, setDraft] = useState<Filters>(filters);
+
+  useEffect(() => {
+    if (open) setDraft(filters);
+  }, [open, filters]);
+
+  if (!open) return null;
+
+  const toggleType = (t: ListingType) => {
+    setDraft((d) => ({
+      ...d,
+      types: d.types.includes(t) ? d.types.filter((x) => x !== t) : [...d.types, t],
+    }));
+  };
+
+  const setMin = (v: number) => setDraft((d) => ({ ...d, priceMin: Math.min(v, d.priceMax - PRICE_STEP) }));
+  const setMax = (v: number) => setDraft((d) => ({ ...d, priceMax: Math.max(v, d.priceMin + PRICE_STEP) }));
+
+  const count = countFor(draft);
+
+  return (
+    <div className="sheet-overlay" onClick={onClose}>
+      <div className="filter-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="sheet-handle" />
+        <div className="sheet-header" style={{ padding: '0 16px 12px' }}>
+          <div>
+            <div className="sheet-title">Filters</div>
+            <div className="sheet-sub">Narrow down your search</div>
+          </div>
+          <button className="sheet-close" onClick={onClose} aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="filter-body">
+          {/* Monthly rent */}
+          <div className="filter-section">
+            <div className="filter-section-title">Monthly rent</div>
+            <div className="price-range-label">
+              <span>{priceLabel(draft.priceMin, false)}</span>
+              <span>–</span>
+              <span>{priceLabel(draft.priceMax, true)}</span>
+            </div>
+            <div className="range-slider">
+              <div className="range-track" />
+              <div
+                className="range-fill"
+                style={{ left: `${pct(draft.priceMin)}%`, right: `${100 - pct(draft.priceMax)}%` }}
+              />
+              <input
+                type="range"
+                min={PRICE_MIN}
+                max={PRICE_MAX}
+                step={PRICE_STEP}
+                value={draft.priceMin}
+                onChange={(e) => setMin(Number(e.target.value))}
+                aria-label="Minimum rent"
+              />
+              <input
+                type="range"
+                min={PRICE_MIN}
+                max={PRICE_MAX}
+                step={PRICE_STEP}
+                value={draft.priceMax}
+                onChange={(e) => setMax(Number(e.target.value))}
+                aria-label="Maximum rent"
+              />
+            </div>
+          </div>
+
+          {/* Property type */}
+          <div className="filter-section">
+            <div className="filter-section-title">Property type</div>
+            <div className="filter-chip-group">
+              {TYPES.map((t) => (
+                <button
+                  key={t}
+                  className={`filter-chip ${draft.types.includes(t) ? 'active' : ''}`}
+                  onClick={() => toggleType(t)}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Facilities */}
+          <div className="filter-section">
+            <div className="filter-section-title">Facilities</div>
+            <div className="filter-chip-group">
+              <button
+                className={`filter-chip ${draft.furnished ? 'active' : ''}`}
+                onClick={() => setDraft((d) => ({ ...d, furnished: !d.furnished }))}
+              >
+                Furnished
+              </button>
+              <button
+                className={`filter-chip ${draft.wifi ? 'active' : ''}`}
+                onClick={() => setDraft((d) => ({ ...d, wifi: !d.wifi }))}
+              >
+                Wi-Fi
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="filter-actions">
+          <button className="filter-clear" onClick={() => setDraft(defaultFilters)}>
+            Clear all
+          </button>
+          <button className="filter-apply" onClick={() => { onApply(draft); onClose(); }}>
+            Show {count} {count === 1 ? 'result' : 'results'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
