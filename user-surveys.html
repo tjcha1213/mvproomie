@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Roomie | User Surveys</title>
+    <meta
+      name="description"
+      content="Roomie user testing survey page with NPS and SUS questionnaires."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">Roomie</p>
+        <nav class="subhead-tabs" aria-label="Root page sections">
+          <a class="subhead-tab" href="index.html">UI Layouts</a>
+          <a class="subhead-tab active" href="user-surveys.html">User Surveys</a>
+        </nav>
+        <h1>User survey packet for MVP testing</h1>
+        <p class="copy intro-copy">
+          This survey page is designed for moderated or unmoderated product
+          testing. It includes a Net Promoter Score question, a full System
+          Usability Scale questionnaire, and a small set of qualitative
+          follow-ups to capture usability friction, trust signals, and product
+          intent.
+        </p>
+      </section>
+
+      <section class="survey-section">
+        <div class="survey-header">
+          <p class="eyebrow">Survey Setup</p>
+          <h2>Session metadata</h2>
+          <p class="copy">
+            Use this section to identify the participant, capture their role
+            and background, and record the prototype route they reviewed before
+            you begin the scored questionnaire.
+          </p>
+        </div>
+        <form class="survey-form">
+          <div class="survey-grid">
+            <label class="survey-field">
+              <span>Name</span>
+              <input type="text" name="name" placeholder="Participant name" />
+            </label>
+            <label class="survey-field">
+              <span>Contact</span>
+              <input type="text" name="contact" placeholder="Email, phone number, or preferred contact" />
+            </label>
+            <label class="survey-field full-width-field">
+              <span>Bio</span>
+              <textarea name="bio" rows="4" placeholder="Short background, housing experience, or relevant context"></textarea>
+            </label>
+            <label class="survey-field">
+              <span>Participant role</span>
+              <select name="participant_role">
+                <option value="">Select one</option>
+                <option value="renter">Renter</option>
+                <option value="landlord">Landlord</option>
+                <option value="broker">Broker</option>
+              </select>
+            </label>
+            <label class="survey-field">
+              <span>Participant ID</span>
+              <input type="text" name="participant_id" placeholder="e.g. P-014" />
+            </label>
+            <label class="survey-field">
+              <span>Tested route</span>
+              <select name="tested_route">
+                <option value="">Select one</option>
+                <option value="mvp1">MVP 1</option>
+                <option value="mvp2">MVP 2</option>
+                <option value="mvp3">MVP 3</option>
+              </select>
+            </label>
+            <label class="survey-field">
+              <span>User type</span>
+              <select name="user_type">
+                <option value="">Select one</option>
+                <option value="renter">Prospective renter</option>
+                <option value="student">Student</option>
+                <option value="young_professional">Young professional</option>
+                <option value="operator">Owner / operator</option>
+              </select>
+            </label>
+            <label class="survey-field">
+              <span>Session notes</span>
+              <input type="text" name="session_notes" placeholder="Moderator initials, context, or device used" />
+            </label>
+          </div>
+        </form>
+      </section>
+
+      <section class="survey-section">
+        <div class="survey-header">
+          <p class="eyebrow">Net Promoter Score</p>
+          <h2>Likelihood to recommend</h2>
+          <p class="copy">
+            Ask this after the participant finishes the core tasks. The 0 to 10
+            scale provides a simple top-line signal for product advocacy and
+            overall impression.
+          </p>
+        </div>
+        <form class="survey-form">
+          <fieldset class="survey-card">
+            <legend>How likely are you to recommend Roomie to a friend or colleague looking for housing?</legend>
+            <div class="nps-scale" role="radiogroup" aria-label="Net Promoter Score">
+              <label><input type="radio" name="nps" value="0" />0</label>
+              <label><input type="radio" name="nps" value="1" />1</label>
+              <label><input type="radio" name="nps" value="2" />2</label>
+              <label><input type="radio" name="nps" value="3" />3</label>
+              <label><input type="radio" name="nps" value="4" />4</label>
+              <label><input type="radio" name="nps" value="5" />5</label>
+              <label><input type="radio" name="nps" value="6" />6</label>
+              <label><input type="radio" name="nps" value="7" />7</label>
+              <label><input type="radio" name="nps" value="8" />8</label>
+              <label><input type="radio" name="nps" value="9" />9</label>
+              <label><input type="radio" name="nps" value="10" />10</label>
+            </div>
+            <div class="nps-labels">
+              <span>Not at all likely</span>
+              <span>Extremely likely</span>
+            </div>
+          </fieldset>
+          <label class="survey-field full-width-field">
+            <span>Why did you choose that score?</span>
+            <textarea name="nps_reason" rows="4" placeholder="Capture the participant's main reason in their own words."></textarea>
+          </label>
+        </form>
+      </section>
+
+      <section class="survey-section">
+        <div class="survey-header">
+          <p class="eyebrow">System Usability Scale</p>
+          <h2>Ten-item usability assessment</h2>
+          <p class="copy">
+            Rate each statement on a five-point scale from strongly disagree to
+            strongly agree. These ten items can be scored later to calculate
+            the participant's SUS score.
+          </p>
+        </div>
+        <form class="survey-form">
+          <div class="sus-key">
+            <span>1 = Strongly disagree</span>
+            <span>2 = Disagree</span>
+            <span>3 = Neutral</span>
+            <span>4 = Agree</span>
+            <span>5 = Strongly agree</span>
+          </div>
+          <div class="sus-list">
+            <fieldset class="survey-card">
+              <legend>1. I think that I would like to use this system frequently.</legend>
+              <div class="likert-row">
+                <label><input type="radio" name="sus_1" value="1" />1</label>
+                <label><input type="radio" name="sus_1" value="2" />2</label>
+                <label><input type="radio" name="sus_1" value="3" />3</label>
+                <label><input type="radio" name="sus_1" value="4" />4</label>
+                <label><input type="radio" name="sus_1" value="5" />5</label>
+              </div>
+            </fieldset>
+            <fieldset class="survey-card">
+              <legend>2. I found the system unnecessarily complex.</legend>
+              <div class="likert-row">
+                <label><input type="radio" name="sus_2" value="1" />1</label>
+                <label><input type="radio" name="sus_2" value="2" />2</label>
+                <label><input type="radio" name="sus_2" value="3" />3</label>
+                <label><input type="radio" name="sus_2" value="4" />4</label>
+                <label><input type="radio" name="sus_2" value="5" />5</label>
+              </div>
+            </fieldset>
+            <fieldset class="survey-card">
+              <legend>3. I thought the system was easy to use.</legend>
+              <div class="likert-row">
+                <label><input type="radio" name="sus_3" value="1" />1</label>
+                <label><input type="radio" name="sus_3" value="2" />2</label>
+                <label><input type="radio" name="sus_3" value="3" />3</label>
+                <label><input type="radio" name="sus_3" value="4" />4</label>
+                <label><input type="radio" name="sus_3" value="5" />5</label>
+              </div>
+            </fieldset>
+            <fieldset class="survey-card">
+              <legend>4. I think that I would need the support of a technical person to be able to use this system.</legend>
+              <div class="likert-row">
+                <label><input type="radio" name="sus_4" value="1" />1</label>
+                <label><input type="radio" name="sus_4" value="2" />2</label>
+                <label><input type="radio" name="sus_4" value="3" />3</label>
+                <label><input type="radio" name="sus_4" value="4" />4</label>
+                <label><input type="radio" name="sus_4" value="5" />5</label>
+              </div>
+            </fieldset>
+            <fieldset class="survey-card">
+              <legend>5. I found the various functions in this system were well integrated.</legend>
+              <div class="likert-row">
+                <label><input type="radio" name="sus_5" value="1" />1</label>
+                <label><input type="radio" name="sus_5" value="2" />2</label>
+                <label><input type="radio" name="sus_5" value="3" />3</label>
+                <label><input type="radio" name="sus_5" value="4" />4</label>
+                <label><input type="radio" name="sus_5" value="5" />5</label>
+              </div>
+            </fieldset>
+            <fieldset class="survey-card">
+              <legend>6. I thought there was too much inconsistency in this system.</legend>
+              <div class="likert-row">
+                <label><input type="radio" name="sus_6" value="1" />1</label>
+                <label><input type="radio" name="sus_6" value="2" />2</label>
+                <label><input type="radio" name="sus_6" value="3" />3</label>
+                <label><input type="radio" name="sus_6" value="4" />4</label>
+                <label><input type="radio" name="sus_6" value="5" />5</label>
+              </div>
+            </fieldset>
+            <fieldset class="survey-card">
+              <legend>7. I would imagine that most people would learn to use this system very quickly.</legend>
+              <div class="likert-row">
+                <label><input type="radio" name="sus_7" value="1" />1</label>
+                <label><input type="radio" name="sus_7" value="2" />2</label>
+                <label><input type="radio" name="sus_7" value="3" />3</label>
+                <label><input type="radio" name="sus_7" value="4" />4</label>
+                <label><input type="radio" name="sus_7" value="5" />5</label>
+              </div>
+            </fieldset>
+            <fieldset class="survey-card">
+              <legend>8. I found the system very cumbersome to use.</legend>
+              <div class="likert-row">
+                <label><input type="radio" name="sus_8" value="1" />1</label>
+                <label><input type="radio" name="sus_8" value="2" />2</label>
+                <label><input type="radio" name="sus_8" value="3" />3</label>
+                <label><input type="radio" name="sus_8" value="4" />4</label>
+                <label><input type="radio" name="sus_8" value="5" />5</label>
+              </div>
+            </fieldset>
+            <fieldset class="survey-card">
+              <legend>9. I felt very confident using the system.</legend>
+              <div class="likert-row">
+                <label><input type="radio" name="sus_9" value="1" />1</label>
+                <label><input type="radio" name="sus_9" value="2" />2</label>
+                <label><input type="radio" name="sus_9" value="3" />3</label>
+                <label><input type="radio" name="sus_9" value="4" />4</label>
+                <label><input type="radio" name="sus_9" value="5" />5</label>
+              </div>
+            </fieldset>
+            <fieldset class="survey-card">
+              <legend>10. I needed to learn a lot of things before I could get going with this system.</legend>
+              <div class="likert-row">
+                <label><input type="radio" name="sus_10" value="1" />1</label>
+                <label><input type="radio" name="sus_10" value="2" />2</label>
+                <label><input type="radio" name="sus_10" value="3" />3</label>
+                <label><input type="radio" name="sus_10" value="4" />4</label>
+                <label><input type="radio" name="sus_10" value="5" />5</label>
+              </div>
+            </fieldset>
+          </div>
+        </form>
+      </section>
+
+      <section class="survey-section">
+        <div class="survey-header">
+          <p class="eyebrow">Qualitative Follow-up</p>
+          <h2>Open-ended prompts</h2>
+          <p class="copy">
+            Use these questions to capture what the scores do not explain on
+            their own: trust, clarity, hesitation, and unmet expectations.
+          </p>
+        </div>
+        <form class="survey-form">
+          <div class="survey-stack">
+            <label class="survey-field full-width-field">
+              <span>What part of the Roomie experience felt most clear or helpful?</span>
+              <textarea name="most_clear" rows="4" placeholder="Capture the participant's strongest positive signal."></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>What part of the experience felt confusing, frustrating, or slowed you down?</span>
+              <textarea name="most_confusing" rows="4" placeholder="Capture navigation friction, missing information, or unclear actions."></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>Did anything affect your trust in the listings, landlord information, or the platform overall?</span>
+              <textarea name="trust_feedback" rows="4" placeholder="Note concerns or signals that increased confidence."></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>If you could change one thing before the next round of testing, what would it be?</span>
+              <textarea name="priority_change" rows="4" placeholder="Capture the participant's highest-priority improvement."></textarea>
+            </label>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

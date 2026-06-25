@@ -34,10 +34,11 @@ jobs:
       - name: Build Vite app
         run: npm run build
 
-      - name: Include standalone static demo pages
-        # Keep the old static demo pages reachable alongside the React app,
-        # e.g. /mvproomie/demo-layout-1.html
-        run: cp -f demo-layout-*.html demo-layout-1.js internal.html styles.css dist/ 2>/dev/null || true
+      - name: Include static overview and sibling MVP pages
+        run: |
+          cp -f index.html user-surveys.html styles.css demo-layout-1.js dist/
+          mkdir -p dist/mvp1
+          cp -f mvp1/detail.html mvp1/saved.html mvp1/internal.html dist/mvp1/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'node:path'
 
 // https://vite.dev/config/
 // On GitHub Pages this is served from a project subpath (/mvproomie/), so the
@@ -7,4 +8,13 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ command }) => ({
   plugins: [react()],
   base: command === 'build' ? '/mvproomie/' : '/',
+  build: {
+    rollupOptions: {
+      input: {
+        mvp1: resolve(__dirname, 'mvp1/index.html'),
+        mvp2: resolve(__dirname, 'mvp2/index.html'),
+        mvp3: resolve(__dirname, 'mvp3/index.html'),
+      },
+    },
+  },
 }))
