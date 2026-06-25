@@ -47,6 +47,13 @@ body {
   margin-bottom: 24px;
 }
 
+.survey-logo {
+  display: block;
+  width: min(520px, 100%);
+  height: auto;
+  margin: 0 0 18px;
+}
+
 .subhead-tabs {
   display: inline-flex;
   gap: 10px;
