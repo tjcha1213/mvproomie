@@ -1,88 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Roomie | Demo 01 Home</title>
     <meta
       name="description"
-      content="Single-screen renter discovery demo for Roomie MVP layout 01."
+      content="Roomie — Find your space. Feel at home. Room and bedspace finder in the Philippines."
     />
-    <link rel="stylesheet" href="../styles.css" />
+    <title>Roomie | Find your space. Feel at home.</title>
   </head>
-  <body class="demo-body">
-    <main class="single-demo-page">
-      <header class="single-demo-header">
-        <p class="eyebrow">MVP Demo 01</p>
-        <h1 class="demo-title">Discovery-first renter flow</h1>
-        <p class="copy demo-copy">
-          This is the single-screen renter discovery view. Tap a listing to go
-          to the detail screen or open saved listings from the top action.
-        </p>
-        <a class="demo-button secondary-button" href="../index.html">Back to layout overview</a>
-      </header>
-
-      <section class="phone-stage">
-        <article class="app-phone single-phone">
-          <div class="status-bar"><span>9:41</span><span>▮▮▮</span></div>
-          <div class="demo-app-header">
-            <div class="mini-logo">roomie</div>
-            <div class="header-icons">
-              <a class="icon-link" href="saved.html">♡</a>
-              <span>☰</span>
-            </div>
-          </div>
-          <div class="search-wrap">
-            <div class="search-input">Search location or property</div>
-            <button class="filter-fab" type="button">⌘</button>
-          </div>
-          <div class="section-row">
-            <h3>Nearby Listings</h3>
-            <button class="text-link" type="button">See all</button>
-          </div>
-          <div class="listing-grid single-listing-grid">
-            <a class="demo-listing-card selected" href="detail.html">
-              <div class="demo-thumb" style="background:linear-gradient(135deg, #e7d8c6, #b08b67)"></div>
-              <div class="heart-btn">♥</div>
-              <div class="mini-pill">Studio</div>
-              <h4>Cozy Studio Unit</h4>
-              <p>Katipunan, QC</p>
-              <strong>₱6,000 / month</strong>
-            </a>
-            <a class="demo-listing-card" href="detail.html">
-              <div class="demo-thumb" style="background:linear-gradient(135deg, #d7d1c5, #8c8378)"></div>
-              <div class="heart-btn">♡</div>
-              <div class="mini-pill">Bedspace</div>
-              <h4>Male Bedspace</h4>
-              <p>España, Manila</p>
-              <strong>₱2,600 / month</strong>
-            </a>
-            <a class="demo-listing-card" href="detail.html">
-              <div class="demo-thumb" style="background:linear-gradient(135deg, #d9e6d8, #9fb39a)"></div>
-              <div class="heart-btn">♥</div>
-              <div class="mini-pill">Apartment</div>
-              <h4>1BR Apartment</h4>
-              <p>Cubao, QC</p>
-              <strong>₱13,500 / month</strong>
-            </a>
-            <a class="demo-listing-card" href="detail.html">
-              <div class="demo-thumb" style="background:linear-gradient(135deg, #efe5da, #bda68d)"></div>
-              <div class="heart-btn">♥</div>
-              <div class="mini-pill">Studio</div>
-              <h4>Modern Studio</h4>
-              <p>Timog, QC</p>
-              <strong>₱7,000 / month</strong>
-            </a>
-          </div>
-          <div class="tabbar">
-            <span class="active">Home</span>
-            <span>Search</span>
-            <span>Add Listing</span>
-            <span>Inbox</span>
-            <span>Profile</span>
-          </div>
-        </article>
-      </section>
-    </main>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
