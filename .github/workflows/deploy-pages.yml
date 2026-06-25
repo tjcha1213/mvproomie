@@ -36,7 +36,7 @@ jobs:
 
       - name: Include static overview and sibling MVP pages
         run: |
-          cp -f index.html styles.css demo-layout-1.js dist/
+          cp -f index.html user-surveys.html styles.css demo-layout-1.js dist/
           mkdir -p dist/mvp1
           cp -f mvp1/detail.html mvp1/saved.html mvp1/internal.html dist/mvp1/
 
