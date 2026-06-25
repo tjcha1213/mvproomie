@@ -47,6 +47,38 @@ body {
   margin-bottom: 24px;
 }
 
+.hero-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.hero-logo-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6ba7ff, #1f66db);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(31, 102, 219, 0.18);
+}
+
+.hero-logo-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.hero-logo-text {
+  color: #1f66db;
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
 .subhead-tabs {
   display: inline-flex;
   gap: 10px;
