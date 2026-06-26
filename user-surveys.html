@@ -24,11 +24,7 @@
         </nav>
         <h1>User survey packet for MVP testing</h1>
         <p class="copy intro-copy">
-          This survey page is designed for moderated or unmoderated product
-          testing. It includes a Net Promoter Score question, a full System
-          Usability Scale questionnaire, and a small set of qualitative
-          follow-ups to capture usability friction, trust signals, and product
-          intent.
+          NPS, SUS, and qualitative follow-ups for MVP testing.
         </p>
       </section>
 
@@ -37,9 +33,7 @@
           <p class="eyebrow">Survey Setup</p>
           <h2>Session metadata</h2>
           <p class="copy">
-            Use this section to identify the participant, capture their role
-            and background, and record the prototype route they reviewed before
-            you begin the scored questionnaire.
+            Capture participant background and the prototype reviewed.
           </p>
         </div>
         <form class="survey-form">
@@ -54,16 +48,7 @@
             </label>
             <label class="survey-field full-width-field">
               <span>Bio</span>
-              <textarea name="bio" rows="4" placeholder="Short background, housing experience, or relevant context"></textarea>
-            </label>
-            <label class="survey-field">
-              <span>Participant role</span>
-              <select name="participant_role">
-                <option value="">Select one</option>
-                <option value="renter">Renter</option>
-                <option value="landlord">Landlord</option>
-                <option value="broker">Broker</option>
-              </select>
+              <textarea name="bio" rows="4" placeholder="Short background, housing experience, or other relevant context"></textarea>
             </label>
             <label class="survey-field">
               <span>Participant ID</span>
@@ -79,14 +64,17 @@
               </select>
             </label>
             <label class="survey-field">
-              <span>User type</span>
-              <select name="user_type">
+              <span>Participant role</span>
+              <select name="participant_role">
                 <option value="">Select one</option>
-                <option value="renter">Prospective renter</option>
-                <option value="student">Student</option>
-                <option value="young_professional">Young professional</option>
-                <option value="operator">Owner / operator</option>
+                <option value="renter">Renter</option>
+                <option value="landlord">Landlord</option>
+                <option value="broker">Broker</option>
               </select>
+            </label>
+            <label class="survey-field">
+              <span>Occupation</span>
+              <input type="text" name="occupation" placeholder="Current occupation" />
             </label>
             <label class="survey-field">
               <span>Session notes</span>
@@ -101,9 +89,7 @@
           <p class="eyebrow">Net Promoter Score</p>
           <h2>Likelihood to recommend</h2>
           <p class="copy">
-            Ask this after the participant finishes the core tasks. The 0 to 10
-            scale provides a simple top-line signal for product advocacy and
-            overall impression.
+            A top-line signal for recommendation and overall impression.
           </p>
         </div>
         <form class="survey-form">
@@ -139,9 +125,7 @@
           <p class="eyebrow">System Usability Scale</p>
           <h2>Ten-item usability assessment</h2>
           <p class="copy">
-            Rate each statement on a five-point scale from strongly disagree to
-            strongly agree. These ten items can be scored later to calculate
-            the participant's SUS score.
+            Rate each statement from strongly disagree to strongly agree.
           </p>
         </div>
         <form class="survey-form">
@@ -262,8 +246,7 @@
           <p class="eyebrow">Qualitative Follow-up</p>
           <h2>Open-ended prompts</h2>
           <p class="copy">
-            Use these questions to capture what the scores do not explain on
-            their own: trust, clarity, hesitation, and unmet expectations.
+            Use these to capture trust, friction, and unmet expectations.
           </p>
         </div>
         <form class="survey-form">
