@@ -269,6 +269,20 @@ img {
   gap: 6px;
 }
 
+/* Wordmark recolored to the active theme via a CSS mask. */
+.logo-img {
+  display: block;
+  height: 28px;
+  width: 113px;
+  background-color: var(--primary);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: left center;
+  mask-position: left center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
 .logo-icon {
   width: 28px;
   height: 28px;

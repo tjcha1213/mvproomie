@@ -1,3 +1,5 @@
+import Logo from '../components/Logo';
+
 const CONVERSATIONS = [
   { id: 1, name: 'Juan Dela Cruz', preview: 'Hi! Is the unit still available?', time: '2m ago', unread: 3 },
   { id: 2, name: 'Maria Santos', preview: 'Yes, you can move in on July 1st.', time: '1h ago', unread: 0 },
@@ -14,15 +16,7 @@ export default function InboxScreen({ onShowToast }: Props) {
   return (
     <>
       <div className="app-header">
-        <div className="logo">
-          <div className="logo-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <circle cx="12" cy="11" r="2" fill="currentColor" stroke="none"/>
-            </svg>
-          </div>
-          <span className="logo-text">roomie</span>
-        </div>
+        <Logo />
       </div>
 
       <div className="section-header">
