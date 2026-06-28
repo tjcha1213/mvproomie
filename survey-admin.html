@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Roomie | Survey Admin Export</title>
+    <meta
+      name="description"
+      content="Administrative export page for Roomie survey responses saved from MVP user testing."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <a href="../bahaytrust/index.html#vision">
+          <img
+            class="survey-logo"
+            src="assets/logo-draft.png"
+            alt="Roomie logo"
+          />
+        </a>
+        <nav class="subhead-tabs" aria-label="Root page sections">
+          <a class="subhead-tab" href="index.html">UI Layouts</a>
+          <a class="subhead-tab" href="user-surveys.html">User Surveys</a>
+          <a class="subhead-tab active" href="survey-admin.html">Survey Admin</a>
+        </nav>
+        <h1>Survey admin export</h1>
+        <p class="copy intro-copy">
+          Review stored survey metadata and download responses for research as CSV or JSON.
+        </p>
+      </section>
+
+      <section class="survey-section">
+        <div class="survey-header">
+          <p class="eyebrow">Stored Responses</p>
+          <h2 data-response-count>0 stored responses</h2>
+          <p class="copy">
+            This static version stores submissions in the current browser. Export from the same browser/device used to collect responses.
+          </p>
+        </div>
+        <div class="survey-actions">
+          <button class="demo-button" type="button" data-export-csv>Download CSV</button>
+          <button class="secondary-button" type="button" data-export-json>Download JSON</button>
+          <button class="secondary-button" type="button" data-refresh-responses>Refresh list</button>
+        </div>
+      </section>
+
+      <section class="survey-section">
+        <div class="survey-header">
+          <p class="eyebrow">Preview</p>
+          <h2>Recent submissions</h2>
+        </div>
+        <p class="copy" data-empty-state>
+          No responses are stored in this browser yet.
+        </p>
+        <div class="table-wrap" data-response-table-wrap hidden>
+          <table class="response-table">
+            <thead>
+              <tr>
+                <th>Response ID</th>
+                <th>Submitted At</th>
+                <th>Name</th>
+                <th>Participant ID</th>
+                <th>Tested Route</th>
+                <th>Role</th>
+                <th>Recommendation</th>
+              </tr>
+            </thead>
+            <tbody data-response-table-body></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script src="survey-storage.js"></script>
+  </body>
+</html>

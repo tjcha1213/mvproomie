@@ -111,6 +111,28 @@ body {
   gap: 18px;
 }
 
+.survey-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.survey-status {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 0.96rem;
+  line-height: 1.65;
+}
+
+.survey-status[data-state="success"] {
+  color: #1f66db;
+}
+
+.survey-status[data-state="error"] {
+  color: #bf3a3a;
+}
+
 .survey-grid,
 .survey-stack,
 .sus-list {
@@ -285,16 +307,23 @@ h2 {
 
 .demo-button,
 .secondary-button {
+  appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 50px;
-  padding: 0 22px;
+  min-height: 48px;
+  padding: 0 20px;
   border-radius: 999px;
+  border: 1px solid transparent;
   background: linear-gradient(135deg, #4a8dff, #1f66db);
   color: #ffffff;
+  font: inherit;
+  font-size: 0.96rem;
   font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
   text-decoration: none;
+  cursor: pointer;
   box-shadow: 0 12px 24px rgba(31, 102, 219, 0.2);
 }
 
@@ -305,11 +334,51 @@ h2 {
   box-shadow: none;
 }
 
+.demo-button:hover,
+.secondary-button:hover {
+  transform: translateY(-1px);
+}
+
 .button-like {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(248, 251, 255, 0.96);
+}
+
+.response-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.response-table th,
+.response-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  color: var(--ink);
+  font-size: 0.94rem;
+}
+
+.response-table th {
+  background: rgba(233, 239, 255, 0.72);
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.response-table tbody tr:last-child td {
+  border-bottom: 0;
 }
 
 .intro-copy {
@@ -1097,6 +1166,11 @@ h2 {
   .survey-grid,
   .sus-key {
     grid-template-columns: 1fr;
+  }
+
+  .survey-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .phone-frame {

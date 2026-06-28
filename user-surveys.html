@@ -254,6 +254,24 @@
           </div>
         </form>
       </section>
+
+      <section class="survey-section">
+        <div class="survey-header">
+          <p class="eyebrow">Response Logging</p>
+          <h2>Save and export-ready storage</h2>
+          <p class="copy">
+            Save the completed packet with participant metadata so it can be exported later for research review.
+          </p>
+        </div>
+        <div class="survey-actions">
+          <button class="demo-button" type="button" data-save-survey>Save response</button>
+          <a class="secondary-button button-like" href="survey-admin.html">Open admin export</a>
+        </div>
+        <p class="survey-status" data-save-status data-state="idle">
+          Responses are stored locally in this browser and can be downloaded later as CSV or JSON.
+        </p>
+      </section>
     </main>
+    <script src="survey-storage.js"></script>
   </body>
 </html>
