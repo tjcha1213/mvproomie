@@ -157,13 +157,19 @@ body {
 }
 
 .survey-card {
-  padding: 20px;
+  padding: 24px 22px;
 }
 
 .survey-card legend {
-  padding: 0 6px;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  padding: 0 8px 0 6px;
+  margin-bottom: 6px;
   font-weight: 800;
   color: var(--ink);
+  line-height: 1.55;
+  white-space: normal;
 }
 
 .nps-scale,
@@ -174,15 +180,15 @@ body {
 }
 
 .nps-scale {
-  grid-template-columns: repeat(11, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .likert-row {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .nps-scale label,
@@ -215,7 +221,7 @@ body {
 }
 
 .sus-key {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   color: var(--muted);
   font-size: 0.88rem;

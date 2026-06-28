@@ -6,7 +6,7 @@
     <title>Roomie | User Surveys</title>
     <meta
       name="description"
-      content="Roomie user testing survey page with NPS and SUS questionnaires."
+      content="Roomie user testing survey page with recommendation, usability, and qualitative questionnaires."
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -26,7 +26,7 @@
         </nav>
         <h1>User survey packet for MVP testing</h1>
         <p class="copy intro-copy">
-          NPS, SUS, and qualitative follow-ups for MVP testing.
+          Recommendation, usability, and qualitative follow-ups for MVP testing.
         </p>
       </section>
 
@@ -88,31 +88,24 @@
 
       <section class="survey-section">
         <div class="survey-header">
-          <p class="eyebrow">Net Promoter Score</p>
+          <p class="eyebrow">Recommendation</p>
           <h2>Likelihood to recommend</h2>
           <p class="copy">
-            A top-line signal for recommendation and overall impression.
+            A 4-point recommendation signal for overall impression.
           </p>
         </div>
         <form class="survey-form">
           <fieldset class="survey-card">
             <legend>How likely are you to recommend Roomie to a friend or colleague looking for housing?</legend>
-            <div class="nps-scale" role="radiogroup" aria-label="Net Promoter Score">
-              <label><input type="radio" name="nps" value="0" />0</label>
-              <label><input type="radio" name="nps" value="1" />1</label>
-              <label><input type="radio" name="nps" value="2" />2</label>
-              <label><input type="radio" name="nps" value="3" />3</label>
-              <label><input type="radio" name="nps" value="4" />4</label>
-              <label><input type="radio" name="nps" value="5" />5</label>
-              <label><input type="radio" name="nps" value="6" />6</label>
-              <label><input type="radio" name="nps" value="7" />7</label>
-              <label><input type="radio" name="nps" value="8" />8</label>
-              <label><input type="radio" name="nps" value="9" />9</label>
-              <label><input type="radio" name="nps" value="10" />10</label>
+            <div class="nps-scale" role="radiogroup" aria-label="Recommendation scale">
+              <label><input type="radio" name="recommendation" value="1" />1</label>
+              <label><input type="radio" name="recommendation" value="2" />2</label>
+              <label><input type="radio" name="recommendation" value="3" />3</label>
+              <label><input type="radio" name="recommendation" value="4" />4</label>
             </div>
             <div class="nps-labels">
-              <span>Not at all likely</span>
-              <span>Extremely likely</span>
+              <span>1 = Not likely</span>
+              <span>4 = Very likely</span>
             </div>
           </fieldset>
           <label class="survey-field full-width-field">
@@ -127,16 +120,15 @@
           <p class="eyebrow">System Usability Scale</p>
           <h2>Ten-item usability assessment</h2>
           <p class="copy">
-            Rate each statement from strongly disagree to strongly agree.
+            Rate each statement on a 4-point Likert scale.
           </p>
         </div>
         <form class="survey-form">
           <div class="sus-key">
             <span>1 = Strongly disagree</span>
             <span>2 = Disagree</span>
-            <span>3 = Neutral</span>
-            <span>4 = Agree</span>
-            <span>5 = Strongly agree</span>
+            <span>3 = Agree</span>
+            <span>4 = Strongly agree</span>
           </div>
           <div class="sus-list">
             <fieldset class="survey-card">
@@ -146,7 +138,6 @@
                 <label><input type="radio" name="sus_1" value="2" />2</label>
                 <label><input type="radio" name="sus_1" value="3" />3</label>
                 <label><input type="radio" name="sus_1" value="4" />4</label>
-                <label><input type="radio" name="sus_1" value="5" />5</label>
               </div>
             </fieldset>
             <fieldset class="survey-card">
@@ -156,7 +147,6 @@
                 <label><input type="radio" name="sus_2" value="2" />2</label>
                 <label><input type="radio" name="sus_2" value="3" />3</label>
                 <label><input type="radio" name="sus_2" value="4" />4</label>
-                <label><input type="radio" name="sus_2" value="5" />5</label>
               </div>
             </fieldset>
             <fieldset class="survey-card">
@@ -166,7 +156,6 @@
                 <label><input type="radio" name="sus_3" value="2" />2</label>
                 <label><input type="radio" name="sus_3" value="3" />3</label>
                 <label><input type="radio" name="sus_3" value="4" />4</label>
-                <label><input type="radio" name="sus_3" value="5" />5</label>
               </div>
             </fieldset>
             <fieldset class="survey-card">
@@ -176,7 +165,6 @@
                 <label><input type="radio" name="sus_4" value="2" />2</label>
                 <label><input type="radio" name="sus_4" value="3" />3</label>
                 <label><input type="radio" name="sus_4" value="4" />4</label>
-                <label><input type="radio" name="sus_4" value="5" />5</label>
               </div>
             </fieldset>
             <fieldset class="survey-card">
@@ -186,7 +174,6 @@
                 <label><input type="radio" name="sus_5" value="2" />2</label>
                 <label><input type="radio" name="sus_5" value="3" />3</label>
                 <label><input type="radio" name="sus_5" value="4" />4</label>
-                <label><input type="radio" name="sus_5" value="5" />5</label>
               </div>
             </fieldset>
             <fieldset class="survey-card">
@@ -196,7 +183,6 @@
                 <label><input type="radio" name="sus_6" value="2" />2</label>
                 <label><input type="radio" name="sus_6" value="3" />3</label>
                 <label><input type="radio" name="sus_6" value="4" />4</label>
-                <label><input type="radio" name="sus_6" value="5" />5</label>
               </div>
             </fieldset>
             <fieldset class="survey-card">
@@ -206,7 +192,6 @@
                 <label><input type="radio" name="sus_7" value="2" />2</label>
                 <label><input type="radio" name="sus_7" value="3" />3</label>
                 <label><input type="radio" name="sus_7" value="4" />4</label>
-                <label><input type="radio" name="sus_7" value="5" />5</label>
               </div>
             </fieldset>
             <fieldset class="survey-card">
@@ -216,7 +201,6 @@
                 <label><input type="radio" name="sus_8" value="2" />2</label>
                 <label><input type="radio" name="sus_8" value="3" />3</label>
                 <label><input type="radio" name="sus_8" value="4" />4</label>
-                <label><input type="radio" name="sus_8" value="5" />5</label>
               </div>
             </fieldset>
             <fieldset class="survey-card">
@@ -226,7 +210,6 @@
                 <label><input type="radio" name="sus_9" value="2" />2</label>
                 <label><input type="radio" name="sus_9" value="3" />3</label>
                 <label><input type="radio" name="sus_9" value="4" />4</label>
-                <label><input type="radio" name="sus_9" value="5" />5</label>
               </div>
             </fieldset>
             <fieldset class="survey-card">
@@ -236,7 +219,6 @@
                 <label><input type="radio" name="sus_10" value="2" />2</label>
                 <label><input type="radio" name="sus_10" value="3" />3</label>
                 <label><input type="radio" name="sus_10" value="4" />4</label>
-                <label><input type="radio" name="sus_10" value="5" />5</label>
               </div>
             </fieldset>
           </div>
