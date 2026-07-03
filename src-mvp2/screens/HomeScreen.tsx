@@ -22,10 +22,11 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
   const listRef = useRef<HTMLDivElement>(null);
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sheetHeightRef = useRef(244);
-  const dragState = useRef<{ startY: number; startHeight: number; dragging: boolean }>({
+  const dragState = useRef<{ startY: number; startHeight: number; dragging: boolean; moved: boolean }>({
     startY: 0,
     startHeight: 244,
     dragging: false,
+    moved: false,
   });
 
   const clampHeight = useCallback((value: number) => Math.max(154, Math.min(454, value)), []);
@@ -85,12 +86,20 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
     const handlePointerMove = (event: PointerEvent) => {
       if (!dragState.current.dragging) return;
       const delta = dragState.current.startY - event.clientY;
+      if (Math.abs(delta) > 6) {
+        dragState.current.moved = true;
+      }
       setSheetHeight(clampHeight(dragState.current.startHeight + delta));
     };
 
     const handlePointerUp = () => {
       if (!dragState.current.dragging) return;
+      const shouldToggle = !dragState.current.moved;
       dragState.current.dragging = false;
+      if (shouldToggle) {
+        expandSheet();
+        return;
+      }
       snapSheetHeight(sheetHeightRef.current);
     };
 
@@ -102,13 +111,14 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
       window.removeEventListener('pointerup', handlePointerUp);
       window.removeEventListener('pointercancel', handlePointerUp);
     };
-  }, [clampHeight, snapSheetHeight]);
+  }, [clampHeight, expandSheet, snapSheetHeight]);
 
   const beginDrag = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
     dragState.current = {
       startY: event.clientY,
       startHeight: sheetHeight,
       dragging: true,
+      moved: false,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
   }, [sheetHeight]);
@@ -179,8 +189,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
           className="home-sheet-grabber"
           type="button"
           onPointerDown={beginDrag}
-          onDoubleClick={expandSheet}
-          aria-label="Drag to expand or minimize listings"
+          aria-label="Expand or minimize listings"
         >
           <span className="home-sheet-handle" />
         </button>
@@ -191,9 +200,6 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
               Expand for a larger map-to-listing comparison view.
             </div>
           </div>
-          <button className="home-sheet-toggle" onClick={expandSheet} type="button">
-            {sheetHeight >= 340 ? 'Minimize' : 'Expand'}
-          </button>
         </div>
 
         {/* Synced listing carousel */}
