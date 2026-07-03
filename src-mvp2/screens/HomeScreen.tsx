@@ -82,6 +82,8 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
     sheetHeightRef.current = sheetHeight;
   }, [sheetHeight]);
 
+  const expandSheet = useCallback(() => setSheetHeight((prev) => (prev >= 340 ? 154 : 454)), []);
+
   useEffect(() => {
     const handlePointerMove = (event: PointerEvent) => {
       if (!dragState.current.dragging) return;
@@ -122,8 +124,6 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
     };
     event.currentTarget.setPointerCapture(event.pointerId);
   }, [sheetHeight]);
-
-  const expandSheet = useCallback(() => setSheetHeight((prev) => (prev >= 340 ? 154 : 454)), []);
 
   return (
     <>
