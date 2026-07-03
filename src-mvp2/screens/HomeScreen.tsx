@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Listing } from '../data/listings';
 import ListingMap from '../components/ListingMap';
 
@@ -18,8 +18,27 @@ function TypeBadge({ type }: { type: string }) {
 
 export default function HomeScreen({ listings, onSelectListing, onToggleSave, onOpenSearch, onOpenMenu, onShowToast }: Props) {
   const [selectedId, setSelectedId] = useState<number>(listings[0]?.id ?? 0);
+  const [sheetHeight, setSheetHeight] = useState(244);
   const carouselRef = useRef<HTMLDivElement>(null);
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sheetHeightRef = useRef(244);
+  const dragState = useRef<{ startY: number; startHeight: number; dragging: boolean }>({
+    startY: 0,
+    startHeight: 244,
+    dragging: false,
+  });
+
+  const clampHeight = useCallback((value: number) => Math.max(154, Math.min(454, value)), []);
+  const snapSheetHeight = useCallback(
+    (value: number) => {
+      const snapPoints = [154, 244, 454];
+      const next = snapPoints.reduce((best, point) =>
+        Math.abs(point - value) < Math.abs(best - value) ? point : best
+      );
+      setSheetHeight(next);
+    },
+    []
+  );
 
   // Smoothly bring a card to the centre of the carousel.
   const centerCard = useCallback((id: number) => {
@@ -56,6 +75,44 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
   }, [listings]);
 
   useEffect(() => () => { if (scrollTimer.current) clearTimeout(scrollTimer.current); }, []);
+
+  useEffect(() => {
+    sheetHeightRef.current = sheetHeight;
+  }, [sheetHeight]);
+
+  useEffect(() => {
+    const handlePointerMove = (event: PointerEvent) => {
+      if (!dragState.current.dragging) return;
+      const delta = dragState.current.startY - event.clientY;
+      setSheetHeight(clampHeight(dragState.current.startHeight + delta));
+    };
+
+    const handlePointerUp = () => {
+      if (!dragState.current.dragging) return;
+      dragState.current.dragging = false;
+      snapSheetHeight(sheetHeightRef.current);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+    };
+  }, [clampHeight, snapSheetHeight]);
+
+  const beginDrag = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
+    dragState.current = {
+      startY: event.clientY,
+      startHeight: sheetHeight,
+      dragging: true,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }, [sheetHeight]);
+
+  const expandSheet = useCallback(() => setSheetHeight((prev) => (prev >= 340 ? 154 : 454)), []);
 
   return (
     <>
@@ -106,46 +163,75 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
         </button>
       </div>
 
+      <div className="home-stage">
       {/* Interactive map */}
-      <div className="home-map-wrap">
+      <div className="home-map-wrap" style={{ bottom: `${sheetHeight - 6}px` }}>
         <ListingMap listings={listings} selectedId={selectedId} onSelect={selectFromMap} />
         <div className="home-map-count">{listings.length} homes in this area</div>
       </div>
 
-      {/* Synced listing carousel */}
-      <div className="home-carousel" ref={carouselRef} onScroll={handleScroll}>
-        {listings.map((l) => (
-          <div
-            key={l.id}
-            className={`carousel-card ${l.id === selectedId ? 'active' : ''}`}
-            onClick={() => onSelectListing(l)}
-          >
-            <div className="carousel-card-img">
-              <img src={l.image} alt={l.title} loading="lazy" />
-              <TypeBadge type={l.type} />
-              <button
-                className={`save-btn ${l.saved ? 'saved' : ''}`}
-                onClick={(e) => { e.stopPropagation(); onToggleSave(l.id); }}
-                aria-label={l.saved ? 'Unsave' : 'Save'}
-              >
-                <svg viewBox="0 0 24 24" fill={l.saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-              </button>
-            </div>
-            <div className="carousel-card-body">
-              <div className="carousel-card-title">{l.title}</div>
-              <div className="carousel-card-location">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-                {l.location}
-              </div>
-              <div className="carousel-card-price">₱{l.price.toLocaleString()} <span>/ month</span></div>
+      <div
+        className={`home-sheet ${sheetHeight >= 340 ? 'expanded' : sheetHeight <= 170 ? 'peek' : 'mid'}`}
+        style={{ height: `${sheetHeight}px` }}
+      >
+        <button
+          className="home-sheet-grabber"
+          type="button"
+          onPointerDown={beginDrag}
+          onDoubleClick={expandSheet}
+          aria-label="Drag to expand or minimize listings"
+        >
+          <span className="home-sheet-handle" />
+          <span className="home-sheet-label">Swipe up or down</span>
+        </button>
+        <div className="home-sheet-head">
+          <div>
+            <div className="home-sheet-title">Listings nearby</div>
+            <div className="home-sheet-sub">
+              Expand for a larger map-to-listing comparison view.
             </div>
           </div>
-        ))}
+          <button className="home-sheet-toggle" onClick={expandSheet} type="button">
+            {sheetHeight >= 340 ? 'Minimize' : 'Expand'}
+          </button>
+        </div>
+
+        {/* Synced listing carousel */}
+        <div className="home-carousel" ref={carouselRef} onScroll={handleScroll}>
+          {listings.map((l) => (
+            <div
+              key={l.id}
+              className={`carousel-card ${l.id === selectedId ? 'active' : ''}`}
+              onClick={() => onSelectListing(l)}
+            >
+              <div className="carousel-card-img">
+                <img src={l.image} alt={l.title} loading="lazy" />
+                <TypeBadge type={l.type} />
+                <button
+                  className={`save-btn ${l.saved ? 'saved' : ''}`}
+                  onClick={(e) => { e.stopPropagation(); onToggleSave(l.id); }}
+                  aria-label={l.saved ? 'Unsave' : 'Save'}
+                >
+                  <svg viewBox="0 0 24 24" fill={l.saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                </button>
+              </div>
+              <div className="carousel-card-body">
+                <div className="carousel-card-title">{l.title}</div>
+                <div className="carousel-card-location">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  {l.location}
+                </div>
+                <div className="carousel-card-price">₱{l.price.toLocaleString()} <span>/ month</span></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
       </div>
     </>
   );

@@ -227,6 +227,84 @@
 
       <section class="survey-section">
         <div class="survey-header">
+          <p class="eyebrow">Brand Preferences</p>
+          <h2>Logo, color, naming, and domain feedback</h2>
+          <p class="copy">
+            Capture how participants react to the current brand direction and naming options.
+          </p>
+        </div>
+        <form class="survey-form">
+          <div class="survey-stack">
+            <label class="survey-field full-width-field">
+              <span>What is your preference or reaction to the current logo?</span>
+              <textarea name="logo_preference" rows="4" placeholder="Describe what feels strong, weak, memorable, confusing, or worth changing."></textarea>
+            </label>
+            <fieldset class="survey-card full-width-field">
+              <legend>Preferred color theme</legend>
+              <div class="theme-option-grid" role="radiogroup" aria-label="Preferred color theme">
+                <label class="theme-option-card">
+                  <input type="radio" name="color_theme_preference" value="indigo-white" />
+                  <span class="theme-option-swatch" aria-hidden="true">
+                    <span style="background:#4338ca"></span>
+                    <span style="background:#ffffff"></span>
+                  </span>
+                  <span class="theme-option-text">Indigo</span>
+                </label>
+                <label class="theme-option-card">
+                  <input type="radio" name="color_theme_preference" value="turquoise" />
+                  <span class="theme-option-swatch" aria-hidden="true">
+                    <span style="background:#14b8a6"></span>
+                    <span style="background:#ffffff"></span>
+                  </span>
+                  <span class="theme-option-text">Turquoise</span>
+                </label>
+                <label class="theme-option-card">
+                  <input type="radio" name="color_theme_preference" value="warm-mango" />
+                  <span class="theme-option-swatch" aria-hidden="true">
+                    <span style="background:#f59e0b"></span>
+                    <span style="background:#fff7ed"></span>
+                  </span>
+                  <span class="theme-option-text">Warm mango</span>
+                </label>
+                <label class="theme-option-card">
+                  <input type="radio" name="color_theme_preference" value="sunset-orange" />
+                  <span class="theme-option-swatch" aria-hidden="true">
+                    <span style="background:#f97316"></span>
+                    <span style="background:#fff7ed"></span>
+                  </span>
+                  <span class="theme-option-text">Sunset orange</span>
+                </label>
+              </div>
+            </fieldset>
+            <label class="survey-field">
+              <span>Color theme notes</span>
+              <input type="text" name="color_theme_notes" placeholder="Optional notes on what feels trustworthy, modern, or off-target" />
+            </label>
+            <label class="survey-field">
+              <span>Preferred company name</span>
+              <input type="text" name="company_name_preference" placeholder="e.g. Roomie, Rumie, another option" />
+            </label>
+            <label class="survey-field">
+              <span>Preferred domain name</span>
+              <select name="domain_name_preference">
+                <option value="">Select one</option>
+                <option value="roomie.ph">roomie.ph</option>
+                <option value="rumie.io">rumie.io</option>
+                <option value="rooomie.ai">rooomie.ai</option>
+                <option value="roomie.ai">roomie.ai</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>Other naming or domain suggestions</span>
+              <textarea name="brand_notes" rows="4" placeholder="Add other company name ideas, domain options, or brand notes here."></textarea>
+            </label>
+          </div>
+        </form>
+      </section>
+
+      <section class="survey-section">
+        <div class="survey-header">
           <p class="eyebrow">Qualitative Follow-up</p>
           <h2>Open-ended prompts</h2>
           <p class="copy">
