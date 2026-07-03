@@ -84,59 +84,53 @@ img {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 
-/* App shell: mobile-first, centered on desktop */
+/* App shell.
+   Mobile-first: the app fills the screen edge-to-edge like a native app —
+   no device mockup, bezel, or surrounding frame. */
 .app-shell {
   display: flex;
   justify-content: center;
-  align-items: center;
   min-height: 100dvh;
-  background: linear-gradient(135deg,
-    color-mix(in srgb, var(--primary) 9%, #ffffff) 0%,
-    color-mix(in srgb, var(--primary) 5%, #ffffff) 55%,
-    #F0FDF4 100%);
-  padding: 20px;
+  background: var(--bg);
 }
 
 .phone-container {
-  /* Width and height both adapt to the viewport so the whole device
-     stays visible on short or narrow screens; capped at a real phone size. */
-  width: min(390px, calc(100vw - 24px));
-  height: min(844px, calc(100dvh - 24px));
+  width: 100%;
+  height: 100dvh;
   background: var(--bg);
-  border-radius: 40px;
   overflow: hidden;
-  box-shadow:
-    0 0 0 10px #1a1a2e,
-    0 0 0 12px #2a2a3e,
-    0 40px 80px rgba(0,0,0,0.35),
-    0 20px 40px rgba(0,0,0,0.2);
   position: relative;
   display: flex;
   flex-direction: column;
 }
 
-/* On small viewports, trim the shell padding and device bezel so the
-   screen uses the available space instead of being clipped. */
-@media (max-height: 740px), (max-width: 430px) {
+/* Larger screens: present the mobile app as a clean, centered card
+   (soft shadow + rounded corners) — a contained preview, not a device mockup. */
+@media (min-width: 480px) {
   .app-shell {
-    padding: 8px;
+    align-items: center;
+    padding: 24px;
+    background: linear-gradient(135deg,
+      color-mix(in srgb, var(--primary) 9%, #ffffff) 0%,
+      color-mix(in srgb, var(--primary) 5%, #ffffff) 55%,
+      #F0FDF4 100%);
   }
   .phone-container {
-    width: min(390px, calc(100vw - 8px));
-    height: min(844px, calc(100dvh - 8px));
+    width: 390px;
+    height: min(844px, calc(100dvh - 48px));
     border-radius: 28px;
     box-shadow:
-      0 0 0 5px #1a1a2e,
-      0 0 0 6px #2a2a3e,
-      0 20px 40px rgba(0,0,0,0.28);
+      0 24px 60px rgba(0, 0, 0, 0.16),
+      0 8px 24px rgba(0, 0, 0, 0.08);
   }
 }
 
-/* Status bar */
+/* Faux device status bar — removed from the app shell to avoid the mockup look;
+   the OS provides the real one on phones. Kept in the DOM but hidden. */
 .status-bar {
   height: 44px;
   background: var(--surface);
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
@@ -1697,7 +1691,6 @@ img {
 .home-sheet-grabber {
   display: grid;
   justify-items: center;
-  gap: 7px;
   width: 100%;
   padding: 4px 0 0;
   border: 0;
@@ -1715,13 +1708,6 @@ img {
   height: 5px;
   border-radius: 999px;
   background: rgba(148, 163, 184, 0.9);
-}
-
-.home-sheet-label {
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
 }
 
 .home-sheet-head {
@@ -1759,18 +1745,25 @@ img {
 
 .home-carousel {
   display: flex;
-  gap: 12px;
   padding: 0 16px 18px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
+  overflow: auto;
   background: transparent;
   border-top: 0;
 }
 
+.home-carousel.vertical-list {
+  flex-direction: column;
+  gap: 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y proximity;
+  padding-top: 2px;
+}
+
 .carousel-card {
-  flex: 0 0 86%;
-  scroll-snap-align: center;
+  flex: 0 0 auto;
+  width: 100%;
+  scroll-snap-align: start;
   display: flex;
   background: var(--surface);
   border-radius: var(--radius-lg);
@@ -1788,7 +1781,7 @@ img {
 
 .carousel-card-img {
   position: relative;
-  width: 118px;
+  width: 120px;
   flex-shrink: 0;
   background: var(--surface-2);
   overflow: hidden;

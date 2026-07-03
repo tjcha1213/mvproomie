@@ -19,7 +19,7 @@ function TypeBadge({ type }: { type: string }) {
 export default function HomeScreen({ listings, onSelectListing, onToggleSave, onOpenSearch, onOpenMenu, onShowToast }: Props) {
   const [selectedId, setSelectedId] = useState<number>(listings[0]?.id ?? 0);
   const [sheetHeight, setSheetHeight] = useState(244);
-  const carouselRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sheetHeightRef = useRef(244);
   const dragState = useRef<{ startY: number; startHeight: number; dragging: boolean }>({
@@ -42,12 +42,13 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
 
   // Smoothly bring a card to the centre of the carousel.
   const centerCard = useCallback((id: number) => {
-    const el = carouselRef.current;
+    const el = listRef.current;
     if (!el) return;
     const idx = listings.findIndex((l) => l.id === id);
     const child = el.children[idx] as HTMLElement | undefined;
     if (!child) return;
-    el.scrollTo({ left: child.offsetLeft - (el.clientWidth - child.offsetWidth) / 2, behavior: 'smooth' });
+    const targetTop = child.offsetTop - 10;
+    el.scrollTo({ top: targetTop, behavior: 'smooth' });
   }, [listings]);
 
   // Pin tap → select and centre the matching card.
@@ -60,13 +61,13 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
   const handleScroll = useCallback(() => {
     if (scrollTimer.current) clearTimeout(scrollTimer.current);
     scrollTimer.current = setTimeout(() => {
-      const el = carouselRef.current;
+      const el = listRef.current;
       if (!el) return;
-      const center = el.scrollLeft + el.clientWidth / 2;
+      const center = el.scrollTop + el.clientHeight / 2;
       let bestId = listings[0]?.id ?? 0;
       let bestDist = Infinity;
       Array.from(el.children).forEach((child, i) => {
-        const c = (child as HTMLElement).offsetLeft + (child as HTMLElement).offsetWidth / 2;
+        const c = (child as HTMLElement).offsetTop + (child as HTMLElement).offsetHeight / 2;
         const d = Math.abs(c - center);
         if (d < bestDist) { bestDist = d; bestId = listings[i].id; }
       });
@@ -182,7 +183,6 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
           aria-label="Drag to expand or minimize listings"
         >
           <span className="home-sheet-handle" />
-          <span className="home-sheet-label">Swipe up or down</span>
         </button>
         <div className="home-sheet-head">
           <div>
@@ -197,7 +197,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
         </div>
 
         {/* Synced listing carousel */}
-        <div className="home-carousel" ref={carouselRef} onScroll={handleScroll}>
+        <div className="home-carousel vertical-list" ref={listRef} onScroll={handleScroll}>
           {listings.map((l) => (
             <div
               key={l.id}
