@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, type UIEvent } from 'react';
 import type { Listing } from '../data/listings';
+import { MiniListingMap } from '../components/ListingMap';
 
 interface Props {
   listing: Listing;
@@ -198,6 +199,16 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
               </svg>
               Call
             </button>
+          </div>
+        </div>
+
+        <div className="detail-map-section">
+          <div className="about-title">Location</div>
+          <p className="detail-map-copy">
+            Explore where this listing sits within the neighborhood before sending an inquiry.
+          </p>
+          <div className="detail-map-card">
+            <MiniListingMap lat={listing.lat} lng={listing.lng} />
           </div>
         </div>
 

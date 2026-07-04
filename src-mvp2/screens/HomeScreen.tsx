@@ -40,7 +40,15 @@ function ListingPhotoCarousel({
   return (
     <>
       {showMap ? (
-        <MiniListingMap lat={lat} lng={lng} />
+        <div
+          className="carousel-mini-map-wrap"
+          onClick={(event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
+          onTouchStart={(event) => event.stopPropagation()}
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <MiniListingMap lat={lat} lng={lng} />
+        </div>
       ) : (
         <>
           <div className="carousel-photo-strip" onScroll={handleScroll}>
@@ -69,11 +77,19 @@ function ListingPhotoCarousel({
         }}
         aria-label={showMap ? 'Show listing photos' : 'Show listing location on map'}
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2V6z" />
-          <path d="M9 4v14" />
-          <path d="M15 6v14" />
-        </svg>
+        {showMap ? (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <circle cx="9" cy="10" r="1.5" />
+            <path d="M21 15l-5-5-4 4-2-2-5 5" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2V6z" />
+            <path d="M9 4v14" />
+            <path d="M15 6v14" />
+          </svg>
+        )}
       </button>
     </>
   );
@@ -96,7 +112,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
 
   const getSnapPoints = useCallback(() => {
     const collapsed = 44;
-    const full = stageHeight > 0 ? Math.max(320, stageHeight - 14) : 454;
+    const full = stageHeight > 0 ? Math.max(320, stageHeight) : 454;
     const split = stageHeight > 0
       ? Math.min(full - 84, Math.max(260, Math.round(stageHeight * 0.42)))
       : 244;
@@ -230,6 +246,9 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
       : sheetHeight >= fullHeight - 28
         ? 'full'
         : 'mid';
+  const mapBottom = sheetMode === 'full'
+    ? stageHeight
+    : Math.max(0, sheetHeight - 6);
 
   return (
     <>
@@ -282,7 +301,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
 
       <div className={`home-stage sheet-${sheetMode}`} ref={stageRef}>
       {/* Interactive map */}
-      <div className="home-map-wrap" style={{ bottom: `${sheetHeight - 6}px` }}>
+      <div className="home-map-wrap" style={{ bottom: `${mapBottom}px` }}>
         <ListingMap listings={listings} selectedId={selectedId} onSelect={selectFromMap} />
         <div className="home-map-count">{listings.length} homes in this area</div>
       </div>
