@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Listing } from '../data/listings';
-import ListingMap from '../components/ListingMap';
+import ListingMap, { MiniListingMap } from '../components/ListingMap';
 
 interface Props {
   listings: Listing[];
@@ -16,9 +16,74 @@ function TypeBadge({ type }: { type: string }) {
   return <span className={`listing-type-badge ${cls}`}>{type}</span>;
 }
 
+function ListingPhotoCarousel({
+  images,
+  title,
+  lat,
+  lng,
+}: {
+  images: string[];
+  title: string;
+  lat: number;
+  lng: number;
+}) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [showMap, setShowMap] = useState(false);
+
+  const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
+    const el = event.currentTarget;
+    if (!el.clientWidth) return;
+    const nextIndex = Math.round(el.scrollLeft / el.clientWidth);
+    setActiveIndex(Math.max(0, Math.min(images.length - 1, nextIndex)));
+  }, [images.length]);
+
+  return (
+    <>
+      {showMap ? (
+        <MiniListingMap lat={lat} lng={lng} />
+      ) : (
+        <>
+          <div className="carousel-photo-strip" onScroll={handleScroll}>
+            {images.map((image, imageIndex) => (
+              <div className="carousel-photo-slide" key={`${title}-${imageIndex}`}>
+                <img src={image} alt={`${title} photo ${imageIndex + 1}`} loading="lazy" />
+              </div>
+            ))}
+          </div>
+          <div className="carousel-photo-dots" aria-hidden="true">
+            {images.map((_, imageIndex) => (
+              <span
+                key={`${title}-dot-${imageIndex}`}
+                className={`carousel-photo-dot ${imageIndex === activeIndex ? 'active' : ''}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+      <button
+        className={`carousel-map-toggle ${showMap ? 'active' : ''}`}
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          setShowMap((prev) => !prev);
+        }}
+        aria-label={showMap ? 'Show listing photos' : 'Show listing location on map'}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2V6z" />
+          <path d="M9 4v14" />
+          <path d="M15 6v14" />
+        </svg>
+      </button>
+    </>
+  );
+}
+
 export default function HomeScreen({ listings, onSelectListing, onToggleSave, onOpenSearch, onOpenMenu, onShowToast }: Props) {
   const [selectedId, setSelectedId] = useState<number>(listings[0]?.id ?? 0);
   const [sheetHeight, setSheetHeight] = useState(244);
+  const [stageHeight, setStageHeight] = useState(0);
+  const stageRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sheetHeightRef = useRef(244);
@@ -29,17 +94,27 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
     moved: false,
   });
 
-  const clampHeight = useCallback((value: number) => Math.max(154, Math.min(454, value)), []);
-  const snapSheetHeight = useCallback(
-    (value: number) => {
-      const snapPoints = [154, 244, 454];
-      const next = snapPoints.reduce((best, point) =>
-        Math.abs(point - value) < Math.abs(best - value) ? point : best
-      );
-      setSheetHeight(next);
-    },
-    []
-  );
+  const getSnapPoints = useCallback(() => {
+    const collapsed = 44;
+    const full = stageHeight > 0 ? Math.max(320, stageHeight - 14) : 454;
+    const split = stageHeight > 0
+      ? Math.min(full - 84, Math.max(260, Math.round(stageHeight * 0.42)))
+      : 244;
+    return [collapsed, split, full];
+  }, [stageHeight]);
+
+  const clampHeight = useCallback((value: number) => {
+    const [collapsed, , full] = getSnapPoints();
+    return Math.max(collapsed, Math.min(full, value));
+  }, [getSnapPoints]);
+
+  const snapSheetHeight = useCallback((value: number) => {
+    const snapPoints = getSnapPoints();
+    const next = snapPoints.reduce((best, point) =>
+      Math.abs(point - value) < Math.abs(best - value) ? point : best
+    );
+    setSheetHeight(next);
+  }, [getSnapPoints]);
 
   // Smoothly bring a card to the centre of the carousel.
   const centerCard = useCallback((id: number) => {
@@ -79,10 +154,33 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
   useEffect(() => () => { if (scrollTimer.current) clearTimeout(scrollTimer.current); }, []);
 
   useEffect(() => {
+    const updateStageHeight = () => {
+      setStageHeight(stageRef.current?.clientHeight ?? 0);
+    };
+    updateStageHeight();
+    window.addEventListener('resize', updateStageHeight);
+    return () => window.removeEventListener('resize', updateStageHeight);
+  }, []);
+
+  useEffect(() => {
+    if (stageHeight <= 0) return;
+    setSheetHeight((prev) => clampHeight(prev));
+  }, [clampHeight, stageHeight]);
+
+  useEffect(() => {
     sheetHeightRef.current = sheetHeight;
   }, [sheetHeight]);
 
-  const expandSheet = useCallback(() => setSheetHeight((prev) => (prev >= 340 ? 154 : 454)), []);
+  const expandSheet = useCallback(() => {
+    const snapPoints = getSnapPoints();
+    setSheetHeight((prev) => {
+      const currentIndex = snapPoints.reduce((bestIndex, point, index) =>
+        Math.abs(point - prev) < Math.abs(snapPoints[bestIndex] - prev) ? index : bestIndex
+      , 0);
+      const nextIndex = currentIndex >= snapPoints.length - 1 ? 0 : currentIndex + 1;
+      return snapPoints[nextIndex];
+    });
+  }, [getSnapPoints]);
 
   useEffect(() => {
     const handlePointerMove = (event: PointerEvent) => {
@@ -124,6 +222,14 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
     };
     event.currentTarget.setPointerCapture(event.pointerId);
   }, [sheetHeight]);
+
+  const [collapsedHeight, splitHeight, fullHeight] = getSnapPoints();
+  const sheetMode =
+    sheetHeight <= collapsedHeight + 18
+      ? 'peek'
+      : sheetHeight >= fullHeight - 28
+        ? 'full'
+        : 'mid';
 
   return (
     <>
@@ -174,7 +280,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
         </button>
       </div>
 
-      <div className="home-stage">
+      <div className={`home-stage sheet-${sheetMode}`} ref={stageRef}>
       {/* Interactive map */}
       <div className="home-map-wrap" style={{ bottom: `${sheetHeight - 6}px` }}>
         <ListingMap listings={listings} selectedId={selectedId} onSelect={selectFromMap} />
@@ -182,7 +288,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
       </div>
 
       <div
-        className={`home-sheet ${sheetHeight >= 340 ? 'expanded' : sheetHeight <= 170 ? 'peek' : 'mid'}`}
+        className={`home-sheet ${sheetMode}`}
         style={{ height: `${sheetHeight}px` }}
       >
         <button
@@ -195,10 +301,16 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
         </button>
         <div className="home-sheet-head">
           <div>
-            <div className="home-sheet-title">Listings nearby</div>
-            <div className="home-sheet-sub">
-              Expand for a larger map-to-listing comparison view.
+            <div className="home-sheet-title">
+              {sheetMode === 'peek' ? `${listings.length} listings in this area` : 'Listings nearby'}
             </div>
+            {sheetMode !== 'peek' && (
+              <div className="home-sheet-sub">
+                {sheetMode === 'full'
+                  ? 'Browse the full list and compare options in one scroll.'
+                  : 'Split the map and listings to compare area and price together.'}
+              </div>
+            )}
           </div>
         </div>
 
@@ -211,7 +323,12 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
               onClick={() => onSelectListing(l)}
             >
               <div className="carousel-card-img">
-                <img src={l.image} alt={l.title} loading="lazy" />
+                <ListingPhotoCarousel
+                  images={l.images}
+                  title={l.title}
+                  lat={l.lat}
+                  lng={l.lng}
+                />
                 <TypeBadge type={l.type} />
                 <button
                   className={`save-btn ${l.saved ? 'saved' : ''}`}
@@ -225,13 +342,8 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
               </div>
               <div className="carousel-card-body">
                 <div className="carousel-card-title">{l.title}</div>
-                <div className="carousel-card-location">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                  </svg>
-                  {l.location}
-                </div>
+                <div className="carousel-card-location">{l.location}</div>
+                <div className="carousel-card-size">{l.sqm} sqm</div>
                 <div className="carousel-card-price">₱{l.price.toLocaleString()} <span>/ month</span></div>
               </div>
             </div>

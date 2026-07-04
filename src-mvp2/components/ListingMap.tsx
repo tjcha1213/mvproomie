@@ -10,6 +10,11 @@ interface Props {
   onSelect: (id: number) => void;
 }
 
+interface MiniMapProps {
+  lat: number;
+  lng: number;
+}
+
 function pinIcon(listing: Listing, active: boolean): L.DivIcon {
   return L.divIcon({
     className: 'map-pin-wrap',
@@ -88,4 +93,49 @@ export default function ListingMap({ listings, selectedId, onSelect }: Props) {
   }, [selectedId, listings]);
 
   return <div className="home-map" ref={containerRef} />;
+}
+
+export function MiniListingMap({ lat, lng }: MiniMapProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+
+    const map = L.map(containerRef.current, {
+      zoomControl: false,
+      attributionControl: false,
+      dragging: true,
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      boxZoom: false,
+      keyboard: false,
+      touchZoom: true,
+      tapHold: true,
+    });
+    mapRef.current = map;
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd',
+      maxZoom: 19,
+    }).addTo(map);
+
+    L.circleMarker([lat, lng], {
+      radius: 7,
+      color: '#2F55E7',
+      weight: 2,
+      fillColor: '#2F55E7',
+      fillOpacity: 0.95,
+    }).addTo(map);
+
+    map.setView([lat, lng], 14, { animate: false });
+    requestAnimationFrame(() => map.invalidateSize());
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+    };
+  }, [lat, lng]);
+
+  return <div className="mini-listing-map" ref={containerRef} />;
 }
