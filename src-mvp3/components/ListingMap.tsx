@@ -8,6 +8,13 @@ interface Props {
   listings: Listing[];
   selectedId: number;
   onSelect: (id: number) => void;
+  bottomInset: number;
+  topInset: number;
+}
+
+interface MiniMapProps {
+  lat: number;
+  lng: number;
 }
 
 function pinIcon(listing: Listing, active: boolean): L.DivIcon {
@@ -19,7 +26,7 @@ function pinIcon(listing: Listing, active: boolean): L.DivIcon {
   });
 }
 
-export default function ListingMap({ listings, selectedId, onSelect }: Props) {
+export default function ListingMap({ listings, selectedId, onSelect, bottomInset, topInset }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Record<number, L.Marker>>({});
@@ -58,8 +65,10 @@ export default function ListingMap({ listings, selectedId, onSelect }: Props) {
       markersRef.current[l.id] = marker;
     });
 
-    const bounds = L.latLngBounds(listings.map((l) => [l.lat, l.lng] as [number, number]));
-    map.fitBounds(bounds, { padding: [48, 48] });
+    if (listings.length > 0) {
+      const bounds = L.latLngBounds(listings.map((l) => [l.lat, l.lng] as [number, number]));
+      map.fitBounds(bounds, { padding: [48, 48] });
+    }
 
     // The container is laid out via flexbox; make sure Leaflet measures it.
     requestAnimationFrame(() => map.invalidateSize());
@@ -73,19 +82,93 @@ export default function ListingMap({ listings, selectedId, onSelect }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // React to selection changes: restyle pins, raise the active one, recenter.
+  // Rebuild markers when the listing set changes.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+
+    Object.values(markersRef.current).forEach((marker) => marker.remove());
+    markersRef.current = {};
+
+    listings.forEach((l) => {
+      const marker = L.marker([l.lat, l.lng], {
+        icon: pinIcon(l, l.id === selectedId),
+      })
+        .addTo(map)
+        .on('click', () => onSelectRef.current(l.id));
+      markersRef.current[l.id] = marker;
+    });
+
+    if (listings.length > 0) {
+      const bounds = L.latLngBounds(listings.map((l) => [l.lat, l.lng] as [number, number]));
+      map.fitBounds(bounds, { padding: [48, 48] });
+    }
+  }, [listings, selectedId]);
+
+  // React to selection changes: restyle pins, raise the active one, recenter.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || listings.length === 0) return;
+    map.invalidateSize();
     listings.forEach((l) => {
       const marker = markersRef.current[l.id];
       if (!marker) return;
       const active = l.id === selectedId;
       marker.setIcon(pinIcon(l, active));
       marker.setZIndexOffset(active ? 1000 : 0);
-      if (active) map.panTo([l.lat, l.lng], { animate: true, duration: 0.4 });
+      if (active) {
+        const selectedPoint = map.project([l.lat, l.lng], map.getZoom());
+        const visibleOffset = (Math.max(0, topInset) - Math.max(0, bottomInset)) / 2;
+        const centeredPoint = selectedPoint.add([0, visibleOffset]);
+        map.panTo(map.unproject(centeredPoint, map.getZoom()), { animate: true, duration: 0.4 });
+      }
     });
-  }, [selectedId, listings]);
+  }, [selectedId, listings, bottomInset, topInset]);
 
   return <div className="home-map" ref={containerRef} />;
+}
+
+export function MiniListingMap({ lat, lng }: MiniMapProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+
+    const map = L.map(containerRef.current, {
+      zoomControl: false,
+      attributionControl: false,
+      dragging: true,
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      boxZoom: false,
+      keyboard: false,
+      touchZoom: true,
+      tapHold: true,
+    });
+    mapRef.current = map;
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd',
+      maxZoom: 19,
+    }).addTo(map);
+
+    L.circleMarker([lat, lng], {
+      radius: 7,
+      color: '#2F55E7',
+      weight: 2,
+      fillColor: '#2F55E7',
+      fillOpacity: 0.95,
+    }).addTo(map);
+
+    map.setView([lat, lng], 14, { animate: false });
+    requestAnimationFrame(() => map.invalidateSize());
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+    };
+  }, [lat, lng]);
+
+  return <div className="mini-listing-map" ref={containerRef} />;
 }
