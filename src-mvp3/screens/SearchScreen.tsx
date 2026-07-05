@@ -16,6 +16,11 @@ function TypeBadge({ type }: { type: string }) {
   return <span className={`listing-type-badge ${cls}`}>{type}</span>;
 }
 
+function getBathroomLabel(listing: Listing) {
+  if (listing.type === 'Bedspace') return 'Shared bathroom';
+  return `${listing.baths} bathroom${listing.baths > 1 ? 's' : ''}`;
+}
+
 function ListingPhotoCarousel({
   images,
   title,
@@ -501,14 +506,17 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
               <div className="carousel-card-body">
                 <div className="carousel-card-title">{l.title}</div>
                 <div className="carousel-card-location">{l.location}</div>
-                <div className="carousel-card-size">{l.sqm} sqm</div>
+                <div className="carousel-card-detail-row">
+                  <span className="carousel-card-size">{l.sqm} sqm</span>
+                  <span className="carousel-card-bath">{getBathroomLabel(l)}</span>
+                </div>
                 <div className="carousel-card-price">₱{l.price.toLocaleString()} <span>/ month</span></div>
                 <button
                   className="carousel-inquiry-pill"
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    onShowToast(`Inquiry sent for ${l.title}`);
+                    onShowToast("Inquiry sent. We'll contact you in Inbox.");
                   }}
                 >
                   Send inquiry

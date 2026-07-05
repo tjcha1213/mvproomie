@@ -2068,7 +2068,7 @@ img {
 .home-map-return-pill {
   position: absolute;
   left: 50%;
-  bottom: calc(var(--bottom-nav-height) + 12px);
+  bottom: calc(var(--bottom-nav-height) - 14px);
   transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
@@ -2424,6 +2424,19 @@ img {
 }
 
 .carousel-card-size {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.carousel-card-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.carousel-card-bath {
   font-size: 10px;
   font-weight: 600;
   color: var(--text-light);

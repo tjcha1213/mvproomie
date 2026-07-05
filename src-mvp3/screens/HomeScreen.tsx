@@ -16,6 +16,11 @@ function TypeBadge({ type }: { type: string }) {
   return <span className={`listing-type-badge ${cls}`}>{type}</span>;
 }
 
+function getBathroomLabel(listing: Listing) {
+  if (listing.type === 'Bedspace') return 'Shared bathroom';
+  return `${listing.baths} bathroom${listing.baths > 1 ? 's' : ''}`;
+}
+
 interface ListingRailSection {
   title: string;
   subtitle: string;
@@ -162,7 +167,7 @@ export default function HomeScreen({
                   <div className="mvp3-home-card-body">
                     <div className="mvp3-home-card-title">{listing.title}</div>
                     <div className="mvp3-home-card-meta">{listing.location}</div>
-                    <div className="mvp3-home-card-detail">{listing.sqm} sqm</div>
+                    <div className="mvp3-home-card-detail">{listing.sqm} sqm • {getBathroomLabel(listing)}</div>
                     <div className="mvp3-home-card-price">
                       ₱{listing.price.toLocaleString()} <span>/ month</span>
                     </div>
