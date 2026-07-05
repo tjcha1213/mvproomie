@@ -8,6 +8,8 @@ interface Props {
   listings: Listing[];
   selectedId: number;
   onSelect: (id: number) => void;
+  bottomInset: number;
+  topInset: number;
 }
 
 interface MiniMapProps {
@@ -24,7 +26,7 @@ function pinIcon(listing: Listing, active: boolean): L.DivIcon {
   });
 }
 
-export default function ListingMap({ listings, selectedId, onSelect }: Props) {
+export default function ListingMap({ listings, selectedId, onSelect, bottomInset, topInset }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Record<number, L.Marker>>({});
@@ -82,15 +84,21 @@ export default function ListingMap({ listings, selectedId, onSelect }: Props) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+    map.invalidateSize();
     listings.forEach((l) => {
       const marker = markersRef.current[l.id];
       if (!marker) return;
       const active = l.id === selectedId;
       marker.setIcon(pinIcon(l, active));
       marker.setZIndexOffset(active ? 1000 : 0);
-      if (active) map.panTo([l.lat, l.lng], { animate: true, duration: 0.4 });
+      if (active) {
+        const selectedPoint = map.project([l.lat, l.lng], map.getZoom());
+        const visibleOffset = (Math.max(0, topInset) - Math.max(0, bottomInset)) / 2;
+        const centeredPoint = selectedPoint.add([0, visibleOffset]);
+        map.panTo(map.unproject(centeredPoint, map.getZoom()), { animate: true, duration: 0.4 });
+      }
     });
-  }, [selectedId, listings]);
+  }, [selectedId, listings, bottomInset, topInset]);
 
   return <div className="home-map" ref={containerRef} />;
 }

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Listing } from '../data/listings';
 import ListingMap, { MiniListingMap } from '../components/ListingMap';
+import AppLogo from '../components/AppLogo';
 
 interface Props {
   listings: Listing[];
@@ -97,9 +98,11 @@ function ListingPhotoCarousel({
 
 export default function HomeScreen({ listings, onSelectListing, onToggleSave, onOpenSearch, onOpenMenu, onShowToast }: Props) {
   const [selectedId, setSelectedId] = useState<number>(listings[0]?.id ?? 0);
-  const [sheetHeight, setSheetHeight] = useState(244);
+  const [sheetHeight, setSheetHeight] = useState(320);
   const [stageHeight, setStageHeight] = useState(0);
+  const [topInset, setTopInset] = useState(0);
   const stageRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sheetHeightRef = useRef(244);
@@ -114,8 +117,8 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
     const collapsed = 44;
     const full = stageHeight > 0 ? Math.max(320, stageHeight) : 454;
     const split = stageHeight > 0
-      ? Math.min(full - 84, Math.max(260, Math.round(stageHeight * 0.42)))
-      : 244;
+      ? Math.min(full - 84, Math.max(292, Math.round(stageHeight * 0.48)))
+      : 320;
     return [collapsed, split, full];
   }, [stageHeight]);
 
@@ -170,12 +173,13 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
   useEffect(() => () => { if (scrollTimer.current) clearTimeout(scrollTimer.current); }, []);
 
   useEffect(() => {
-    const updateStageHeight = () => {
+    const updateMeasurements = () => {
       setStageHeight(stageRef.current?.clientHeight ?? 0);
+      setTopInset(overlayRef.current?.clientHeight ?? 0);
     };
-    updateStageHeight();
-    window.addEventListener('resize', updateStageHeight);
-    return () => window.removeEventListener('resize', updateStageHeight);
+    updateMeasurements();
+    window.addEventListener('resize', updateMeasurements);
+    return () => window.removeEventListener('resize', updateMeasurements);
   }, []);
 
   useEffect(() => {
@@ -249,61 +253,50 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
   const mapBottom = sheetMode === 'full'
     ? stageHeight
     : Math.max(0, sheetHeight - 6);
+  const returnToMapView = useCallback(() => {
+    setSheetHeight(collapsedHeight);
+  }, [collapsedHeight]);
 
   return (
     <>
-      {/* Header */}
-      <div className="app-header">
-        <div className="logo">
-          <div className="logo-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <circle cx="12" cy="11" r="2" fill="currentColor" stroke="none"/>
-            </svg>
-          </div>
-          <span className="logo-text">roomie</span>
-        </div>
-        <div className="header-actions">
-          <button className="icon-btn" style={{ position: 'relative' }} onClick={() => onShowToast('🔔 No new notifications')} aria-label="Notifications">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-            <span className="notif-dot" />
-          </button>
-          <button className="icon-btn" onClick={onOpenMenu} aria-label="Menu">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="3" y1="12" x2="21" y2="12"/>
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="search-container">
-        <button className="search-input-wrap" onClick={onOpenSearch} style={{ textAlign: 'left' }}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <input type="text" placeholder="Search location or property" readOnly tabIndex={-1} style={{ pointerEvents: 'none' }} />
-        </button>
-        <button className="filter-btn" onClick={onOpenSearch} aria-label="Filters">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="4" y1="6" x2="20" y2="6"/>
-            <line x1="8" y1="12" x2="16" y2="12"/>
-            <line x1="11" y1="18" x2="13" y2="18"/>
-          </svg>
-        </button>
-      </div>
-
       <div className={`home-stage sheet-${sheetMode}`} ref={stageRef}>
+      <div className="mvp2-map-overlay" ref={overlayRef}>
+        <button
+          className="mvp2-logo-pill"
+          type="button"
+          onClick={() => onShowToast('Roomie home')}
+          aria-label="Roomie"
+        >
+          <AppLogo className="mvp2-logo-img" />
+        </button>
+
+        <div className="search-container mvp2-search-shell">
+          <button className="search-input-wrap mvp2-search-pill" onClick={onOpenSearch} style={{ textAlign: 'left' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" placeholder="Search location or property" readOnly tabIndex={-1} style={{ pointerEvents: 'none' }} />
+          </button>
+          <button className="filter-btn mvp2-filter-pill" onClick={onOpenSearch} aria-label="Filters">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="4" y1="6" x2="20" y2="6"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+              <line x1="11" y1="18" x2="13" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
       {/* Interactive map */}
       <div className="home-map-wrap" style={{ bottom: `${mapBottom}px` }}>
-        <ListingMap listings={listings} selectedId={selectedId} onSelect={selectFromMap} />
-        <div className="home-map-count">{listings.length} homes in this area</div>
+        <ListingMap
+          listings={listings}
+          selectedId={selectedId}
+          onSelect={selectFromMap}
+          bottomInset={mapBottom}
+          topInset={topInset}
+        />
       </div>
 
       <div
@@ -320,16 +313,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
         </button>
         <div className="home-sheet-head">
           <div>
-            <div className="home-sheet-title">
-              {sheetMode === 'peek' ? `${listings.length} listings in this area` : 'Listings nearby'}
-            </div>
-            {sheetMode !== 'peek' && (
-              <div className="home-sheet-sub">
-                {sheetMode === 'full'
-                  ? 'Browse the full list and compare options in one scroll.'
-                  : 'Split the map and listings to compare area and price together.'}
-              </div>
-            )}
+            <div className="home-sheet-title">{listings.length} listings in this area</div>
           </div>
         </div>
 
@@ -364,10 +348,35 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
                 <div className="carousel-card-location">{l.location}</div>
                 <div className="carousel-card-size">{l.sqm} sqm</div>
                 <div className="carousel-card-price">₱{l.price.toLocaleString()} <span>/ month</span></div>
+                <button
+                  className="carousel-inquiry-pill"
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onShowToast(`Inquiry sent for ${l.title}`);
+                  }}
+                >
+                  Send inquiry
+                </button>
               </div>
             </div>
           ))}
         </div>
+
+        {sheetMode === 'full' && (
+          <button
+            className="home-map-return-pill"
+            type="button"
+            onClick={returnToMapView}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2V6z" />
+              <path d="M9 4v14" />
+              <path d="M15 6v14" />
+            </svg>
+            <span>Map view</span>
+          </button>
+        )}
       </div>
       </div>
     </>
