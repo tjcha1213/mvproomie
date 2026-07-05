@@ -296,14 +296,16 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
     };
   }, [clampHeight, expandSheet, snapSheetHeight]);
 
-  const beginDrag = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
+  const beginDrag = useCallback((event: ReactPointerEvent<HTMLDivElement | HTMLButtonElement>) => {
     dragState.current = {
       startY: event.clientY,
       startHeight: sheetHeight,
       dragging: true,
       moved: false,
     };
-    event.currentTarget.setPointerCapture(event.pointerId);
+    if ('setPointerCapture' in event.currentTarget) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
   }, [sheetHeight]);
 
   const [collapsedHeight, splitHeight, fullHeight] = getSnapPoints();
@@ -315,7 +317,9 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
         : 'mid';
   const mapBottom = sheetMode === 'full'
     ? stageHeight
-    : Math.max(0, sheetHeight - 6);
+    : sheetMode === 'peek'
+      ? 0
+      : Math.max(0, sheetHeight - 6);
   const returnToMapView = useCallback(() => {
     setSheetHeight(collapsedHeight);
   }, [collapsedHeight]);
@@ -455,6 +459,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
           onSelect={selectFromMap}
           bottomInset={mapBottom}
           topInset={topInset}
+          sheetMode={sheetMode}
         />
       </div>
 
@@ -462,20 +467,28 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
         className={`home-sheet ${sheetMode}`}
         style={{ height: `${sheetHeight}px` }}
       >
-        <button
-          className="home-sheet-grabber"
-          type="button"
+        <div
+          className="home-sheet-drag-zone"
           onPointerDown={beginDrag}
+          role="button"
+          tabIndex={0}
           aria-label="Expand or minimize listings"
         >
-          <span className="home-sheet-handle" />
-        </button>
+          <button
+            className="home-sheet-grabber"
+            type="button"
+            tabIndex={-1}
+            aria-hidden="true"
+          >
+            <span className="home-sheet-handle" />
+          </button>
         <div className="home-sheet-head">
           <div>
             <div className="home-sheet-title">
               {filteredListings.length} listings in {query.trim() || 'this area'}
             </div>
           </div>
+        </div>
         </div>
 
         {/* Synced listing carousel */}
