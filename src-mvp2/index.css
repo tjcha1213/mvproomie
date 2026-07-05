@@ -1700,7 +1700,7 @@ img {
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
-  z-index: 100;
+  z-index: 3200;
   animation: toastIn 0.25s ease-out, toastOut 0.3s ease-in 1.7s forwards;
   pointer-events: none;
   box-shadow: var(--shadow-lg);
