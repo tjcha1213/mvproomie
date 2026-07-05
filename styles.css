@@ -503,6 +503,23 @@ h2 {
   box-shadow: none;
 }
 
+.static-layout-empty {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 620px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top, rgba(67, 56, 202, 0.12), transparent 42%),
+    linear-gradient(180deg, #fbfdff 0%, #f3f7fd 100%);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  color: rgba(100, 116, 139, 0.92);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
 .app-topbar,
 .map-strip,
 .signal-grid {
