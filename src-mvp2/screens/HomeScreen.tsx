@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, type PointerEvent as ReactPointerEvent } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Listing } from '../data/listings';
 import ListingMap, { MiniListingMap } from '../components/ListingMap';
 import AppLogo from '../components/AppLogo';
@@ -97,12 +97,20 @@ function ListingPhotoCarousel({
 }
 
 export default function HomeScreen({ listings, onSelectListing, onToggleSave, onOpenSearch, onOpenMenu, onShowToast }: Props) {
+  const [query, setQuery] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [minSqm, setMinSqm] = useState('');
+  const [maxSqm, setMaxSqm] = useState('');
+  const [listingType, setListingType] = useState<'Any' | Listing['type']>('Any');
   const [selectedId, setSelectedId] = useState<number>(listings[0]?.id ?? 0);
   const [sheetHeight, setSheetHeight] = useState(320);
   const [stageHeight, setStageHeight] = useState(0);
   const [topInset, setTopInset] = useState(0);
   const stageRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sheetHeightRef = useRef(244);
@@ -112,6 +120,38 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
     dragging: false,
     moved: false,
   });
+
+  const filteredListings = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const parsedMinPrice = minPrice ? Number(minPrice) : null;
+    const parsedMaxPrice = maxPrice ? Number(maxPrice) : null;
+    const parsedMinSqm = minSqm ? Number(minSqm) : null;
+    const parsedMaxSqm = maxSqm ? Number(maxSqm) : null;
+
+    return listings.filter((listing) => {
+      const matchesQuery =
+        !q ||
+        listing.location.toLowerCase().includes(q) ||
+        listing.district.toLowerCase().includes(q) ||
+        listing.title.toLowerCase().includes(q);
+
+      const matchesMinPrice = parsedMinPrice === null || listing.price >= parsedMinPrice;
+      const matchesMaxPrice = parsedMaxPrice === null || listing.price <= parsedMaxPrice;
+      const matchesMinSqm = parsedMinSqm === null || listing.sqm >= parsedMinSqm;
+      const matchesMaxSqm = parsedMaxSqm === null || listing.sqm <= parsedMaxSqm;
+      const matchesType = listingType === 'Any' || listing.type === listingType;
+
+      return matchesQuery && matchesMinPrice && matchesMaxPrice && matchesMinSqm && matchesMaxSqm && matchesType;
+    });
+  }, [listings, query, minPrice, maxPrice, minSqm, maxSqm, listingType]);
+
+  const activeFilterCount = [
+    minPrice,
+    maxPrice,
+    minSqm,
+    maxSqm,
+    listingType !== 'Any' ? listingType : '',
+  ].filter(Boolean).length;
 
   const getSnapPoints = useCallback(() => {
     const collapsed = 44;
@@ -139,12 +179,12 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
   const centerCard = useCallback((id: number) => {
     const el = listRef.current;
     if (!el) return;
-    const idx = listings.findIndex((l) => l.id === id);
+    const idx = filteredListings.findIndex((l) => l.id === id);
     const child = el.children[idx] as HTMLElement | undefined;
     if (!child) return;
     const targetTop = child.offsetTop - 10;
     el.scrollTo({ top: targetTop, behavior: 'smooth' });
-  }, [listings]);
+  }, [filteredListings]);
 
   // Pin tap → select and centre the matching card.
   const selectFromMap = useCallback((id: number) => {
@@ -159,18 +199,25 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
       const el = listRef.current;
       if (!el) return;
       const center = el.scrollTop + el.clientHeight / 2;
-      let bestId = listings[0]?.id ?? 0;
+      let bestId = filteredListings[0]?.id ?? 0;
       let bestDist = Infinity;
       Array.from(el.children).forEach((child, i) => {
         const c = (child as HTMLElement).offsetTop + (child as HTMLElement).offsetHeight / 2;
         const d = Math.abs(c - center);
-        if (d < bestDist) { bestDist = d; bestId = listings[i].id; }
+        if (d < bestDist && filteredListings[i]) { bestDist = d; bestId = filteredListings[i].id; }
       });
       setSelectedId(bestId);
     }, 90);
-  }, [listings]);
+  }, [filteredListings]);
 
   useEffect(() => () => { if (scrollTimer.current) clearTimeout(scrollTimer.current); }, []);
+
+  useEffect(() => {
+    if (filteredListings.length === 0) return;
+    if (!filteredListings.some((listing) => listing.id === selectedId)) {
+      setSelectedId(filteredListings[0].id);
+    }
+  }, [filteredListings, selectedId]);
 
   useEffect(() => {
     const updateMeasurements = () => {
@@ -190,6 +237,17 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
   useEffect(() => {
     sheetHeightRef.current = sheetHeight;
   }, [sheetHeight]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!filtersOpen) return;
+      if (filterRef.current?.contains(event.target as Node)) return;
+      setFiltersOpen(false);
+    };
+
+    window.addEventListener('pointerdown', handlePointerDown);
+    return () => window.removeEventListener('pointerdown', handlePointerDown);
+  }, [filtersOpen]);
 
   const expandSheet = useCallback(() => {
     const snapPoints = getSnapPoints();
@@ -257,6 +315,14 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
     setSheetHeight(collapsedHeight);
   }, [collapsedHeight]);
 
+  const resetFilters = useCallback(() => {
+    setMinPrice('');
+    setMaxPrice('');
+    setMinSqm('');
+    setMaxSqm('');
+    setListingType('Any');
+  }, []);
+
   return (
     <>
       <div className={`home-stage sheet-${sheetMode}`} ref={stageRef}>
@@ -270,28 +336,116 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
           <AppLogo className="mvp2-logo-img" />
         </button>
 
-        <div className="search-container mvp2-search-shell">
-          <button className="search-input-wrap mvp2-search-pill" onClick={onOpenSearch} style={{ textAlign: 'left' }}>
+        <div className="search-container mvp2-search-shell" ref={filterRef}>
+          <div className="search-input-wrap mvp2-search-pill" style={{ textAlign: 'left' }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="8"/>
               <line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
-            <input type="text" placeholder="Search location or property" readOnly tabIndex={-1} style={{ pointerEvents: 'none' }} />
-          </button>
-          <button className="filter-btn mvp2-filter-pill" onClick={onOpenSearch} aria-label="Filters">
+            <input
+              type="text"
+              placeholder="Search location or property"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+            {query && (
+              <button
+                type="button"
+                className="mvp2-search-clear"
+                onClick={() => setQuery('')}
+                aria-label="Clear search"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )}
+          </div>
+          <button
+            className={`filter-btn mvp2-filter-pill ${filtersOpen ? 'active' : ''}`}
+            onClick={() => setFiltersOpen((prev) => !prev)}
+            aria-label="Filters"
+            aria-expanded={filtersOpen}
+          >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="4" y1="6" x2="20" y2="6"/>
               <line x1="8" y1="12" x2="16" y2="12"/>
               <line x1="11" y1="18" x2="13" y2="18"/>
             </svg>
+            {activeFilterCount > 0 && <span className="mvp2-filter-count">{activeFilterCount}</span>}
           </button>
+          {filtersOpen && (
+            <div className="mvp2-filter-menu" onClick={(event) => event.stopPropagation()}>
+              <div className="mvp2-filter-menu-head">
+                <div>
+                  <div className="mvp2-filter-menu-title">Filters</div>
+                  <div className="mvp2-filter-menu-copy">Refine listings shown on the map and in the sheet.</div>
+                </div>
+                <button type="button" className="mvp2-filter-reset" onClick={resetFilters}>
+                  Reset
+                </button>
+              </div>
+              <div className="mvp2-filter-grid">
+                <label className="mvp2-filter-field">
+                  <span>Min price</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="2500"
+                    value={minPrice}
+                    onChange={(event) => setMinPrice(event.target.value)}
+                  />
+                </label>
+                <label className="mvp2-filter-field">
+                  <span>Max price</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="18000"
+                    value={maxPrice}
+                    onChange={(event) => setMaxPrice(event.target.value)}
+                  />
+                </label>
+                <label className="mvp2-filter-field">
+                  <span>Min room size</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="10 sqm"
+                    value={minSqm}
+                    onChange={(event) => setMinSqm(event.target.value)}
+                  />
+                </label>
+                <label className="mvp2-filter-field">
+                  <span>Max room size</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="40 sqm"
+                    value={maxSqm}
+                    onChange={(event) => setMaxSqm(event.target.value)}
+                  />
+                </label>
+                <label className="mvp2-filter-field mvp2-filter-field-wide">
+                  <span>Listing type</span>
+                  <select value={listingType} onChange={(event) => setListingType(event.target.value as 'Any' | Listing['type'])}>
+                    <option value="Any">Any</option>
+                    <option value="Studio">Studio</option>
+                    <option value="Bedspace">Bedspace</option>
+                    <option value="Apartment">Apartment</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Interactive map */}
       <div className="home-map-wrap" style={{ bottom: `${mapBottom}px` }}>
         <ListingMap
-          listings={listings}
+          listings={filteredListings}
           selectedId={selectedId}
           onSelect={selectFromMap}
           bottomInset={mapBottom}
@@ -313,13 +467,15 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
         </button>
         <div className="home-sheet-head">
           <div>
-            <div className="home-sheet-title">{listings.length} listings in this area</div>
+            <div className="home-sheet-title">
+              {filteredListings.length} listings in {query.trim() || 'this area'}
+            </div>
           </div>
         </div>
 
         {/* Synced listing carousel */}
         <div className="home-carousel vertical-list" ref={listRef} onScroll={handleScroll}>
-          {listings.map((l) => (
+          {filteredListings.map((l) => (
             <div
               key={l.id}
               className={`carousel-card ${l.id === selectedId ? 'active' : ''}`}
@@ -361,6 +517,14 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
               </div>
             </div>
           ))}
+          {filteredListings.length === 0 && (
+            <div className="mvp2-empty-results">
+              <div className="mvp2-empty-results-title">No listings found</div>
+              <div className="mvp2-empty-results-copy">
+                Try another district, city, or neighborhood in Metro Manila.
+              </div>
+            </div>
+          )}
         </div>
 
         {sheetMode === 'full' && (

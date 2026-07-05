@@ -65,8 +65,10 @@ export default function ListingMap({ listings, selectedId, onSelect, bottomInset
       markersRef.current[l.id] = marker;
     });
 
-    const bounds = L.latLngBounds(listings.map((l) => [l.lat, l.lng] as [number, number]));
-    map.fitBounds(bounds, { padding: [48, 48] });
+    if (listings.length > 0) {
+      const bounds = L.latLngBounds(listings.map((l) => [l.lat, l.lng] as [number, number]));
+      map.fitBounds(bounds, { padding: [48, 48] });
+    }
 
     // The container is laid out via flexbox; make sure Leaflet measures it.
     requestAnimationFrame(() => map.invalidateSize());
@@ -80,10 +82,33 @@ export default function ListingMap({ listings, selectedId, onSelect, bottomInset
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // React to selection changes: restyle pins, raise the active one, recenter.
+  // Rebuild markers when the listing set changes.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+
+    Object.values(markersRef.current).forEach((marker) => marker.remove());
+    markersRef.current = {};
+
+    listings.forEach((l) => {
+      const marker = L.marker([l.lat, l.lng], {
+        icon: pinIcon(l, l.id === selectedId),
+      })
+        .addTo(map)
+        .on('click', () => onSelectRef.current(l.id));
+      markersRef.current[l.id] = marker;
+    });
+
+    if (listings.length > 0) {
+      const bounds = L.latLngBounds(listings.map((l) => [l.lat, l.lng] as [number, number]));
+      map.fitBounds(bounds, { padding: [48, 48] });
+    }
+  }, [listings, selectedId]);
+
+  // React to selection changes: restyle pins, raise the active one, recenter.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || listings.length === 0) return;
     map.invalidateSize();
     listings.forEach((l) => {
       const marker = markersRef.current[l.id];
