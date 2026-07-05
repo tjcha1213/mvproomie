@@ -516,7 +516,7 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    onShowToast("Inquiry sent. We'll contact you in Inbox.");
+                    onShowToast('Inquiry Sent! Check your inbox.');
                   }}
                 >
                   Send inquiry

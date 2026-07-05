@@ -517,7 +517,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    onShowToast('Inquiry sent! We will contact you in Inbox.');
+                    onShowToast('Inquiry Sent! Check your inbox.');
                   }}
                 >
                   Send inquiry

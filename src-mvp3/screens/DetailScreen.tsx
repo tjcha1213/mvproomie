@@ -223,7 +223,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
           <p className="detail-cta-copy">
             Reach out directly to ask about availability, viewing schedules, or move-in timing.
           </p>
-          <button className="cta-primary" onClick={() => onShowToast('Inquiry sent! The landlord will contact you.')}>
+          <button className="cta-primary" onClick={() => onShowToast('Inquiry Sent! Check your inbox.')}>
             Send Inquiry
           </button>
         </div>

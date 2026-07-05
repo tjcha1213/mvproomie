@@ -186,7 +186,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
 
         {/* CTA */}
         <div className="detail-cta">
-          <button className="cta-primary" onClick={() => onShowToast('Inquiry sent! The landlord will contact you.')}>
+          <button className="cta-primary" onClick={() => onShowToast('Inquiry Sent! Check your inbox.')}>
             Send Inquiry
           </button>
         </div>
