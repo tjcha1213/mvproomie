@@ -68,7 +68,7 @@ export default function ListingMap({ listings, selectedId, onSelect, bottomInset
 
     // Use a fixed center + zoom so the view isn't zoomed out to fit all pins.
     // Metro Manila center; zoom 13 shows the whole metro at a comfortable density.
-    map.setView([14.5995, 121.0244], 13, { animate: false });
+    map.setView([14.5995, 121.0244], 12, { animate: false });
 
     // The container is laid out via flexbox; make sure Leaflet measures it.
     requestAnimationFrame(() => map.invalidateSize());
