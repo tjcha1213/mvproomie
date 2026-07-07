@@ -118,19 +118,6 @@ export default function HomeScreen({
           </button>
         </div>
 
-        <section className="mvp3-home-intro-card">
-          <div>
-            <p className="mvp3-home-intro-eyebrow">Home discovery</p>
-            <h2>Swipe through curated listing groups before jumping into the map.</h2>
-            <p>
-              Each row is organized around a practical discovery lens, so users can browse
-              by district or price range without starting from the full map.
-            </p>
-          </div>
-          <button className="demo-button mvp3-home-open-map" type="button" onClick={onOpenSearch}>
-            Open map search
-          </button>
-        </section>
 
         {sections.map((section) => (
           <section className="mvp3-home-section" key={section.title}>
