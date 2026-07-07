@@ -66,14 +66,9 @@ export default function ListingMap({ listings, selectedId, onSelect, bottomInset
       markersRef.current[l.id] = marker;
     });
 
-    if (listings.length > 0) {
-      const bounds = L.latLngBounds(listings.map((l) => [l.lat, l.lng] as [number, number]));
-      map.fitBounds(bounds, {
-        paddingTopLeft: [40, 40],
-        paddingBottomRight: [40, 40],
-        maxZoom: sheetMode === 'peek' ? 15 : 14,
-      });
-    }
+    // Use a fixed center + zoom so the view isn't zoomed out to fit all pins.
+    // Metro Manila center; zoom 11 shows the whole metro at a comfortable density.
+    map.setView([14.5995, 121.0244], 11, { animate: false });
 
     // The container is laid out via flexbox; make sure Leaflet measures it.
     requestAnimationFrame(() => map.invalidateSize());
@@ -104,14 +99,7 @@ export default function ListingMap({ listings, selectedId, onSelect, bottomInset
       markersRef.current[l.id] = marker;
     });
 
-    if (listings.length > 0) {
-      const bounds = L.latLngBounds(listings.map((l) => [l.lat, l.lng] as [number, number]));
-      map.fitBounds(bounds, {
-        paddingTopLeft: [48, 48],
-        paddingBottomRight: [48, 48],
-        maxZoom: 14,
-      });
-    }
+    // Don't re-fit bounds on every listing/selection change — keep the current view.
   }, [listings, selectedId, sheetMode, topInset, bottomInset]);
 
   // React to selection changes: restyle pins, raise the active one, recenter.
