@@ -71,7 +71,7 @@ export default function ListingMap({ listings, selectedId, onSelect, bottomInset
       map.fitBounds(bounds, {
         paddingTopLeft: [40, 40],
         paddingBottomRight: [40, 40],
-        maxZoom: sheetMode === 'peek' ? 15 : 14,
+        maxZoom: sheetMode === 'peek' ? 16 : 15,
       });
     }
 
@@ -109,7 +109,7 @@ export default function ListingMap({ listings, selectedId, onSelect, bottomInset
       map.fitBounds(bounds, {
         paddingTopLeft: [48, 48],
         paddingBottomRight: [48, 48],
-        maxZoom: 14,
+        maxZoom: 15,
       });
     }
   }, [listings, selectedId, sheetMode, topInset, bottomInset]);
