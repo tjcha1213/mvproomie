@@ -399,6 +399,19 @@ h2 {
   box-shadow: none;
 }
 
+.disabled-button {
+  background: rgba(233, 239, 255, 0.88);
+  color: var(--accent);
+  border-color: var(--line);
+  box-shadow: none;
+  cursor: default;
+  pointer-events: none;
+}
+
+.disabled-button:hover {
+  transform: none;
+}
+
 .demo-button:hover,
 .secondary-button:hover {
   transform: translateY(-1px);
@@ -1310,7 +1323,14 @@ h2 {
   .subhead-tabs {
     width: 100%;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .subhead-tab {
+    min-height: 40px;
+    padding: 0 12px;
+    font-size: 0.84rem;
+    text-align: center;
   }
 
   .nps-scale {

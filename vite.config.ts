@@ -11,6 +11,9 @@ export default defineConfig(({ command }) => ({
   build: {
     rollupOptions: {
       input: {
+        index: resolve(__dirname, 'index.html'),
+        landlordsBrokers: resolve(__dirname, 'landlords-brokers.html'),
+        userSurveys: resolve(__dirname, 'user-surveys.html'),
         mvp1: resolve(__dirname, 'mvp1/index.html'),
         mvp2: resolve(__dirname, 'mvp2/index.html'),
         mvp3: resolve(__dirname, 'mvp3/index.html'),
