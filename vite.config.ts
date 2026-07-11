@@ -17,6 +17,7 @@ export default defineConfig(({ command }) => ({
         mvp1: resolve(__dirname, 'mvp1/index.html'),
         mvp2: resolve(__dirname, 'mvp2/index.html'),
         mvp3: resolve(__dirname, 'mvp3/index.html'),
+        landlord: resolve(__dirname, 'landlord/index.html'),
       },
     },
   },

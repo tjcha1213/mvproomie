@@ -56,7 +56,10 @@ body {
 }
 
 .subhead-tabs {
-  display: inline-flex;
+  /* flex + fit-content = shrink-wrapped like inline-flex, but each nav row
+     stays on its own line (needed now that parent/child tab rows stack) */
+  display: flex;
+  width: fit-content;
   gap: 10px;
   padding: 6px;
   margin: 0 0 18px;
@@ -81,6 +84,23 @@ body {
   background: linear-gradient(135deg, #6a78ff, #3f51e5);
   color: #ffffff;
   box-shadow: 0 10px 20px rgba(63, 81, 229, 0.18);
+}
+
+/* Child tabs: section nav (MVPs / User Survey) shown under the audience tabs */
+.subhead-tabs-child {
+  padding: 4px;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.subhead-tabs + .subhead-tabs-child {
+  margin-top: -8px;
+}
+
+.subhead-tabs-child .subhead-tab {
+  min-height: 34px;
+  padding: 0 16px;
+  font-size: 0.85rem;
 }
 
 .layout-section {
@@ -1323,7 +1343,7 @@ h2 {
   .subhead-tabs {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .subhead-tab {
