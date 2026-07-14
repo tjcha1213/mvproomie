@@ -183,14 +183,74 @@ export interface Inquiry {
   message: string;
   time: string;
   status: InquiryStatus;
+  thread: {
+    id: number;
+    sender: 'tenant' | 'landlord' | 'system';
+    text: string;
+    time: string;
+  }[];
 }
 
 export const INQUIRIES: Inquiry[] = [
-  { id: 1, name: 'Carlo Dizon', unitId: 2, message: 'Hi po! Is the bedspace still available? Looking to move in Aug 1.', time: '5m ago', status: 'New' },
-  { id: 2, name: 'Grace Tan', unitId: 3, message: 'Can I schedule a viewing this weekend?', time: '1h ago', status: 'New' },
-  { id: 3, name: 'Miguel Ramos', unitId: 2, message: 'Is water included in the rent?', time: '3h ago', status: 'New' },
-  { id: 4, name: 'Bea Aquino', unitId: 3, message: 'Thank you! See you on Saturday at 2pm.', time: 'Yesterday', status: 'Viewing' },
-  { id: 5, name: 'Leo Garcia', unitId: 2, message: 'Sure, I will send my requirements tonight.', time: 'Mon', status: 'Replied' },
+  {
+    id: 1,
+    name: 'Carlo Dizon',
+    unitId: 2,
+    message: 'Hi po! Is the bedspace still available? Looking to move in Aug 1.',
+    time: '5m ago',
+    status: 'New',
+    thread: [
+      { id: 11, sender: 'tenant', text: 'Hi po! Is the bedspace still available? Looking to move in Aug 1.', time: '5m ago' },
+    ],
+  },
+  {
+    id: 2,
+    name: 'Grace Tan',
+    unitId: 3,
+    message: 'Can I schedule a viewing this weekend?',
+    time: '1h ago',
+    status: 'New',
+    thread: [
+      { id: 21, sender: 'tenant', text: 'Can I schedule a viewing this weekend?', time: '1h ago' },
+    ],
+  },
+  {
+    id: 3,
+    name: 'Miguel Ramos',
+    unitId: 2,
+    message: 'Is water included in the rent?',
+    time: '3h ago',
+    status: 'New',
+    thread: [
+      { id: 31, sender: 'tenant', text: 'Is water included in the rent?', time: '3h ago' },
+    ],
+  },
+  {
+    id: 4,
+    name: 'Bea Aquino',
+    unitId: 3,
+    message: 'Thank you! See you on Saturday at 2pm.',
+    time: 'Yesterday',
+    status: 'Viewing',
+    thread: [
+      { id: 41, sender: 'tenant', text: 'Can I schedule a viewing this weekend?', time: '2d ago' },
+      { id: 42, sender: 'landlord', text: 'Yes, Saturday at 2pm works. Please bring one valid ID.', time: 'Yesterday' },
+      { id: 43, sender: 'tenant', text: 'Thank you! See you on Saturday at 2pm.', time: 'Yesterday' },
+    ],
+  },
+  {
+    id: 5,
+    name: 'Leo Garcia',
+    unitId: 2,
+    message: 'Sure, I will send my requirements tonight.',
+    time: 'Mon',
+    status: 'Replied',
+    thread: [
+      { id: 51, sender: 'tenant', text: 'Is the unit still open for July move-in?', time: 'Mon' },
+      { id: 52, sender: 'landlord', text: 'Yes, it is still available. I can send the requirements list here.', time: 'Mon' },
+      { id: 53, sender: 'tenant', text: 'Sure, I will send my requirements tonight.', time: 'Mon' },
+    ],
+  },
 ];
 
 export type PaymentStatus = 'Paid' | 'Due' | 'Overdue';

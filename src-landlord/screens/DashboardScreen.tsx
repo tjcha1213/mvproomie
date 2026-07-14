@@ -23,6 +23,14 @@ const ACTIVITY_ICONS = {
 const WEEK_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const CALENDAR_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+function heatLevelClass(views: number) {
+  if (views >= 62) return 'heat-level-5';
+  if (views >= 52) return 'heat-level-4';
+  if (views >= 42) return 'heat-level-3';
+  if (views >= 30) return 'heat-level-2';
+  return 'heat-level-1';
+}
+
 export default function DashboardScreen({ units, inquiries, payments, onGoTo, onOpenProfile, onShowToast }: Props) {
   const [viewMode, setViewMode] = useState<'weekly' | 'calendar'>('weekly');
   const published = units.filter(u => u.status !== 'Draft');
@@ -38,7 +46,6 @@ export default function DashboardScreen({ units, inquiries, payments, onGoTo, on
   const totalViews = WEEK_VIEWS.reduce((a, b) => a + b, 0);
   const maxViews = Math.max(...WEEK_VIEWS);
   const averageViews = Math.round(totalViews / WEEK_VIEWS.length);
-  const maxCalendarViews = Math.max(...CALENDAR_VIEWS.map((day) => day.views));
   const calendarLeadingBlanks = new Date('2026-07-01').getDay();
   const calendarCells = [
     ...Array.from({ length: calendarLeadingBlanks }, (_, index) => ({ kind: 'blank' as const, id: `blank-${index}` })),
@@ -148,19 +155,15 @@ export default function DashboardScreen({ units, inquiries, payments, onGoTo, on
                     return <div key={cell.id} className="calendar-day calendar-day-empty" aria-hidden="true" />;
                   }
 
-                  const intensity = cell.views / maxCalendarViews;
                   return (
                     <button
                       key={cell.date}
                       type="button"
-                      className="calendar-day"
+                      className={`calendar-day ${heatLevelClass(cell.views)}`}
                       aria-label={`${cell.date}: ${cell.views} listing views`}
                       onClick={() => onShowToast(`${cell.date} · ${cell.views} views`)}
                     >
-                      <div
-                        className="calendar-day-fill"
-                        style={{ opacity: 0.18 + intensity * 0.82 }}
-                      />
+                      <div className="calendar-day-fill" />
                       <span className="calendar-day-number">{cell.day}</span>
                       <span className="calendar-day-count">{cell.views}</span>
                       <div className="bar-tooltip calendar-tooltip" role="tooltip">

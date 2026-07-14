@@ -44,6 +44,28 @@ function App() {
     setInquiries(prev => prev.map(i => (i.id === id ? { ...i, status } : i)));
   }, []);
 
+  const addInquiryThreadMessage = useCallback((
+    id: number,
+    message: { sender: 'tenant' | 'landlord' | 'system'; text: string; time: string },
+    status?: Inquiry['status'],
+  ) => {
+    setInquiries((prev) =>
+      prev.map((inquiry) => {
+        if (inquiry.id !== id) return inquiry;
+
+        const nextThreadId = inquiry.thread.length > 0
+          ? Math.max(...inquiry.thread.map((entry) => entry.id)) + 1
+          : inquiry.id * 10 + 1;
+
+        return {
+          ...inquiry,
+          status: status ?? inquiry.status,
+          thread: [...inquiry.thread, { id: nextThreadId, ...message }],
+        };
+      }),
+    );
+  }, []);
+
   const markPaid = useCallback((id: number) => {
     setPayments(prev => prev.map(p => (p.id === id ? { ...p, status: 'Paid', dueLabel: 'Paid today' } : p)));
   }, []);
@@ -88,6 +110,7 @@ function App() {
               inquiries={inquiries}
               units={units}
               onSetStatus={setInquiryStatus}
+              onAddThreadMessage={addInquiryThreadMessage}
               onOpenProfile={() => setTab('profile')}
               onShowToast={showToast}
             />

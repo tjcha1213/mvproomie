@@ -6,6 +6,11 @@ interface Props {
   inquiries: Inquiry[];
   units: Unit[];
   onSetStatus: (id: number, status: InquiryStatus) => void;
+  onAddThreadMessage: (
+    id: number,
+    message: { sender: 'tenant' | 'landlord' | 'system'; text: string; time: string },
+    status?: InquiryStatus,
+  ) => void;
   onOpenProfile: () => void;
   onShowToast: (msg: string) => void;
 }
@@ -18,12 +23,53 @@ function StatusBadge({ status }: { status: InquiryStatus }) {
   return <span className={`status-badge ${cls}`}>{status}</span>;
 }
 
-export default function InquiriesScreen({ inquiries, units, onSetStatus, onOpenProfile, onShowToast }: Props) {
+function timeStampLabel() {
+  return 'Just now';
+}
+
+export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddThreadMessage, onOpenProfile, onShowToast }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [openId, setOpenId] = useState<number | null>(null);
+  const [chatOpenId, setChatOpenId] = useState<number | null>(null);
+  const [draftReplies, setDraftReplies] = useState<Record<number, string>>({});
 
   const filtered = filter === 'All' ? inquiries : inquiries.filter(i => i.status === filter);
   const unitTitle = (id: number) => units.find(u => u.id === id)?.title ?? '';
+  const activeChat = chatOpenId === null ? null : inquiries.find((inquiry) => inquiry.id === chatOpenId) ?? null;
+
+  function setDraft(id: number, value: string) {
+    setDraftReplies((prev) => ({ ...prev, [id]: value }));
+  }
+
+  function sendReply(inquiry: Inquiry) {
+    const text = draftReplies[inquiry.id]?.trim();
+    if (!text) {
+      onShowToast('Write a reply first');
+      return;
+    }
+
+    onAddThreadMessage(
+      inquiry.id,
+      { sender: 'landlord', text, time: timeStampLabel() },
+      'Replied',
+    );
+    setDraftReplies((prev) => ({ ...prev, [inquiry.id]: '' }));
+    onShowToast(`✉️ Reply sent to ${inquiry.name}`);
+  }
+
+  function scheduleViewing(inquiry: Inquiry) {
+    onSetStatus(inquiry.id, 'Viewing');
+    onAddThreadMessage(
+      inquiry.id,
+      {
+        sender: 'system',
+        text: 'Viewing scheduled. Follow up with the applicant for exact time and property access notes.',
+        time: timeStampLabel(),
+      },
+      'Viewing',
+    );
+    onShowToast(`📅 Viewing scheduled with ${inquiry.name}`);
+  }
 
   return (
     <>
@@ -73,21 +119,32 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onOpenP
 
                 {openId === i.id && (
                   <div className="inquiry-actions">
+                    <div className="inquiry-reply-box">
+                      <label className="inquiry-reply-label" htmlFor={`reply-${i.id}`}>Quick reply</label>
+                      <textarea
+                        id={`reply-${i.id}`}
+                        className="inquiry-reply-input"
+                        rows={3}
+                        placeholder="Write a quick reply to the inquiry here"
+                        value={draftReplies[i.id] ?? ''}
+                        onChange={(event) => setDraft(i.id, event.target.value)}
+                      />
+                    </div>
                     <button
                       className="unit-btn unit-btn-primary"
-                      onClick={() => { onSetStatus(i.id, 'Replied'); onShowToast(`✉️ Reply sent to ${i.name}`); setOpenId(null); }}
+                      onClick={() => { sendReply(i); }}
                     >
                       Reply
                     </button>
                     <button
                       className="unit-btn"
-                      onClick={() => { onSetStatus(i.id, 'Viewing'); onShowToast(`📅 Viewing scheduled with ${i.name}`); setOpenId(null); }}
+                      onClick={() => { scheduleViewing(i); }}
                     >
                       Schedule viewing
                     </button>
                     <button
                       className="unit-btn"
-                      onClick={() => { onShowToast('Opening chat…'); setOpenId(null); }}
+                      onClick={() => { setChatOpenId(i.id); }}
                     >
                       Open chat
                     </button>
@@ -100,6 +157,41 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onOpenP
 
         <div style={{ height: 16 }} />
       </div>
+
+      {activeChat && (
+        <div className="listing-modal-overlay" onClick={() => setChatOpenId(null)}>
+          <div
+            className="listing-modal inquiry-chat-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="inquiry-chat-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="listing-modal-body">
+              <div className="listing-modal-topline">
+                <span className="listing-modal-type">Inquiry chat</span>
+                <button className="listing-modal-close inquiry-chat-close" onClick={() => setChatOpenId(null)} aria-label="Close chat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+              <h2 id="inquiry-chat-title" className="listing-modal-title">{activeChat.name}</h2>
+              <div className="listing-modal-location">{unitTitle(activeChat.unitId)}</div>
+
+              <div className="inquiry-chat-thread">
+                {activeChat.thread.map((entry) => (
+                  <div key={entry.id} className={`inquiry-chat-message inquiry-chat-${entry.sender}`}>
+                    <div className="inquiry-chat-bubble">{entry.text}</div>
+                    <div className="inquiry-chat-time">{entry.time}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
