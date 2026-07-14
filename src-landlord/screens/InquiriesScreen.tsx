@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Inquiry, InquiryStatus, Unit } from '../data';
 import Header from '../components/Header';
+import type { HeaderNotification } from '../components/Header';
 
 interface Props {
   inquiries: Inquiry[];
@@ -12,6 +13,8 @@ interface Props {
     status?: InquiryStatus,
   ) => void;
   onOpenProfile: () => void;
+  notifications: HeaderNotification[];
+  onOpenNotification: (notification: HeaderNotification) => void;
   onShowToast: (msg: string) => void;
 }
 
@@ -27,7 +30,7 @@ function timeStampLabel() {
   return 'Just now';
 }
 
-export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddThreadMessage, onOpenProfile, onShowToast }: Props) {
+export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddThreadMessage, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [openId, setOpenId] = useState<number | null>(null);
   const [chatOpenId, setChatOpenId] = useState<number | null>(null);
@@ -73,7 +76,7 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddTh
 
   return (
     <>
-      <Header onOpenProfile={onOpenProfile} onShowToast={onShowToast} />
+      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
 
       <div className="search-filter-chips">
         {FILTERS.map(f => (

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Payment, PaymentStatus, Unit } from '../data';
 import { formatPeso } from '../data';
 import Header from '../components/Header';
+import type { HeaderNotification } from '../components/Header';
 
 interface Props {
   payments: Payment[];
@@ -9,6 +10,8 @@ interface Props {
   onMarkPaid: (id: number) => void;
   onRemind: (id: number) => void;
   onOpenProfile: () => void;
+  notifications: HeaderNotification[];
+  onOpenNotification: (notification: HeaderNotification) => void;
   onShowToast: (msg: string) => void;
 }
 
@@ -31,7 +34,7 @@ function TooltipBubble({ title, lines }: { title: string; lines: string[] }) {
   );
 }
 
-export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, onOpenProfile, onShowToast }: Props) {
+export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
 
@@ -69,7 +72,7 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
 
   return (
     <>
-      <Header onOpenProfile={onOpenProfile} onShowToast={onShowToast} />
+      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
 
       <div className="scroll-area">
         {/* Month summary */}

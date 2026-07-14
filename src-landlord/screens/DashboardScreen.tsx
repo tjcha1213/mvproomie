@@ -3,6 +3,7 @@ import type { Unit, Inquiry, Payment, Activity } from '../data';
 import { WEEK_VIEWS, WEEK_DAYS, CALENDAR_VIEWS, formatPesoShort } from '../data';
 import type { Tab } from '../components/LandlordNav';
 import Header from '../components/Header';
+import type { HeaderNotification } from '../components/Header';
 import LandlordMiniMap from '../components/LandlordMiniMap';
 
 interface Props {
@@ -12,6 +13,8 @@ interface Props {
   activities: Activity[];
   onGoTo: (t: Tab) => void;
   onOpenProfile: () => void;
+  notifications: HeaderNotification[];
+  onOpenNotification: (notification: HeaderNotification) => void;
   onShowToast: (msg: string) => void;
 }
 
@@ -41,7 +44,7 @@ function heatLevelClass(views: number) {
   return 'heat-level-1';
 }
 
-export default function DashboardScreen({ units, inquiries, payments, activities, onGoTo, onOpenProfile, onShowToast }: Props) {
+export default function DashboardScreen({ units, inquiries, payments, activities, onGoTo, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
   const [viewMode, setViewMode] = useState<'weekly' | 'calendar' | 'map'>('weekly');
   const published = units.filter(u => u.status !== 'Draft');
   const mappableUnits = units.filter((unit) => Number.isFinite(unit.lat) && Number.isFinite(unit.lng));
@@ -73,7 +76,7 @@ export default function DashboardScreen({ units, inquiries, payments, activities
 
   return (
     <>
-      <Header onOpenProfile={onOpenProfile} onShowToast={onShowToast} />
+      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
 
       <div className="scroll-area">
         <div className="ll-greeting">

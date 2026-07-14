@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import { UNITS, INQUIRIES, PAYMENTS, ACTIVITY } from './data';
+import { UNITS, INQUIRIES, PAYMENTS, ACTIVITY, formatPesoShort } from './data';
 import type { Unit, UnitStatus, Inquiry, Payment, Activity } from './data';
 import { DEFAULT_PRIMARY, THEME_STORAGE_KEY } from './theme';
 import LandlordNav from './components/LandlordNav';
 import type { Tab } from './components/LandlordNav';
 import Sidebar from './components/Sidebar';
+import type { HeaderNotification } from './components/Header';
 import NewListingModal from './components/NewListingModal';
 import type { NewListingDraft } from './components/NewListingModal';
 import DashboardScreen from './screens/DashboardScreen';
@@ -168,6 +169,20 @@ function App() {
   }, [showToast, units]);
 
   const newInquiryCount = inquiries.filter(i => i.status === 'New').length;
+  const overdueTotal = payments.filter((payment) => payment.status === 'Overdue').reduce((sum, payment) => sum + payment.amount, 0);
+  const draftCount = units.filter((unit) => unit.status === 'Draft').length;
+  const unverifiedCount = units.filter((unit) => unit.status !== 'Draft' && !unit.verified).length;
+  const notifications: HeaderNotification[] = [
+    { id: 'new-inquiries', title: `${newInquiryCount} new inquiries`, detail: 'Open the inquiries tab and respond to the newest prospects.', tab: 'inquiries' as const },
+    { id: 'overdue-payments', title: `${formatPesoShort(overdueTotal)} overdue`, detail: 'Review overdue rent logs and follow up from the payments tab.', tab: 'payments' as const },
+    { id: 'draft-listings', title: `${draftCount} draft listings`, detail: 'Finish and publish the listings still saved as drafts.', tab: 'listings' as const },
+    { id: 'verification', title: `${unverifiedCount} listings pending verification`, detail: 'Open listings to review the units that still need verification.', tab: 'listings' as const },
+  ].filter((notification) => !notification.title.startsWith('0 '));
+
+  const openNotification = useCallback((notification: HeaderNotification) => {
+    setTab(notification.tab);
+    showToast(`🔔 ${notification.title}`);
+  }, [showToast]);
 
   return (
     <div className="app-shell">
@@ -188,6 +203,8 @@ function App() {
               activities={activities}
               onGoTo={setTab}
               onOpenProfile={() => setTab('profile')}
+              notifications={notifications}
+              onOpenNotification={openNotification}
               onShowToast={showToast}
             />
           )}
@@ -196,6 +213,8 @@ function App() {
               units={units}
               onSetStatus={setUnitStatus}
               onOpenProfile={() => setTab('profile')}
+              notifications={notifications}
+              onOpenNotification={openNotification}
               onShowToast={showToast}
             />
           )}
@@ -206,6 +225,8 @@ function App() {
               onSetStatus={setInquiryStatus}
               onAddThreadMessage={addInquiryThreadMessage}
               onOpenProfile={() => setTab('profile')}
+              notifications={notifications}
+              onOpenNotification={openNotification}
               onShowToast={showToast}
             />
           )}
@@ -216,6 +237,8 @@ function App() {
               onMarkPaid={markPaid}
               onRemind={remindPayment}
               onOpenProfile={() => setTab('profile')}
+              notifications={notifications}
+              onOpenNotification={openNotification}
               onShowToast={showToast}
             />
           )}
@@ -223,6 +246,8 @@ function App() {
             <ProfileScreen
               units={units}
               onOpenTheme={() => setThemeOpen(true)}
+              notifications={notifications}
+              onOpenNotification={openNotification}
               onShowToast={showToast}
             />
           )}

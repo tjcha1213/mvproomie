@@ -2,11 +2,14 @@ import { useState } from 'react';
 import type { Unit, UnitStatus } from '../data';
 import { formatPeso } from '../data';
 import Header from '../components/Header';
+import type { HeaderNotification } from '../components/Header';
 
 interface Props {
   units: Unit[];
   onSetStatus: (id: number, status: UnitStatus) => void;
   onOpenProfile: () => void;
+  notifications: HeaderNotification[];
+  onOpenNotification: (notification: HeaderNotification) => void;
   onShowToast: (msg: string) => void;
 }
 
@@ -24,7 +27,7 @@ function unitStatusClass(status: UnitStatus) {
   return 'unit-card-draft';
 }
 
-export default function ListingsScreen({ units, onSetStatus, onOpenProfile, onShowToast }: Props) {
+export default function ListingsScreen({ units, onSetStatus, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
 
@@ -60,7 +63,7 @@ export default function ListingsScreen({ units, onSetStatus, onOpenProfile, onSh
 
   return (
     <>
-      <Header onOpenProfile={onOpenProfile} onShowToast={onShowToast} />
+      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
 
       <div className="search-filter-chips">
         {FILTERS.map(f => (

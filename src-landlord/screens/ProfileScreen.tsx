@@ -1,10 +1,13 @@
 import { LANDLORD_PROFILE } from '../data';
 import type { Unit } from '../data';
 import Header from '../components/Header';
+import type { HeaderNotification } from '../components/Header';
 
 interface Props {
   units: Unit[];
   onOpenTheme: () => void;
+  notifications: HeaderNotification[];
+  onOpenNotification: (notification: HeaderNotification) => void;
   onShowToast: (msg: string) => void;
 }
 
@@ -15,12 +18,12 @@ const MENU_ITEMS = [
   { label: 'Help & Support', icon: <><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></> },
 ];
 
-export default function ProfileScreen({ units, onOpenTheme, onShowToast }: Props) {
+export default function ProfileScreen({ units, onOpenTheme, notifications, onOpenNotification, onShowToast }: Props) {
   const occupied = units.filter(u => u.status === 'Occupied').length;
 
   return (
     <>
-      <Header onOpenProfile={() => {}} onShowToast={onShowToast} />
+      <Header onOpenProfile={() => {}} notifications={notifications} onOpenNotification={onOpenNotification} />
 
       <div className="scroll-area">
         {/* Profile header */}
