@@ -218,6 +218,28 @@ export default function ListingsScreen({ units, onSetStatus, onOpenProfile, onSh
                 </div>
               </div>
 
+              <div className="listing-modal-section">
+                <div className="listing-modal-section-title">History and transaction log</div>
+                <div className="listing-history-list">
+                  {selectedUnit.history.map((entry) => (
+                    <div key={entry.id} className="listing-history-item">
+                      <div className="listing-history-topline">
+                        <span className="listing-history-date">{entry.date}</span>
+                        <span className="listing-history-type">{entry.type}</span>
+                      </div>
+                      <div className="listing-history-summary">{entry.summary}</div>
+                      <div className="listing-history-detail">{entry.detail}</div>
+                      <div className="listing-history-footer">
+                        <span className="listing-history-status">{entry.status}</span>
+                        {typeof entry.amount === 'number' && (
+                          <span className="listing-history-amount">{formatPeso(entry.amount)}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="listing-modal-actions">
                 <button
                   className={`unit-btn ${selectedUnit.status === 'Draft' ? 'unit-btn-primary' : ''}`}

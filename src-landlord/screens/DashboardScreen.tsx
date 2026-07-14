@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import type { Unit, Inquiry, Payment } from '../data';
-import { WEEK_VIEWS, WEEK_DAYS, ACTIVITY, formatPesoShort } from '../data';
+import { WEEK_VIEWS, WEEK_DAYS, CALENDAR_VIEWS, ACTIVITY, formatPesoShort } from '../data';
 import type { Tab } from '../components/LandlordNav';
 import Header from '../components/Header';
 
@@ -20,8 +21,10 @@ const ACTIVITY_ICONS = {
 };
 
 const WEEK_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const CALENDAR_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export default function DashboardScreen({ units, inquiries, payments, onGoTo, onOpenProfile, onShowToast }: Props) {
+  const [viewMode, setViewMode] = useState<'weekly' | 'calendar'>('weekly');
   const published = units.filter(u => u.status !== 'Draft');
   const occupied = units.filter(u => u.status === 'Occupied');
   const occupancy = published.length > 0 ? Math.round((occupied.length / published.length) * 100) : 0;
@@ -35,6 +38,12 @@ export default function DashboardScreen({ units, inquiries, payments, onGoTo, on
   const totalViews = WEEK_VIEWS.reduce((a, b) => a + b, 0);
   const maxViews = Math.max(...WEEK_VIEWS);
   const averageViews = Math.round(totalViews / WEEK_VIEWS.length);
+  const maxCalendarViews = Math.max(...CALENDAR_VIEWS.map((day) => day.views));
+  const calendarLeadingBlanks = new Date('2026-07-01').getDay();
+  const calendarCells = [
+    ...Array.from({ length: calendarLeadingBlanks }, (_, index) => ({ kind: 'blank' as const, id: `blank-${index}` })),
+    ...CALENDAR_VIEWS.map((entry) => ({ kind: 'day' as const, ...entry })),
+  ];
 
   // Actionable items, computed from live state so acting on them clears them.
   const tasks: { id: string; text: string; tab: Tab }[] = [
@@ -79,34 +88,94 @@ export default function DashboardScreen({ units, inquiries, payments, onGoTo, on
         {/* Views chart */}
         <div className="ll-card ll-chart-card">
           <div className="ll-card-head">
-            <span className="ll-card-title">Listing views</span>
-            <span className="ll-card-meta">{totalViews} this week · <b className="ll-up">+18%</b></span>
+            <div>
+              <span className="ll-card-title">Listing views</span>
+              <span className="ll-card-meta">{viewMode === 'weekly' ? `${totalViews} this week` : 'July 2026 view activity'} · <b className="ll-up">+18%</b></span>
+            </div>
+            <div className="ll-view-toggle" role="tablist" aria-label="Listing view chart mode">
+              <button
+                type="button"
+                className={`ll-view-toggle-btn ${viewMode === 'weekly' ? 'active' : ''}`}
+                onClick={() => setViewMode('weekly')}
+              >
+                7D
+              </button>
+              <button
+                type="button"
+                className={`ll-view-toggle-btn ${viewMode === 'calendar' ? 'active' : ''}`}
+                onClick={() => setViewMode('calendar')}
+              >
+                Calendar
+              </button>
+            </div>
           </div>
-          <div className="bar-chart">
-            {WEEK_VIEWS.map((v, i) => (
-              <div key={i} className="bar-col">
-                <button
-                  type="button"
-                  className="bar-hitbox"
-                  aria-label={`${WEEK_DAY_LABELS[i]}: ${v} views`}
-                  onClick={() => onShowToast(`${WEEK_DAY_LABELS[i]} · ${v} views`)}
-                >
-                  <div className="bar-tooltip" role="tooltip">
-                    <div className="bar-tooltip-title">{WEEK_DAY_LABELS[i]}</div>
-                    <div className="bar-tooltip-value">{v} listing views</div>
-                    <div className="bar-tooltip-meta">
-                      {v >= averageViews ? `${v - averageViews} above` : `${averageViews - v} below`} weekly average
+          {viewMode === 'weekly' ? (
+            <div className="bar-chart">
+              {WEEK_VIEWS.map((v, i) => (
+                <div key={i} className="bar-col">
+                  <button
+                    type="button"
+                    className="bar-hitbox"
+                    aria-label={`${WEEK_DAY_LABELS[i]}: ${v} views`}
+                    onClick={() => onShowToast(`${WEEK_DAY_LABELS[i]} · ${v} views`)}
+                  >
+                    <div className="bar-tooltip" role="tooltip">
+                      <div className="bar-tooltip-title">{WEEK_DAY_LABELS[i]}</div>
+                      <div className="bar-tooltip-value">{v} listing views</div>
+                      <div className="bar-tooltip-meta">
+                        {v >= averageViews ? `${v - averageViews} above` : `${averageViews - v} below`} weekly average
+                      </div>
                     </div>
-                  </div>
-                  <div
-                    className={`bar ${i === WEEK_VIEWS.length - 1 ? 'bar-today' : ''}`}
-                    style={{ height: `${(v / maxViews) * 100}%` }}
-                  />
-                </button>
-                <span className="bar-day">{WEEK_DAYS[i]}</span>
+                    <div
+                      className={`bar ${i === WEEK_VIEWS.length - 1 ? 'bar-today' : ''}`}
+                      style={{ height: `${(v / maxViews) * 100}%` }}
+                    />
+                  </button>
+                  <span className="bar-day">{WEEK_DAYS[i]}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="calendar-views">
+              <div className="calendar-header-row">
+                {CALENDAR_WEEKDAYS.map((day) => (
+                  <span key={day} className="calendar-weekday">{day}</span>
+                ))}
               </div>
-            ))}
-          </div>
+              <div className="calendar-grid">
+                {calendarCells.map((cell) => {
+                  if (cell.kind === 'blank') {
+                    return <div key={cell.id} className="calendar-day calendar-day-empty" aria-hidden="true" />;
+                  }
+
+                  const intensity = cell.views / maxCalendarViews;
+                  return (
+                    <button
+                      key={cell.date}
+                      type="button"
+                      className="calendar-day"
+                      aria-label={`${cell.date}: ${cell.views} listing views`}
+                      onClick={() => onShowToast(`${cell.date} · ${cell.views} views`)}
+                    >
+                      <div
+                        className="calendar-day-fill"
+                        style={{ opacity: 0.18 + intensity * 0.82 }}
+                      />
+                      <span className="calendar-day-number">{cell.day}</span>
+                      <span className="calendar-day-count">{cell.views}</span>
+                      <div className="bar-tooltip calendar-tooltip" role="tooltip">
+                        <div className="bar-tooltip-title">{cell.date}</div>
+                        <div className="bar-tooltip-value">{cell.views} listing views</div>
+                        <div className="bar-tooltip-meta">
+                          {cell.views >= averageViews ? `${cell.views - averageViews} above` : `${averageViews - cell.views} below`} weekly average
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Needs attention */}
