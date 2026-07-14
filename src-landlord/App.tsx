@@ -15,6 +15,31 @@ import ProfileScreen from './screens/ProfileScreen';
 import Toast from './components/Toast';
 import ThemePicker from './components/ThemePicker';
 
+const LOCATION_COORDS: { match: RegExp; lat: number; lng: number }[] = [
+  { match: /katipunan|quezon city|qc/i, lat: 14.6386, lng: 121.0760 },
+  { match: /espana|manila/i, lat: 14.6090, lng: 120.9930 },
+  { match: /cubao/i, lat: 14.6190, lng: 121.0510 },
+  { match: /timog/i, lat: 14.6330, lng: 121.0340 },
+  { match: /sampaloc/i, lat: 14.6150, lng: 121.0000 },
+  { match: /ortigas|pasig/i, lat: 14.5860, lng: 121.0610 },
+  { match: /makati|poblacion/i, lat: 14.5650, lng: 121.0290 },
+];
+
+function resolveLocationCoords(location: string, seed: number) {
+  const match = LOCATION_COORDS.find((entry) => entry.match.test(location));
+  if (match) {
+    return {
+      lat: match.lat + seed * 0.0018,
+      lng: match.lng + seed * 0.0014,
+    };
+  }
+
+  return {
+    lat: 14.5995 + seed * 0.0022,
+    lng: 120.9842 + seed * 0.0016,
+  };
+}
+
 function App() {
   const [tab, setTab] = useState<Tab>('dashboard');
   const [units, setUnits] = useState<Unit[]>(UNITS);
@@ -90,6 +115,7 @@ function App() {
     };
     const nextId = units.length > 0 ? Math.max(...units.map(unit => unit.id)) + 1 : 1;
     const coverImage = draft.photos[0] || defaultImageByType[draft.type];
+    const coords = resolveLocationCoords(draft.location, nextId % 5);
     const initialViews = draft.status === 'Active' ? 18 : 0;
     const initialInquiries = draft.status === 'Active' ? 1 : 0;
     const nextUnit: Unit = {
@@ -97,6 +123,8 @@ function App() {
       title: draft.title,
       type: draft.type,
       location: draft.location,
+      lat: coords.lat,
+      lng: coords.lng,
       price: draft.price,
       image: coverImage,
       gallery: draft.photos.length > 0 ? draft.photos : [coverImage],

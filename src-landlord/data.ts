@@ -15,6 +15,8 @@ export interface Unit {
   title: string;
   type: 'Studio' | 'Bedspace' | 'Apartment';
   location: string;
+  lat: number;
+  lng: number;
   price: number;
   image: string;
   gallery?: string[];
@@ -45,6 +47,8 @@ export const UNITS: Unit[] = [
     title: 'Cozy Studio Unit',
     type: 'Studio',
     location: 'Katipunan, Quezon City',
+    lat: 14.6386,
+    lng: 121.076,
     price: 6000,
     image: withBase('assets/studio_cozy.png'),
     status: 'Occupied',
@@ -68,6 +72,8 @@ export const UNITS: Unit[] = [
     title: 'Male Bedspace',
     type: 'Bedspace',
     location: 'Espana, Manila',
+    lat: 14.609,
+    lng: 120.993,
     price: 2600,
     image: withBase('assets/bedspace_male.png'),
     status: 'Active',
@@ -91,6 +97,8 @@ export const UNITS: Unit[] = [
     title: '1BR Apartment',
     type: 'Apartment',
     location: 'Cubao, QC',
+    lat: 14.619,
+    lng: 121.051,
     price: 13500,
     image: withBase('assets/apartment_1br.png'),
     status: 'Active',
@@ -114,6 +122,8 @@ export const UNITS: Unit[] = [
     title: 'Modern Studio',
     type: 'Studio',
     location: 'Timog, QC',
+    lat: 14.633,
+    lng: 121.034,
     price: 7000,
     image: withBase('assets/studio_modern.png'),
     status: 'Occupied',
@@ -137,6 +147,8 @@ export const UNITS: Unit[] = [
     title: 'Female Bedspace',
     type: 'Bedspace',
     location: 'Sampaloc, Manila',
+    lat: 14.615,
+    lng: 121,
     price: 2500,
     image: withBase('assets/bedspace_female.png'),
     status: 'Occupied',
@@ -160,6 +172,8 @@ export const UNITS: Unit[] = [
     title: '2BR Apartment',
     type: 'Apartment',
     location: 'Ortigas, Pasig',
+    lat: 14.586,
+    lng: 121.061,
     price: 18000,
     image: withBase('assets/apartment_2br.png'),
     status: 'Draft',
