@@ -1,3 +1,4 @@
+import { LANDLORD_PROFILE } from '../data';
 import Logo from './Logo';
 
 interface Props {
@@ -19,7 +20,9 @@ export default function Header({ onOpenProfile, onShowToast }: Props) {
           </svg>
           <span className="notif-dot" />
         </button>
-        <button className="header-avatar" onClick={onOpenProfile} aria-label="Profile">J</button>
+        <button className="header-avatar" onClick={onOpenProfile} aria-label="Profile">
+          <img src={LANDLORD_PROFILE.avatar} alt={LANDLORD_PROFILE.name} />
+        </button>
       </div>
     </div>
   );

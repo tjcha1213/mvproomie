@@ -1238,6 +1238,15 @@ img {
   font-weight: 700;
   font-size: 15px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.header-avatar img,
+.profile-avatar img,
+.inbox-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .inbox-info {
@@ -1307,6 +1316,7 @@ img {
   font-weight: 800;
   font-size: 26px;
   margin-bottom: 4px;
+  overflow: hidden;
 }
 
 .profile-name {
@@ -1952,15 +1962,13 @@ img {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-light), var(--primary));
-  color: #fff;
-  font-size: 14px;
-  font-weight: 800;
+  background: color-mix(in srgb, var(--primary) 14%, #ffffff);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: transform 0.15s;
+  overflow: hidden;
 }
 
 .header-avatar:active { transform: scale(0.92); }
@@ -2392,6 +2400,21 @@ img {
   overflow: hidden;
 }
 
+.unit-card-active {
+  background: linear-gradient(180deg, color-mix(in srgb, #DCFCE7 58%, #ffffff) 0%, #ffffff 68%);
+  border-color: color-mix(in srgb, #15803D 24%, #ffffff);
+}
+
+.unit-card-occupied {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 10%, #ffffff) 0%, #ffffff 68%);
+  border-color: color-mix(in srgb, var(--primary) 24%, #ffffff);
+}
+
+.unit-card-draft {
+  background: linear-gradient(180deg, color-mix(in srgb, #E5E7EB 64%, #ffffff) 0%, #ffffff 68%);
+  border-color: color-mix(in srgb, #6B7280 22%, #ffffff);
+}
+
 .unit-card-clickable {
   cursor: pointer;
   transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
@@ -2470,6 +2493,18 @@ img {
   padding: 8px 12px;
   border-top: 1px solid var(--border-light);
   background: color-mix(in srgb, var(--surface-2) 45%, var(--surface));
+}
+
+.unit-card-active .unit-card-bottom {
+  background: color-mix(in srgb, #DCFCE7 55%, #ffffff);
+}
+
+.unit-card-occupied .unit-card-bottom {
+  background: color-mix(in srgb, var(--primary) 10%, #ffffff);
+}
+
+.unit-card-draft .unit-card-bottom {
+  background: color-mix(in srgb, #E5E7EB 72%, #ffffff);
 }
 
 .unit-stats { display: flex; gap: 12px; }
@@ -2821,6 +2856,9 @@ img {
 
 .inquiry-chat-modal {
   max-width: 560px;
+  width: min(100%, 560px);
+  height: min(78dvh, 720px);
+  display: flex;
 }
 
 .inquiry-chat-close {
@@ -2828,11 +2866,51 @@ img {
   flex-shrink: 0;
 }
 
+.inquiry-chat-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.inquiry-chat-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.inquiry-chat-header-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inquiry-chat-avatar {
+  width: 42px;
+  height: 42px;
+}
+
+.inquiry-chat-title {
+  margin-top: 10px;
+  font-size: 22px;
+  line-height: 1.1;
+  color: var(--text);
+}
+
 .inquiry-chat-thread {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 18px;
+  flex: 1;
+  min-height: 0;
+  padding: 18px;
+  overflow-y: auto;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--primary) 4%, #ffffff) 0%, #ffffff 28%);
 }
 
 .inquiry-chat-message {
@@ -2873,6 +2951,24 @@ img {
 .inquiry-chat-time {
   font-size: 11px;
   color: var(--text-light);
+}
+
+.inquiry-chat-composer {
+  display: grid;
+  gap: 8px;
+  padding: 14px 18px 18px;
+  border-top: 1px solid var(--border-light);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.inquiry-chat-input {
+  min-height: 88px;
+}
+
+.inquiry-chat-composer-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* Payments */
@@ -3191,5 +3287,16 @@ img {
 
   .calendar-day-count {
     font-size: 10px;
+  }
+
+  .inquiry-chat-modal {
+    height: min(82dvh, 680px);
+  }
+
+  .inquiry-chat-header,
+  .inquiry-chat-thread,
+  .inquiry-chat-composer {
+    padding-left: 14px;
+    padding-right: 14px;
   }
 }

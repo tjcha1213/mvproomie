@@ -3,6 +3,11 @@
 
 const withBase = (p: string) => `${import.meta.env.BASE_URL}${p}`;
 
+export const LANDLORD_PROFILE = {
+  name: 'Juan Dela Cruz',
+  avatar: withBase('assets/avatars/juan-landlord.png'),
+};
+
 export type UnitStatus = 'Active' | 'Occupied' | 'Draft';
 
 export interface Unit {
@@ -179,6 +184,7 @@ export type InquiryStatus = 'New' | 'Replied' | 'Viewing';
 export interface Inquiry {
   id: number;
   name: string;
+  avatar?: string;
   unitId: number;
   message: string;
   time: string;
@@ -195,34 +201,37 @@ export const INQUIRIES: Inquiry[] = [
   {
     id: 1,
     name: 'Carlo Dizon',
+    avatar: withBase('assets/avatars/carlo-dizon.png'),
     unitId: 2,
-    message: 'Hi po! Is the bedspace still available? Looking to move in Aug 1.',
+    message: 'Hi po! Is the bedspace still available? Looking to move in Aug 1 🙂',
     time: '5m ago',
     status: 'New',
     thread: [
-      { id: 11, sender: 'tenant', text: 'Hi po! Is the bedspace still available? Looking to move in Aug 1.', time: '5m ago' },
+      { id: 11, sender: 'tenant', text: 'Hi po! Is the bedspace still available? Looking to move in Aug 1 🙂', time: '5m ago' },
     ],
   },
   {
     id: 2,
     name: 'Grace Tan',
+    avatar: withBase('assets/avatars/grace-tan.png'),
     unitId: 3,
-    message: 'Can I schedule a viewing this weekend?',
+    message: 'Can I schedule a viewing this weekend? 😊',
     time: '1h ago',
     status: 'New',
     thread: [
-      { id: 21, sender: 'tenant', text: 'Can I schedule a viewing this weekend?', time: '1h ago' },
+      { id: 21, sender: 'tenant', text: 'Can I schedule a viewing this weekend? 😊', time: '1h ago' },
     ],
   },
   {
     id: 3,
     name: 'Miguel Ramos',
+    avatar: withBase('assets/avatars/miguel-ramos.png'),
     unitId: 2,
-    message: 'Is water included in the rent?',
+    message: 'Is water included in the rent? 👀',
     time: '3h ago',
     status: 'New',
     thread: [
-      { id: 31, sender: 'tenant', text: 'Is water included in the rent?', time: '3h ago' },
+      { id: 31, sender: 'tenant', text: 'Is water included in the rent? 👀', time: '3h ago' },
     ],
   },
   {
@@ -233,9 +242,9 @@ export const INQUIRIES: Inquiry[] = [
     time: 'Yesterday',
     status: 'Viewing',
     thread: [
-      { id: 41, sender: 'tenant', text: 'Can I schedule a viewing this weekend?', time: '2d ago' },
-      { id: 42, sender: 'landlord', text: 'Yes, Saturday at 2pm works. Please bring one valid ID.', time: 'Yesterday' },
-      { id: 43, sender: 'tenant', text: 'Thank you! See you on Saturday at 2pm.', time: 'Yesterday' },
+      { id: 41, sender: 'tenant', text: 'Can I schedule a viewing this weekend? 🙂', time: '2d ago' },
+      { id: 42, sender: 'landlord', text: 'Yes, Saturday at 2pm works 👍 Please bring one valid ID.', time: 'Yesterday' },
+      { id: 43, sender: 'tenant', text: 'Thank you! See you on Saturday at 2pm 🙌', time: 'Yesterday' },
     ],
   },
   {
@@ -246,9 +255,9 @@ export const INQUIRIES: Inquiry[] = [
     time: 'Mon',
     status: 'Replied',
     thread: [
-      { id: 51, sender: 'tenant', text: 'Is the unit still open for July move-in?', time: 'Mon' },
-      { id: 52, sender: 'landlord', text: 'Yes, it is still available. I can send the requirements list here.', time: 'Mon' },
-      { id: 53, sender: 'tenant', text: 'Sure, I will send my requirements tonight.', time: 'Mon' },
+      { id: 51, sender: 'tenant', text: 'Is the unit still open for July move-in? 🙂', time: 'Mon' },
+      { id: 52, sender: 'landlord', text: 'Yes, it is still available. I can send the requirements list here 👍', time: 'Mon' },
+      { id: 53, sender: 'tenant', text: 'Sure, I will send my requirements tonight. 🙏', time: 'Mon' },
     ],
   },
 ];

@@ -103,7 +103,9 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddTh
             {filtered.map(i => (
               <div key={i.id} className="inquiry-item">
                 <button className="inquiry-main" onClick={() => setOpenId(openId === i.id ? null : i.id)}>
-                  <div className="inbox-avatar">{i.name[0]}</div>
+                  <div className="inbox-avatar">
+                    {i.avatar ? <img src={i.avatar} alt={i.name} /> : i.name[0]}
+                  </div>
                   <div className="inbox-info">
                     <div className="inquiry-name-row">
                       <span className="inbox-name">{i.name}</span>
@@ -167,18 +169,25 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddTh
             aria-labelledby="inquiry-chat-title"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="listing-modal-body">
-              <div className="listing-modal-topline">
-                <span className="listing-modal-type">Inquiry chat</span>
-                <button className="listing-modal-close inquiry-chat-close" onClick={() => setChatOpenId(null)} aria-label="Close chat">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
+            <div className="inquiry-chat-shell">
+              <div className="inquiry-chat-header">
+                <div>
+                  <span className="listing-modal-type">Inquiry chat</span>
+                  <h2 id="inquiry-chat-title" className="inquiry-chat-title">{activeChat.name}</h2>
+                  <div className="listing-modal-location">{unitTitle(activeChat.unitId)}</div>
+                </div>
+                <div className="inquiry-chat-header-side">
+                  <div className="inbox-avatar inquiry-chat-avatar">
+                    {activeChat.avatar ? <img src={activeChat.avatar} alt={activeChat.name} /> : activeChat.name[0]}
+                  </div>
+                  <button className="listing-modal-close inquiry-chat-close" onClick={() => setChatOpenId(null)} aria-label="Close chat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
               </div>
-              <h2 id="inquiry-chat-title" className="listing-modal-title">{activeChat.name}</h2>
-              <div className="listing-modal-location">{unitTitle(activeChat.unitId)}</div>
 
               <div className="inquiry-chat-thread">
                 {activeChat.thread.map((entry) => (
@@ -187,6 +196,26 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddTh
                     <div className="inquiry-chat-time">{entry.time}</div>
                   </div>
                 ))}
+              </div>
+
+              <div className="inquiry-chat-composer">
+                <label className="inquiry-reply-label" htmlFor={`chat-reply-${activeChat.id}`}>Reply in chat</label>
+                <textarea
+                  id={`chat-reply-${activeChat.id}`}
+                  className="inquiry-reply-input inquiry-chat-input"
+                  rows={3}
+                  placeholder="Write a reply to continue the conversation"
+                  value={draftReplies[activeChat.id] ?? ''}
+                  onChange={(event) => setDraft(activeChat.id, event.target.value)}
+                />
+                <div className="inquiry-chat-composer-actions">
+                  <button
+                    className="unit-btn unit-btn-primary"
+                    onClick={() => sendReply(activeChat)}
+                  >
+                    Send reply
+                  </button>
+                </div>
               </div>
             </div>
           </div>

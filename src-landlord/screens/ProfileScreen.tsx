@@ -1,3 +1,4 @@
+import { LANDLORD_PROFILE } from '../data';
 import type { Unit } from '../data';
 import Header from '../components/Header';
 
@@ -24,9 +25,11 @@ export default function ProfileScreen({ units, onOpenTheme, onShowToast }: Props
       <div className="scroll-area">
         {/* Profile header */}
         <div className="profile-header">
-          <div className="profile-avatar">J</div>
+          <div className="profile-avatar">
+            <img src={LANDLORD_PROFILE.avatar} alt={LANDLORD_PROFILE.name} />
+          </div>
           <div className="profile-name-row-ll">
-            <span className="profile-name">Juan Dela Cruz</span>
+            <span className="profile-name">{LANDLORD_PROFILE.name}</span>
             <svg className="verified-badge" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="11" fill="currentColor" />
               <path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />

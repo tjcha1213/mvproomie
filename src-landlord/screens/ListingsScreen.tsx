@@ -18,6 +18,12 @@ function StatusBadge({ status }: { status: UnitStatus }) {
   return <span className={`status-badge ${cls}`}>{status}</span>;
 }
 
+function unitStatusClass(status: UnitStatus) {
+  if (status === 'Active') return 'unit-card-active';
+  if (status === 'Occupied') return 'unit-card-occupied';
+  return 'unit-card-draft';
+}
+
 export default function ListingsScreen({ units, onSetStatus, onOpenProfile, onShowToast }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
@@ -72,7 +78,7 @@ export default function ListingsScreen({ units, onSetStatus, onOpenProfile, onSh
           {filtered.map(u => (
             <div
               key={u.id}
-              className="unit-card unit-card-clickable"
+              className={`unit-card unit-card-clickable ${unitStatusClass(u.status)}`}
               role="button"
               tabIndex={0}
               onClick={() => openUnitModal(u.id)}
