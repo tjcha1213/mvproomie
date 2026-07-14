@@ -8,6 +8,7 @@ export type UnitStatus = 'Active' | 'Occupied' | 'Draft';
 export interface Unit {
   id: number;
   title: string;
+  type: 'Studio' | 'Bedspace' | 'Apartment';
   location: string;
   price: number;
   image: string;
@@ -15,15 +16,123 @@ export interface Unit {
   views: number;
   inquiries: number;
   verified: boolean;
+  bedrooms: number;
+  bathrooms: number;
+  sqm: number;
+  description: string;
+  amenities: string[];
+  lastUpdated: string;
 }
 
 export const UNITS: Unit[] = [
-  { id: 1, title: 'Cozy Studio Unit', location: 'Katipunan, Quezon City', price: 6000, image: withBase('assets/studio_cozy.png'), status: 'Occupied', views: 96, inquiries: 4, verified: true },
-  { id: 2, title: 'Male Bedspace', location: 'Espana, Manila', price: 2600, image: withBase('assets/bedspace_male.png'), status: 'Active', views: 214, inquiries: 12, verified: true },
-  { id: 3, title: '1BR Apartment', location: 'Cubao, QC', price: 13500, image: withBase('assets/apartment_1br.png'), status: 'Active', views: 158, inquiries: 7, verified: false },
-  { id: 4, title: 'Modern Studio', location: 'Timog, QC', price: 7000, image: withBase('assets/studio_modern.png'), status: 'Occupied', views: 61, inquiries: 2, verified: true },
-  { id: 5, title: 'Female Bedspace', location: 'Sampaloc, Manila', price: 2500, image: withBase('assets/bedspace_female.png'), status: 'Occupied', views: 143, inquiries: 9, verified: true },
-  { id: 6, title: '2BR Apartment', location: 'Ortigas, Pasig', price: 18000, image: withBase('assets/apartment_2br.png'), status: 'Draft', views: 0, inquiries: 0, verified: true },
+  {
+    id: 1,
+    title: 'Cozy Studio Unit',
+    type: 'Studio',
+    location: 'Katipunan, Quezon City',
+    price: 6000,
+    image: withBase('assets/studio_cozy.png'),
+    status: 'Occupied',
+    views: 96,
+    inquiries: 4,
+    verified: true,
+    bedrooms: 1,
+    bathrooms: 1,
+    sqm: 18,
+    description: 'Compact studio unit near the university belt with strong recurring demand from students and young professionals.',
+    amenities: ['Furnished', 'Wi-Fi ready', 'Water included', 'Near transport'],
+    lastUpdated: 'Updated 2 days ago',
+  },
+  {
+    id: 2,
+    title: 'Male Bedspace',
+    type: 'Bedspace',
+    location: 'Espana, Manila',
+    price: 2600,
+    image: withBase('assets/bedspace_male.png'),
+    status: 'Active',
+    views: 214,
+    inquiries: 12,
+    verified: true,
+    bedrooms: 1,
+    bathrooms: 1,
+    sqm: 24,
+    description: 'High-traffic bedspace listing with consistent inquiry volume and fast turnover near schools and review centers.',
+    amenities: ['Bunk setup', 'Utilities split', 'CCTV', 'Caretaker onsite'],
+    lastUpdated: 'Updated today',
+  },
+  {
+    id: 3,
+    title: '1BR Apartment',
+    type: 'Apartment',
+    location: 'Cubao, QC',
+    price: 13500,
+    image: withBase('assets/apartment_1br.png'),
+    status: 'Active',
+    views: 158,
+    inquiries: 7,
+    verified: false,
+    bedrooms: 1,
+    bathrooms: 1,
+    sqm: 32,
+    description: 'Private one-bedroom apartment with reliable demand from couples and small households looking for transit access.',
+    amenities: ['Balcony', 'Pet-friendly', 'Parking nearby', 'Separate meter'],
+    lastUpdated: 'Updated yesterday',
+  },
+  {
+    id: 4,
+    title: 'Modern Studio',
+    type: 'Studio',
+    location: 'Timog, QC',
+    price: 7000,
+    image: withBase('assets/studio_modern.png'),
+    status: 'Occupied',
+    views: 61,
+    inquiries: 2,
+    verified: true,
+    bedrooms: 1,
+    bathrooms: 1,
+    sqm: 21,
+    description: 'Recently renovated studio with modern finishes, currently occupied by a repeat tenant on a stable payment record.',
+    amenities: ['Aircon ready', 'Shower heater', 'Secure gate', 'Laundry access'],
+    lastUpdated: 'Updated 5 days ago',
+  },
+  {
+    id: 5,
+    title: 'Female Bedspace',
+    type: 'Bedspace',
+    location: 'Sampaloc, Manila',
+    price: 2500,
+    image: withBase('assets/bedspace_female.png'),
+    status: 'Occupied',
+    views: 143,
+    inquiries: 9,
+    verified: true,
+    bedrooms: 1,
+    bathrooms: 1,
+    sqm: 22,
+    description: 'Affordable shared unit with strong listing traction and repeat referrals from nearby students and workers.',
+    amenities: ['Secure entry', 'Curfew policy', 'Wi-Fi included', 'Shared kitchen'],
+    lastUpdated: 'Updated 3 days ago',
+  },
+  {
+    id: 6,
+    title: '2BR Apartment',
+    type: 'Apartment',
+    location: 'Ortigas, Pasig',
+    price: 18000,
+    image: withBase('assets/apartment_2br.png'),
+    status: 'Draft',
+    views: 0,
+    inquiries: 0,
+    verified: true,
+    bedrooms: 2,
+    bathrooms: 1,
+    sqm: 46,
+    description: 'Draft family-sized unit listing prepared for launch once final staging photos and policy details are approved.',
+    amenities: ['Corner unit', 'Family-sized layout', 'Near offices', 'Storage nook'],
+    lastUpdated: 'Draft saved this week',
+  },
 ];
 
 export type InquiryStatus = 'New' | 'Replied' | 'Viewing';

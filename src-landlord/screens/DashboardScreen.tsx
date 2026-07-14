@@ -19,6 +19,8 @@ const ACTIVITY_ICONS = {
   review: <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>,
 };
 
+const WEEK_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
 export default function DashboardScreen({ units, inquiries, payments, onGoTo, onOpenProfile, onShowToast }: Props) {
   const published = units.filter(u => u.status !== 'Draft');
   const occupied = units.filter(u => u.status === 'Occupied');
@@ -32,6 +34,7 @@ export default function DashboardScreen({ units, inquiries, payments, onGoTo, on
 
   const totalViews = WEEK_VIEWS.reduce((a, b) => a + b, 0);
   const maxViews = Math.max(...WEEK_VIEWS);
+  const averageViews = Math.round(totalViews / WEEK_VIEWS.length);
 
   // Actionable items, computed from live state so acting on them clears them.
   const tasks: { id: string; text: string; tab: Tab }[] = [
@@ -82,7 +85,24 @@ export default function DashboardScreen({ units, inquiries, payments, onGoTo, on
           <div className="bar-chart">
             {WEEK_VIEWS.map((v, i) => (
               <div key={i} className="bar-col">
-                <div className={`bar ${i === WEEK_VIEWS.length - 1 ? 'bar-today' : ''}`} style={{ height: `${(v / maxViews) * 100}%` }} />
+                <button
+                  type="button"
+                  className="bar-hitbox"
+                  aria-label={`${WEEK_DAY_LABELS[i]}: ${v} views`}
+                  onClick={() => onShowToast(`${WEEK_DAY_LABELS[i]} · ${v} views`)}
+                >
+                  <div className="bar-tooltip" role="tooltip">
+                    <div className="bar-tooltip-title">{WEEK_DAY_LABELS[i]}</div>
+                    <div className="bar-tooltip-value">{v} listing views</div>
+                    <div className="bar-tooltip-meta">
+                      {v >= averageViews ? `${v - averageViews} above` : `${averageViews - v} below`} weekly average
+                    </div>
+                  </div>
+                  <div
+                    className={`bar ${i === WEEK_VIEWS.length - 1 ? 'bar-today' : ''}`}
+                    style={{ height: `${(v / maxViews) * 100}%` }}
+                  />
+                </button>
                 <span className="bar-day">{WEEK_DAYS[i]}</span>
               </div>
             ))}
