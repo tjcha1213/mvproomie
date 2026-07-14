@@ -20,6 +20,17 @@ function StatusBadge({ status }: { status: PaymentStatus }) {
   return <span className={`status-badge ${cls}`}>{status}</span>;
 }
 
+function TooltipBubble({ title, lines }: { title: string; lines: string[] }) {
+  return (
+    <div className="payment-hover-tooltip" role="tooltip">
+      <div className="payment-hover-tooltip-title">{title}</div>
+      {lines.map((line) => (
+        <div key={line} className="payment-hover-tooltip-line">{line}</div>
+      ))}
+    </div>
+  );
+}
+
 export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, onOpenProfile, onShowToast }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
@@ -46,10 +57,15 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
   const collectionSeries = payments.map(payment => ({
     id: payment.id,
     label: payment.tenant.split(' ')[0],
+    tenant: payment.tenant,
     value: payment.amount,
     status: payment.status,
+    method: payment.method,
   }));
   const maxCollectionValue = Math.max(...collectionSeries.map(item => item.value), 1);
+  const largestMethod = methodBreakdown.reduce((top, item) => (item.value > top.value ? item : top), methodBreakdown[0]);
+  const collectionGap = expected - collected;
+  const paidRate = payments.length > 0 ? Math.round((paidCount / payments.length) * 100) : 0;
 
   return (
     <>
@@ -67,25 +83,63 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
           </div>
           <div className="progress-label">{pct}% collected</div>
           <div className="payment-kpi-grid">
-            <div className="payment-kpi-card">
+            <div className="payment-kpi-card payment-tooltip-anchor" tabIndex={0}>
               <strong>{formatPeso(dueSoonTotal)}</strong>
               <span>Due this week</span>
+              <TooltipBubble
+                title="Due this week"
+                lines={[
+                  `${payments.filter(p => p.status === 'Due').length} unsettled log${payments.filter(p => p.status === 'Due').length === 1 ? '' : 's'}`,
+                  `Collection gap remaining: ${formatPeso(collectionGap)}`,
+                ]}
+              />
             </div>
-            <div className="payment-kpi-card payment-kpi-alert">
+            <div className="payment-kpi-card payment-kpi-alert payment-tooltip-anchor" tabIndex={0}>
               <strong>{formatPeso(overdueTotal)}</strong>
               <span>Overdue balance</span>
+              <TooltipBubble
+                title="Overdue balance"
+                lines={[
+                  `${payments.filter(p => p.status === 'Overdue').length} overdue account${payments.filter(p => p.status === 'Overdue').length === 1 ? '' : 's'}`,
+                  `Largest overdue exposure: ${formatPeso(Math.max(...payments.filter(p => p.status === 'Overdue').map(p => p.amount), 0))}`,
+                ]}
+              />
             </div>
-            <div className="payment-kpi-card">
+            <div className="payment-kpi-card payment-tooltip-anchor" tabIndex={0}>
               <strong>{paidCount}</strong>
               <span>Paid logs posted</span>
+              <TooltipBubble
+                title="Paid logs"
+                lines={[
+                  `${paidRate}% of this cycle already settled`,
+                  `${formatPeso(collected)} cleared into landlord accounts`,
+                ]}
+              />
             </div>
           </div>
           <div className="payment-analytics-grid">
             <div className="payment-analytics-card">
-              <div className="payment-analytics-title">Monthly trend</div>
+              <div className="payment-analytics-title-row">
+                <div className="payment-analytics-title">Monthly trend</div>
+                <div className="payment-tooltip-anchor payment-info-trigger" tabIndex={0} aria-label="Monthly trend details">
+                  i
+                  <TooltipBubble
+                    title="Monthly trend"
+                    lines={[
+                      `Tracks 6 months of mock landlord collections`,
+                      `Current month total: ${formatPeso(monthlyTotals[monthlyTotals.length - 1])}`,
+                    ]}
+                  />
+                </div>
+              </div>
               <div className="payment-mini-chart">
                 {monthlyTotals.map((value, index) => (
-                  <div key={monthLabels[index]} className="payment-mini-col">
+                  <button
+                    key={monthLabels[index]}
+                    type="button"
+                    className="payment-mini-col payment-mini-col-button"
+                    onClick={() => onShowToast(`${monthLabels[index]} · ${formatPeso(value)} collected`)}
+                  >
                     <div className="payment-mini-tip">{formatPeso(value)}</div>
                     <div className="payment-mini-bar-wrap">
                       <div
@@ -94,29 +148,72 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
                       />
                     </div>
                     <div className="payment-mini-label">{monthLabels[index]}</div>
-                  </div>
+                    <TooltipBubble
+                      title={`${monthLabels[index]} collections`}
+                      lines={[
+                        `${formatPeso(value)} total posted`,
+                        `${index === 0 ? 'Baseline month in the demo series' : `${formatPeso(value - monthlyTotals[index - 1])} vs previous month`}`,
+                      ]}
+                    />
+                  </button>
                 ))}
               </div>
             </div>
             <div className="payment-analytics-card">
-              <div className="payment-analytics-title">Collection by method</div>
+              <div className="payment-analytics-title-row">
+                <div className="payment-analytics-title">Collection by method</div>
+                <div className="payment-tooltip-anchor payment-info-trigger" tabIndex={0} aria-label="Collection by method details">
+                  i
+                  <TooltipBubble
+                    title="Collection by method"
+                    lines={[
+                      `Largest payment rail: ${largestMethod.label}`,
+                      `${formatPeso(largestMethod.value)} routed through that channel`,
+                    ]}
+                  />
+                </div>
+              </div>
               <div className="payment-method-list">
                 {methodBreakdown.map(item => (
-                  <div key={item.label} className="payment-method-row">
+                  <div key={item.label} className="payment-method-row payment-tooltip-anchor" tabIndex={0}>
                     <div className="payment-method-label">{item.label}</div>
                     <div className="payment-method-bar">
                       <div className="payment-method-fill" style={{ width: `${(item.value / maxMethodValue) * 100}%` }} />
                     </div>
                     <div className="payment-method-value">{formatPeso(item.value)}</div>
+                    <TooltipBubble
+                      title={`${item.label} channel`}
+                      lines={[
+                        `${formatPeso(item.value)} assigned to this method`,
+                        `${Math.round((item.value / expected) * 100)}% of total expected collections`,
+                      ]}
+                    />
                   </div>
                 ))}
               </div>
             </div>
             <div className="payment-analytics-card payment-analytics-card-wide">
-              <div className="payment-analytics-title">Per-listing collection snapshot</div>
+              <div className="payment-analytics-title-row">
+                <div className="payment-analytics-title">Per-listing collection snapshot</div>
+                <div className="payment-tooltip-anchor payment-info-trigger" tabIndex={0} aria-label="Per-listing collection details">
+                  i
+                  <TooltipBubble
+                    title="Per-listing snapshot"
+                    lines={[
+                      `Compares current cycle payment logs by tenant`,
+                      `Color indicates paid, due, or overdue state`,
+                    ]}
+                  />
+                </div>
+              </div>
               <div className="payment-mini-chart payment-mini-chart-tight">
                 {collectionSeries.map(item => (
-                  <div key={item.id} className="payment-mini-col">
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="payment-mini-col payment-mini-col-button"
+                    onClick={() => setSelectedPaymentId(item.id)}
+                  >
                     <div className="payment-mini-tip">{formatPeso(item.value)}</div>
                     <div className="payment-mini-bar-wrap">
                       <div
@@ -125,7 +222,14 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
                       />
                     </div>
                     <div className="payment-mini-label">{item.label}</div>
-                  </div>
+                    <TooltipBubble
+                      title={item.tenant}
+                      lines={[
+                        `${item.method} · ${item.status}`,
+                        `${formatPeso(item.value)} booked for this cycle`,
+                      ]}
+                    />
+                  </button>
                 ))}
               </div>
             </div>
@@ -246,12 +350,29 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
                 <div className="listing-modal-section-title">Payment analytics</div>
                 <div className="payment-modal-grid">
                   <div className="payment-analytics-card">
-                    <div className="payment-analytics-title">Tenant payment trend</div>
+                    <div className="payment-analytics-title-row">
+                      <div className="payment-analytics-title">Tenant payment trend</div>
+                      <div className="payment-tooltip-anchor payment-info-trigger" tabIndex={0} aria-label="Tenant payment trend details">
+                        i
+                        <TooltipBubble
+                          title="Tenant payment trend"
+                          lines={[
+                            `Shows this account's last 6 billing cycles`,
+                            `${selectedPayment.bank} · ${selectedPayment.account}`,
+                          ]}
+                        />
+                      </div>
+                    </div>
                     <div className="payment-mini-chart">
                       {selectedPayment.monthlyTrend.map((value, index) => {
                         const maxValue = Math.max(...selectedPayment.monthlyTrend, 1);
                         return (
-                          <div key={monthLabels[index]} className="payment-mini-col">
+                          <button
+                            key={monthLabels[index]}
+                            type="button"
+                            className="payment-mini-col payment-mini-col-button"
+                            onClick={() => onShowToast(`${selectedPayment.tenant} · ${monthLabels[index]} · ${formatPeso(value)}`)}
+                          >
                             <div className="payment-mini-tip">{formatPeso(value)}</div>
                             <div className="payment-mini-bar-wrap">
                               <div
@@ -260,13 +381,32 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
                               />
                             </div>
                             <div className="payment-mini-label">{monthLabels[index]}</div>
-                          </div>
+                            <TooltipBubble
+                              title={`${selectedPayment.tenant} · ${monthLabels[index]}`}
+                              lines={[
+                                `${formatPeso(value)} settled or due in that cycle`,
+                                `${index === selectedPayment.monthlyTrend.length - 1 ? selectedPayment.dueLabel : 'Historical comparison point'}`,
+                              ]}
+                            />
+                          </button>
                         );
                       })}
                     </div>
                   </div>
                   <div className="payment-analytics-card">
-                    <div className="payment-analytics-title">Cycle details</div>
+                    <div className="payment-analytics-title-row">
+                      <div className="payment-analytics-title">Cycle details</div>
+                      <div className="payment-tooltip-anchor payment-info-trigger" tabIndex={0} aria-label="Cycle detail explanation">
+                        i
+                        <TooltipBubble
+                          title="Cycle details"
+                          lines={[
+                            `References the current ledger entry and its banking route`,
+                            `Useful for follow-up, reconciliation, and reminder context`,
+                          ]}
+                        />
+                      </div>
+                    </div>
                     <div className="payment-log-metrics">
                       <div className="payment-log-metric">
                         <span>Collection state</span>

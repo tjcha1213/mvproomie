@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { Unit, Inquiry, Payment } from '../data';
-import { WEEK_VIEWS, WEEK_DAYS, CALENDAR_VIEWS, ACTIVITY, formatPesoShort } from '../data';
+import type { Unit, Inquiry, Payment, Activity } from '../data';
+import { WEEK_VIEWS, WEEK_DAYS, CALENDAR_VIEWS, formatPesoShort } from '../data';
 import type { Tab } from '../components/LandlordNav';
 import Header from '../components/Header';
 
@@ -8,6 +8,7 @@ interface Props {
   units: Unit[];
   inquiries: Inquiry[];
   payments: Payment[];
+  activities: Activity[];
   onGoTo: (t: Tab) => void;
   onOpenProfile: () => void;
   onShowToast: (msg: string) => void;
@@ -18,6 +19,7 @@ const ACTIVITY_ICONS = {
   payment: <><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="12" cy="12" r="3"/></>,
   views: <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>,
   review: <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>,
+  listing: <><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></>,
 };
 
 const WEEK_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -31,7 +33,7 @@ function heatLevelClass(views: number) {
   return 'heat-level-1';
 }
 
-export default function DashboardScreen({ units, inquiries, payments, onGoTo, onOpenProfile, onShowToast }: Props) {
+export default function DashboardScreen({ units, inquiries, payments, activities, onGoTo, onOpenProfile, onShowToast }: Props) {
   const [viewMode, setViewMode] = useState<'weekly' | 'calendar'>('weekly');
   const published = units.filter(u => u.status !== 'Draft');
   const occupied = units.filter(u => u.status === 'Occupied');
@@ -209,7 +211,7 @@ export default function DashboardScreen({ units, inquiries, payments, onGoTo, on
             <span className="ll-card-title">Recent activity</span>
           </div>
           <div className="activity-list">
-            {ACTIVITY.map(a => (
+            {activities.map(a => (
               <div key={a.id} className="activity-item">
                 <div className="activity-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">

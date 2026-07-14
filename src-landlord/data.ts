@@ -17,6 +17,7 @@ export interface Unit {
   location: string;
   price: number;
   image: string;
+  gallery?: string[];
   status: UnitStatus;
   views: number;
   inquiries: number;
@@ -404,7 +405,7 @@ export const CALENDAR_VIEWS = [
 
 export interface Activity {
   id: number;
-  icon: 'inquiry' | 'payment' | 'views' | 'review';
+  icon: 'inquiry' | 'payment' | 'views' | 'review' | 'listing';
   text: string;
   time: string;
 }

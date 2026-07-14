@@ -2634,6 +2634,26 @@ img {
   color: var(--text-muted);
 }
 
+.listing-modal-gallery {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.listing-modal-gallery-item {
+  height: 68px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.listing-modal-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .listing-modal-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2780,6 +2800,135 @@ img {
 .listing-modal-actions .unit-btn {
   flex: 1;
   min-height: 42px;
+}
+
+.new-listing-modal {
+  width: min(100%, 760px);
+  height: min(88dvh, 760px);
+  display: flex;
+  overflow: hidden;
+}
+
+.new-listing-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+
+.new-listing-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.new-listing-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px 22px;
+  overflow-y: auto;
+}
+
+.new-listing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.new-listing-field {
+  display: grid;
+  gap: 7px;
+}
+
+.new-listing-field span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.new-listing-field input,
+.new-listing-field select,
+.new-listing-field textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  padding: 11px 12px;
+}
+
+.new-listing-field textarea {
+  min-height: 98px;
+  resize: vertical;
+}
+
+.new-listing-field input:focus,
+.new-listing-field select:focus,
+.new-listing-field textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.new-listing-upload {
+  border: 1px dashed color-mix(in srgb, var(--primary) 34%, var(--border));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--primary) 4%, #ffffff);
+  padding: 14px;
+  cursor: pointer;
+}
+
+.new-listing-upload input {
+  display: none;
+}
+
+.new-listing-upload-copy strong {
+  display: block;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.new-listing-upload-copy small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.new-listing-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.new-listing-photo-slot {
+  min-height: 110px;
+  border-radius: 16px;
+  border: 1px dashed var(--border);
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.new-listing-photo-slot span {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.new-listing-photo-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* Inquiries */
@@ -3054,6 +3203,18 @@ img {
   margin-bottom: 10px;
 }
 
+.payment-analytics-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.payment-analytics-title-row .payment-analytics-title {
+  margin-bottom: 0;
+}
+
 .payment-mini-chart {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -3071,6 +3232,25 @@ img {
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  position: relative;
+}
+
+.payment-mini-col-button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  width: 100%;
+  cursor: pointer;
+  text-align: center;
+}
+
+.payment-mini-col-button:hover .payment-hover-tooltip,
+.payment-mini-col-button:focus-visible .payment-hover-tooltip,
+.payment-tooltip-anchor:hover .payment-hover-tooltip,
+.payment-tooltip-anchor:focus-visible .payment-hover-tooltip {
+  opacity: 1;
+  transform: translate(-50%, -6px);
+  pointer-events: auto;
 }
 
 .payment-mini-tip {
@@ -3126,6 +3306,7 @@ img {
   grid-template-columns: 52px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
+  position: relative;
 }
 
 .payment-method-label,
@@ -3222,6 +3403,68 @@ img {
   background: var(--surface);
   border: 1px solid var(--border-light);
   padding: 12px;
+}
+
+.payment-tooltip-anchor {
+  position: relative;
+  outline: none;
+}
+
+.payment-info-trigger {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-hover-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  width: min(220px, 72vw);
+  transform: translate(-50%, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.96);
+  color: #fff;
+  padding: 10px 11px;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.24);
+  z-index: 4;
+}
+
+.payment-hover-tooltip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 12px;
+  height: 12px;
+  background: rgba(15, 23, 42, 0.96);
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 2px;
+}
+
+.payment-hover-tooltip-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.payment-hover-tooltip-line {
+  margin-top: 4px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.88);
 }
 
 /* Profile extras */
@@ -3451,10 +3694,25 @@ img {
     height: 180px;
   }
 
+  .listing-modal-gallery,
+  .new-listing-grid,
+  .new-listing-photo-grid,
   .listing-modal-stats,
   .listing-modal-detail-grid,
   .listing-modal-actions {
     grid-template-columns: 1fr;
+  }
+
+  .new-listing-modal {
+    width: 100%;
+    height: min(88dvh, 760px);
+    border-radius: 24px 24px 18px 18px;
+  }
+
+  .new-listing-head,
+  .new-listing-body {
+    padding-left: 14px;
+    padding-right: 14px;
   }
 
   .payment-kpi-grid,

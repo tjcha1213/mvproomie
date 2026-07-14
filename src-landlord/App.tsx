@@ -1,10 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
-import { UNITS, INQUIRIES, PAYMENTS } from './data';
-import type { Unit, UnitStatus, Inquiry, Payment } from './data';
+import { UNITS, INQUIRIES, PAYMENTS, ACTIVITY } from './data';
+import type { Unit, UnitStatus, Inquiry, Payment, Activity } from './data';
 import { DEFAULT_PRIMARY, THEME_STORAGE_KEY } from './theme';
 import LandlordNav from './components/LandlordNav';
 import type { Tab } from './components/LandlordNav';
 import Sidebar from './components/Sidebar';
+import NewListingModal from './components/NewListingModal';
+import type { NewListingDraft } from './components/NewListingModal';
 import DashboardScreen from './screens/DashboardScreen';
 import ListingsScreen from './screens/ListingsScreen';
 import InquiriesScreen from './screens/InquiriesScreen';
@@ -18,8 +20,10 @@ function App() {
   const [units, setUnits] = useState<Unit[]>(UNITS);
   const [inquiries, setInquiries] = useState<Inquiry[]>(INQUIRIES);
   const [payments, setPayments] = useState<Payment[]>(PAYMENTS);
+  const [activities, setActivities] = useState<Activity[]>(ACTIVITY);
   const [toast, setToast] = useState<string | null>(null);
   const [themeOpen, setThemeOpen] = useState(false);
+  const [newListingOpen, setNewListingOpen] = useState(false);
   const [primary, setPrimary] = useState<string>(
     () => localStorage.getItem(THEME_STORAGE_KEY) || DEFAULT_PRIMARY
   );
@@ -74,6 +78,67 @@ function App() {
     setPayments(prev => prev.map(p => (p.id === id ? { ...p, reminded: true } : p)));
   }, []);
 
+  const openNewListing = useCallback(() => {
+    setNewListingOpen(true);
+  }, []);
+
+  const createListing = useCallback((draft: NewListingDraft) => {
+    const defaultImageByType: Record<Unit['type'], string> = {
+      Studio: `${import.meta.env.BASE_URL}assets/studio_modern.png`,
+      Bedspace: `${import.meta.env.BASE_URL}assets/bedspace_female.png`,
+      Apartment: `${import.meta.env.BASE_URL}assets/apartment_1br.png`,
+    };
+    const nextId = units.length > 0 ? Math.max(...units.map(unit => unit.id)) + 1 : 1;
+    const coverImage = draft.photos[0] || defaultImageByType[draft.type];
+    const initialViews = draft.status === 'Active' ? 18 : 0;
+    const initialInquiries = draft.status === 'Active' ? 1 : 0;
+    const nextUnit: Unit = {
+      id: nextId,
+      title: draft.title,
+      type: draft.type,
+      location: draft.location,
+      price: draft.price,
+      image: coverImage,
+      gallery: draft.photos.length > 0 ? draft.photos : [coverImage],
+      status: draft.status,
+      views: initialViews,
+      inquiries: initialInquiries,
+      verified: false,
+      bedrooms: draft.bedrooms,
+      bathrooms: draft.bathrooms,
+      sqm: draft.sqm,
+      description: draft.description,
+      amenities: draft.amenities.length > 0 ? draft.amenities : ['Photo set pending', 'Details pending'],
+      lastUpdated: 'Created just now',
+      history: [
+        {
+          id: nextId * 100 + 1,
+          date: 'Jul 14',
+          type: 'Lease',
+          summary: draft.status === 'Active' ? 'Listing published to marketplace' : 'Draft listing created',
+          detail: draft.status === 'Active'
+            ? 'Mock listing was created and published from the landlord dashboard.'
+            : 'Mock listing was created and saved as a draft for later review.',
+          status: draft.status === 'Active' ? 'Live' : 'Draft saved',
+        },
+      ],
+    };
+
+    setUnits((prev) => [nextUnit, ...prev]);
+    setActivities((prev) => [
+      {
+        id: Date.now(),
+        icon: 'listing',
+        text: `${draft.title} was ${draft.status === 'Active' ? 'published' : 'saved as draft'} · ${draft.location}`,
+        time: 'Just now',
+      },
+      ...prev,
+    ]);
+    setTab('listings');
+    setNewListingOpen(false);
+    showToast(draft.status === 'Active' ? '🚀 New listing published to the demo' : '📝 Draft listing created');
+  }, [showToast, units]);
+
   const newInquiryCount = inquiries.filter(i => i.status === 'New').length;
 
   return (
@@ -84,7 +149,7 @@ function App() {
           activeTab={tab}
           onTabChange={setTab}
           inquiryBadge={newInquiryCount}
-          onAdd={() => showToast('📝 New listing — posting flow coming soon')}
+          onAdd={openNewListing}
         />
         <div className="screen" key={tab}>
           {tab === 'dashboard' && (
@@ -92,6 +157,7 @@ function App() {
               units={units}
               inquiries={inquiries}
               payments={payments}
+              activities={activities}
               onGoTo={setTab}
               onOpenProfile={() => setTab('profile')}
               onShowToast={showToast}
@@ -138,7 +204,7 @@ function App() {
           activeTab={tab}
           onTabChange={setTab}
           inquiryBadge={newInquiryCount}
-          onAdd={() => showToast('📝 New listing — posting flow coming soon')}
+          onAdd={openNewListing}
         />
 
         {toast && <Toast message={toast} />}
@@ -148,6 +214,12 @@ function App() {
           primary={primary}
           onSelect={setPrimary}
           onClose={() => setThemeOpen(false)}
+        />
+
+        <NewListingModal
+          open={newListingOpen}
+          onClose={() => setNewListingOpen(false)}
+          onCreate={createListing}
         />
       </div>
     </div>

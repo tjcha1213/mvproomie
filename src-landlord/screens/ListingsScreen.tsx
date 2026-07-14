@@ -30,6 +30,7 @@ export default function ListingsScreen({ units, onSetStatus, onOpenProfile, onSh
 
   const filtered = filter === 'All' ? units : units.filter(u => u.status === filter);
   const selectedUnit = selectedUnitId === null ? null : units.find((u) => u.id === selectedUnitId) ?? null;
+  const selectedUnitGallery = selectedUnit ? (selectedUnit.gallery?.length ? selectedUnit.gallery : [selectedUnit.image]) : [];
 
   const openUnitModal = (id: number) => setSelectedUnitId(id);
   const closeUnitModal = () => setSelectedUnitId(null);
@@ -175,6 +176,16 @@ export default function ListingsScreen({ units, onSetStatus, onOpenProfile, onSh
               <h2 id="listing-modal-title" className="listing-modal-title">{selectedUnit.title}</h2>
               <div className="listing-modal-location">{selectedUnit.location}</div>
               <div className="listing-modal-price">{formatPeso(selectedUnit.price)} <span>/ month</span></div>
+
+              {selectedUnitGallery.length > 0 && (
+                <div className="listing-modal-gallery">
+                  {selectedUnitGallery.map((image, index) => (
+                    <div key={`${selectedUnit.id}-${index}`} className="listing-modal-gallery-item">
+                      <img src={image} alt={`${selectedUnit.title} photo ${index + 1}`} />
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="listing-modal-stats">
                 <div className="listing-modal-stat">
