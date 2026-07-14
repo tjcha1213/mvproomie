@@ -271,15 +271,97 @@ export interface Payment {
   amount: number;
   dueLabel: string;
   status: PaymentStatus;
+  method: 'Bank transfer' | 'GCash' | 'Cash deposit';
+  reference: string;
+  paidDate?: string;
+  dueDate: string;
+  account: string;
+  bank: string;
+  monthlyTrend: number[];
+  notes: string;
   reminded?: boolean;
 }
 
 export const PAYMENTS: Payment[] = [
-  { id: 1, tenant: 'Maria Reyes', unitId: 1, amount: 6000, dueLabel: 'Paid Jul 1', status: 'Paid' },
-  { id: 2, tenant: 'Ken Villanueva', unitId: 4, amount: 7000, dueLabel: 'Paid Jul 2', status: 'Paid' },
-  { id: 3, tenant: 'Alyssa Cruz', unitId: 5, amount: 2500, dueLabel: 'Paid Jul 1', status: 'Paid' },
-  { id: 4, tenant: 'Janine Lopez', unitId: 5, amount: 2500, dueLabel: 'Due Jul 15', status: 'Due' },
-  { id: 5, tenant: 'Rhea Mendoza', unitId: 5, amount: 2500, dueLabel: '5 days late', status: 'Overdue' },
+  {
+    id: 1,
+    tenant: 'Maria Reyes',
+    unitId: 1,
+    amount: 6000,
+    dueLabel: 'Paid Jul 1',
+    status: 'Paid',
+    method: 'Bank transfer',
+    reference: 'BPI-778291',
+    paidDate: 'Jul 1, 2026',
+    dueDate: 'Jul 1, 2026',
+    account: '•••• 1842',
+    bank: 'BPI Family Savings',
+    monthlyTrend: [5600, 6000, 6000, 6000, 6000, 6000],
+    notes: 'Consistent on-time payer for 6 consecutive months.',
+  },
+  {
+    id: 2,
+    tenant: 'Ken Villanueva',
+    unitId: 4,
+    amount: 7000,
+    dueLabel: 'Paid Jul 2',
+    status: 'Paid',
+    method: 'GCash',
+    reference: 'GCASH-239181',
+    paidDate: 'Jul 2, 2026',
+    dueDate: 'Jul 2, 2026',
+    account: 'GCash wallet',
+    bank: 'GCash',
+    monthlyTrend: [7000, 7000, 6800, 7000, 7000, 7000],
+    notes: 'Usually pays through GCash within the first 48 hours of due date.',
+  },
+  {
+    id: 3,
+    tenant: 'Alyssa Cruz',
+    unitId: 5,
+    amount: 2500,
+    dueLabel: 'Paid Jul 1',
+    status: 'Paid',
+    method: 'Cash deposit',
+    reference: 'BDO-109283',
+    paidDate: 'Jul 1, 2026',
+    dueDate: 'Jul 1, 2026',
+    account: '•••• 5521',
+    bank: 'BDO',
+    monthlyTrend: [2500, 2500, 2500, 2500, 2500, 2500],
+    notes: 'Stable recurring payment pattern with no missed cycles.',
+  },
+  {
+    id: 4,
+    tenant: 'Janine Lopez',
+    unitId: 5,
+    amount: 2500,
+    dueLabel: 'Due Jul 15',
+    status: 'Due',
+    method: 'GCash',
+    reference: 'Pending',
+    dueDate: 'Jul 15, 2026',
+    account: 'GCash wallet',
+    bank: 'GCash',
+    monthlyTrend: [2500, 2500, 2500, 2500, 2500, 0],
+    notes: 'Upcoming due item; reminder already sent this cycle.',
+    reminded: true,
+  },
+  {
+    id: 5,
+    tenant: 'Rhea Mendoza',
+    unitId: 5,
+    amount: 2500,
+    dueLabel: '5 days late',
+    status: 'Overdue',
+    method: 'Bank transfer',
+    reference: 'Pending',
+    dueDate: 'Jul 9, 2026',
+    account: '•••• 9013',
+    bank: 'UnionBank',
+    monthlyTrend: [2500, 2500, 2500, 2500, 0, 0],
+    notes: 'Late this cycle after a previously stable 4-month payment streak.',
+  },
 ];
 
 // Listing views over the last 7 days (Mon–Sun), for the dashboard chart.
