@@ -200,14 +200,29 @@ export default function DashboardScreen({ units, inquiries, payments, activities
             <div className="ll-card-head-copy">
               <span className="ll-card-title">Listing views</span>
               <span className="ll-card-meta">
-                {viewMode === 'weekly'
-                  ? `${totalViews} · ${weeklyRangeLabel}`
-                  : viewMode === 'calendar'
-                    ? `${calendarMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })} activity`
-                    : `${mappableUnits.length} mapped listings · ${occupancy}% occupied`}
+                {viewMode === 'weekly' ? (
+                  <>
+                    <span>{totalViews} views</span>
+                    <span className="ll-meta-dot" aria-hidden="true" />
+                    <span>{weeklyRangeLabel}</span>
+                  </>
+                ) : viewMode === 'calendar' ? (
+                  <>
+                    <span>{calendarMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })} activity</span>
+                    <span className="ll-meta-dot" aria-hidden="true" />
+                    <span>{calendarMonthTotalViews} views</span>
+                  </>
+                ) : (
+                  <>
+                    <span>{mappableUnits.length} mapped listings</span>
+                    <span className="ll-meta-dot" aria-hidden="true" />
+                    <span>{occupancy}% occupied</span>
+                  </>
+                )}
                 {chartDelta !== null && (
                   <>
-                    {' '}· <b className={chartDeltaClass}>{chartDelta >= 0 ? `+${chartDelta}%` : `${chartDelta}%`}</b>
+                    <span className="ll-meta-dot" aria-hidden="true" />
+                    <b className={chartDeltaClass}>{chartDelta >= 0 ? `+${chartDelta}%` : `${chartDelta}%`}</b>
                   </>
                 )}
               </span>

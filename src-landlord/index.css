@@ -2172,13 +2172,24 @@ img {
 }
 
 .ll-card-meta {
-  display: block;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   font-size: 12px;
   line-height: 1.45;
   color: var(--text-muted);
 }
 
 .ll-card-meta b { color: var(--text); }
+
+.ll-meta-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-muted) 72%, #ffffff);
+  flex-shrink: 0;
+}
 
 .ll-up { color: var(--success); }
 .ll-down { color: #dc2626; }
