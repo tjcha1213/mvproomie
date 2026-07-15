@@ -57,6 +57,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
   const [editUnitId, setEditUnitId] = useState<number | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [historyView, setHistoryView] = useState<'log' | 'calendar'>('log');
   const [selectedHistoryDate, setSelectedHistoryDate] = useState<string | null>(null);
   const [historyMonthIndex, setHistoryMonthIndex] = useState(0);
@@ -73,6 +74,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
   });
   const [editPhotos, setEditPhotos] = useState<string[]>([]);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const lightboxRef = useRef<HTMLDivElement>(null);
 
   const filtered = filter === 'All' ? units : units.filter(u => u.status === filter);
   const selectedUnit = selectedUnitId === null ? null : units.find((u) => u.id === selectedUnitId) ?? null;
@@ -197,6 +199,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
 
   useEffect(() => {
     setCarouselIndex(0);
+    setLightboxIndex(null);
     setHistoryView('log');
     setSelectedHistoryDate(null);
     setHistoryMonthIndex(Math.max(historyMonths.length - 1, 0));
@@ -207,6 +210,12 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
     if (!track) return;
     track.scrollTo({ left: carouselIndex * track.clientWidth, behavior: 'smooth' });
   }, [carouselIndex]);
+
+  useEffect(() => {
+    const track = lightboxRef.current;
+    if (!track || lightboxIndex === null) return;
+    track.scrollTo({ left: lightboxIndex * track.clientWidth, behavior: 'smooth' });
+  }, [lightboxIndex]);
 
   return (
     <>
@@ -324,9 +333,15 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
                 }}
               >
                 {selectedUnitGallery.map((image, index) => (
-                  <div key={`${selectedUnit.id}-hero-${index}`} className="listing-modal-carousel-slide">
+                  <button
+                    key={`${selectedUnit.id}-hero-${index}`}
+                    type="button"
+                    className="listing-modal-carousel-slide"
+                    onClick={() => setLightboxIndex(index)}
+                    aria-label={`Open photo ${index + 1} full size`}
+                  >
                     <img src={image} alt={`${selectedUnit.title} photo ${index + 1}`} />
-                  </div>
+                  </button>
                 ))}
               </div>
               <div className="listing-modal-carousel-dots">
@@ -363,16 +378,6 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
               </div>
               <div className="listing-modal-location">{selectedUnit.location}</div>
               <div className="listing-modal-price">{formatPeso(selectedUnit.price)} <span>/ month</span></div>
-
-              {selectedUnitGallery.length > 0 && (
-                <div className="listing-modal-gallery">
-                  {selectedUnitGallery.map((image, index) => (
-                    <div key={`${selectedUnit.id}-${index}`} className="listing-modal-gallery-item">
-                      <img src={image} alt={`${selectedUnit.title} photo ${index + 1}`} />
-                    </div>
-                  ))}
-                </div>
-              )}
 
               <div className="listing-modal-stats">
                 <div className="listing-modal-stat">
@@ -597,6 +602,71 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
                 <button className="unit-btn unit-btn-primary" onClick={saveUnitEdits}>Save changes</button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {selectedUnit && lightboxIndex !== null && (
+        <div className="listing-modal-overlay listing-lightbox-overlay" onClick={() => setLightboxIndex(null)}>
+          <div className="listing-lightbox-modal" role="dialog" aria-modal="true" aria-label="Listing photo viewer" onClick={(event) => event.stopPropagation()}>
+            <div
+              className="listing-lightbox-track"
+              ref={lightboxRef}
+              onScroll={(event) => {
+                const target = event.currentTarget;
+                const nextIndex = Math.round(target.scrollLeft / Math.max(target.clientWidth, 1));
+                if (nextIndex !== lightboxIndex) setLightboxIndex(nextIndex);
+              }}
+            >
+              {selectedUnitGallery.map((image, index) => (
+                <div key={`${selectedUnit.id}-lightbox-${index}`} className="listing-lightbox-slide">
+                  <img src={image} alt={`${selectedUnit.title} enlarged photo ${index + 1}`} />
+                </div>
+              ))}
+            </div>
+            <button className="listing-modal-close" onClick={() => setLightboxIndex(null)} aria-label="Close full photo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            {selectedUnitGallery.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="listing-lightbox-nav is-prev"
+                  onClick={() => setLightboxIndex((current) => current === null ? 0 : Math.max(current - 1, 0))}
+                  disabled={lightboxIndex === 0}
+                  aria-label="Previous photo"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  className="listing-lightbox-nav is-next"
+                  onClick={() => setLightboxIndex((current) => current === null ? 0 : Math.min(current + 1, selectedUnitGallery.length - 1))}
+                  disabled={lightboxIndex === selectedUnitGallery.length - 1}
+                  aria-label="Next photo"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+                <div className="listing-lightbox-dots">
+                  {selectedUnitGallery.map((_, index) => (
+                    <button
+                      key={`${selectedUnit.id}-lightbox-dot-${index}`}
+                      type="button"
+                      className={`listing-modal-carousel-dot ${lightboxIndex === index ? 'active' : ''}`}
+                      onClick={() => setLightboxIndex(index)}
+                      aria-label={`Go to full photo ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

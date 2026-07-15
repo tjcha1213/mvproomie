@@ -93,6 +93,15 @@ function formatWeekday(dateString: string) {
   });
 }
 
+function formatDateRange(startDate: string, endDate: string) {
+  const start = new Date(`${startDate}T12:00:00`);
+  const end = new Date(`${endDate}T12:00:00`);
+  const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
+  const startLabel = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const endLabel = end.toLocaleDateString('en-US', sameMonth ? { day: 'numeric', year: 'numeric' } : { month: 'short', day: 'numeric', year: 'numeric' });
+  return `${startLabel} - ${endLabel}`;
+}
+
 function calculatePercentDelta(currentValue: number, previousValue: number) {
   if (previousValue <= 0) return 0;
   return Math.round(((currentValue - previousValue) / previousValue) * 100);
@@ -151,6 +160,7 @@ export default function DashboardScreen({ units, inquiries, payments, activities
   const calendarDelta = calculatePercentDelta(calendarMonthTotalViews, previousCalendarMonthTotalViews);
   const chartDelta = viewMode === 'weekly' ? weeklyDelta : viewMode === 'calendar' ? calendarDelta : null;
   const chartDeltaClass = chartDelta !== null && chartDelta < 0 ? 'll-down' : 'll-up';
+  const weeklyRangeLabel = weeklyData.length > 0 ? formatDateRange(weeklyData[0].date, weeklyData[weeklyData.length - 1].date) : '';
 
   return (
     <>
@@ -191,7 +201,7 @@ export default function DashboardScreen({ units, inquiries, payments, activities
               <span className="ll-card-title">Listing views</span>
               <span className="ll-card-meta">
                 {viewMode === 'weekly'
-                  ? `${totalViews} this week`
+                  ? `${totalViews} · ${weeklyRangeLabel}`
                   : viewMode === 'calendar'
                     ? `${calendarMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })} activity`
                     : `${mappableUnits.length} mapped listings · ${occupancy}% occupied`}

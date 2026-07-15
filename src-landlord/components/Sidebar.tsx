@@ -10,12 +10,12 @@ interface Props {
 
 const ITEMS: { tab: Tab; label: string; icon: React.ReactNode }[] = [
   {
-    tab: 'dashboard', label: 'Dashboard',
-    icon: <><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></>,
+    tab: 'dashboard', label: 'Home',
+    icon: <><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13V10.5"/><path d="M10 20v-5h4v5"/></>,
   },
   {
     tab: 'listings', label: 'Listings',
-    icon: <><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></>,
+    icon: <><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8"/><path d="M8 13h8"/><path d="M8 17h5"/></>,
   },
   {
     tab: 'inquiries', label: 'Inquiries',
