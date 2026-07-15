@@ -3854,11 +3854,44 @@ img {
 }
 
 /* Payments */
+.payment-summary-card {
+  padding-top: 18px;
+}
+
+.payment-summary-head {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.payment-summary-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.payment-summary-value {
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.payment-summary-value small {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.payment-summary-nav {
+  margin-bottom: 0;
+}
+
 .progress-track {
-  height: 10px;
+  height: 16px;
   border-radius: 99px;
   background: var(--surface-2);
   overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.08);
 }
 
 .progress-fill {
@@ -3869,10 +3902,10 @@ img {
 }
 
 .progress-label {
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--text-muted);
-  font-weight: 600;
-  margin-top: 6px;
+  font-weight: 700;
+  margin-top: 8px;
 }
 
 .payment-kpi-grid,
@@ -3968,6 +4001,12 @@ img {
 }
 
 .payment-trend-nav:disabled {
+  opacity: 0.38;
+  cursor: default;
+  pointer-events: none;
+}
+
+.calendar-arrow-btn:disabled {
   opacity: 0.38;
   cursor: default;
   pointer-events: none;
@@ -4617,6 +4656,10 @@ img {
   .payment-analytics-grid,
   .payment-modal-grid {
     grid-template-columns: 1fr;
+  }
+
+  .payment-summary-value {
+    font-size: 24px;
   }
 
   .payment-trend-shell {

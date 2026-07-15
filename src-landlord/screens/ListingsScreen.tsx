@@ -212,17 +212,17 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
     <>
       <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
 
-      <div className="search-filter-chips">
-        {FILTERS.map(f => (
-          <button key={f} className={`filter-chip ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
-            {f}
-          </button>
-        ))}
-      </div>
-
       <div className="scroll-area">
         <div className="section-header">
           <span className="section-title">My Listings ({filtered.length})</span>
+        </div>
+
+        <div className="search-filter-chips">
+          {FILTERS.map(f => (
+            <button key={f} className={`filter-chip ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
+              {f}
+            </button>
+          ))}
         </div>
 
         <div className="unit-list">

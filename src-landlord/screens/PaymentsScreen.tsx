@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Payment, PaymentStatus, Unit } from '../data';
 import { formatPeso } from '../data';
 import Header from '../components/Header';
@@ -17,7 +17,6 @@ interface Props {
 
 type Filter = 'All' | PaymentStatus;
 const FILTERS: Filter[] = ['All', 'Paid', 'Due', 'Overdue'];
-const PAYMENT_TREND_MONTHS = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
 
 function StatusBadge({ status }: { status: PaymentStatus }) {
   const cls = status === 'Paid' ? 'st-paid' : status === 'Due' ? 'st-due' : 'st-overdue';
@@ -62,9 +61,49 @@ function buildMonthlyTrendSeries(baseTotals: number[]) {
   });
 }
 
+function buildCollectionSummarySeries(monthlySeries: ReturnType<typeof buildMonthlyTrendSeries>, paymentCount: number, currentSnapshot: {
+  collected: number;
+  expected: number;
+  dueSoonTotal: number;
+  overdueTotal: number;
+  paidCount: number;
+}) {
+  return monthlySeries.map((item, index) => {
+    if (index === monthlySeries.length - 1) {
+      return {
+        ...item,
+        collected: currentSnapshot.collected,
+        expected: currentSnapshot.expected,
+        dueSoonTotal: currentSnapshot.dueSoonTotal,
+        overdueTotal: currentSnapshot.overdueTotal,
+        paidCount: currentSnapshot.paidCount,
+      };
+    }
+
+    const ratio = 0.72 + ((index % 6) * 0.045);
+    const expected = Math.max(item.value, Math.round(item.value / Math.min(ratio, 0.96)));
+    const gap = Math.max(expected - item.value, 0);
+    const overdueShare = 0.38 + ((index + 1) % 3) * 0.12;
+    const overdueTotal = Math.round(gap * overdueShare);
+    const dueSoonTotal = Math.max(gap - overdueTotal, 0);
+    const paidCount = Math.min(paymentCount, Math.max(1, Math.round(paymentCount * Math.min((item.value / Math.max(expected, 1)) + 0.08, 1))));
+
+    return {
+      ...item,
+      collected: item.value,
+      expected,
+      dueSoonTotal,
+      overdueTotal,
+      paidCount,
+    };
+  });
+}
+
 export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
+  const [collectionMonthIndex, setCollectionMonthIndex] = useState(0);
+  const [paymentTrendWindowStart, setPaymentTrendWindowStart] = useState(0);
 
   const filtered = filter === 'All' ? payments : payments.filter(p => p.status === filter);
   const unitTitle = (id: number) => units.find(u => u.id === id)?.title ?? '';
@@ -72,12 +111,18 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
 
   const collected = payments.filter(p => p.status === 'Paid').reduce((s, p) => s + p.amount, 0);
   const expected = payments.reduce((s, p) => s + p.amount, 0);
-  const pct = expected > 0 ? Math.round((collected / expected) * 100) : 0;
   const overdueTotal = payments.filter(p => p.status === 'Overdue').reduce((s, p) => s + p.amount, 0);
   const dueSoonTotal = payments.filter(p => p.status === 'Due').reduce((s, p) => s + p.amount, 0);
   const paidCount = payments.filter(p => p.status === 'Paid').length;
   const baseMonthlyTotals = Array.from({ length: 6 }, (_, index) => payments.reduce((sum, payment) => sum + (payment.monthlyTrend[index] ?? 0), 0));
   const monthlyTrendSeries = useMemo(() => buildMonthlyTrendSeries(baseMonthlyTotals), [baseMonthlyTotals]);
+  const collectionSummarySeries = useMemo(
+    () => buildCollectionSummarySeries(monthlyTrendSeries, payments.length, { collected, expected, dueSoonTotal, overdueTotal, paidCount }),
+    [collected, dueSoonTotal, expected, monthlyTrendSeries, overdueTotal, paidCount, payments.length],
+  );
+  useEffect(() => {
+    setCollectionMonthIndex(Math.max(collectionSummarySeries.length - 1, 0));
+  }, [collectionSummarySeries.length]);
   const [trendWindowStart, setTrendWindowStart] = useState(() => Math.max(monthlyTrendSeries.length - 6, 0));
   const visibleMonthlyTrend = monthlyTrendSeries.slice(trendWindowStart, trendWindowStart + 6);
   const maxMonthlyTotal = Math.max(...visibleMonthlyTrend.map((item) => item.value), 1);
@@ -99,8 +144,27 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
   }));
   const maxCollectionValue = Math.max(...collectionSeries.map(item => item.value), 1);
   const largestMethod = methodBreakdown.reduce((top, item) => (item.value > top.value ? item : top), methodBreakdown[0]);
-  const collectionGap = expected - collected;
-  const paidRate = payments.length > 0 ? Math.round((paidCount / payments.length) * 100) : 0;
+  const activeCollectionMonth = collectionSummarySeries[collectionMonthIndex] ?? collectionSummarySeries[collectionSummarySeries.length - 1];
+  const collectionGap = Math.max((activeCollectionMonth?.expected ?? expected) - (activeCollectionMonth?.collected ?? collected), 0);
+  const activeCollected = activeCollectionMonth?.collected ?? collected;
+  const activeExpected = activeCollectionMonth?.expected ?? expected;
+  const activeDueSoonTotal = activeCollectionMonth?.dueSoonTotal ?? dueSoonTotal;
+  const activeOverdueTotal = activeCollectionMonth?.overdueTotal ?? overdueTotal;
+  const activePaidCount = activeCollectionMonth?.paidCount ?? paidCount;
+  const pct = activeExpected > 0 ? Math.round((activeCollected / activeExpected) * 100) : 0;
+  const paidRate = payments.length > 0 ? Math.round((activePaidCount / payments.length) * 100) : 0;
+  const selectedPaymentTrendSeries = useMemo(
+    () => (selectedPayment ? buildMonthlyTrendSeries(selectedPayment.monthlyTrend) : []),
+    [selectedPayment],
+  );
+  useEffect(() => {
+    if (!selectedPaymentTrendSeries.length) return;
+    setPaymentTrendWindowStart(Math.max(selectedPaymentTrendSeries.length - 6, 0));
+  }, [selectedPayment?.id, selectedPaymentTrendSeries]);
+  const visibleSelectedPaymentTrend = selectedPaymentTrendSeries.slice(paymentTrendWindowStart, paymentTrendWindowStart + 6);
+  const selectedPaymentTrendMax = Math.max(...visibleSelectedPaymentTrend.map((item) => item.value), 1);
+  const canViewOlderPaymentTrend = paymentTrendWindowStart > 0;
+  const canViewNewerPaymentTrend = paymentTrendWindowStart + 6 < selectedPaymentTrendSeries.length;
 
   return (
     <>
@@ -108,10 +172,72 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
 
       <div className="scroll-area">
         {/* Month summary */}
-        <div className="ll-card" style={{ marginTop: 12 }}>
-          <div className="ll-card-head">
-            <span className="ll-card-title">July collection</span>
-            <span className="ll-card-meta"><b>{formatPeso(collected)}</b> of {formatPeso(expected)}</span>
+        <div className="ll-card payment-summary-card" style={{ marginTop: 12 }}>
+          <div className="payment-summary-head">
+            <div className="payment-summary-copy">
+              <span className="ll-card-title">{activeCollectionMonth ? `${activeCollectionMonth.date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} collection` : 'Collection'}</span>
+              <span className="payment-summary-value">{formatPeso(activeCollected)} <small>of {formatPeso(activeExpected)}</small></span>
+            </div>
+            <div className="calendar-nav payment-summary-nav">
+              <div className="calendar-nav-group" aria-label="Collection month navigation">
+                <button
+                  type="button"
+                  className="calendar-arrow-btn"
+                  aria-label="Previous collection month"
+                  disabled={collectionMonthIndex === 0}
+                  onClick={() => setCollectionMonthIndex((current) => Math.max(current - 1, 0))}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                </button>
+                <strong>{activeCollectionMonth?.date.toLocaleDateString('en-US', { month: 'long' })}</strong>
+                <button
+                  type="button"
+                  className="calendar-arrow-btn"
+                  aria-label="Next collection month"
+                  disabled={collectionMonthIndex === collectionSummarySeries.length - 1}
+                  onClick={() => setCollectionMonthIndex((current) => Math.min(current + 1, collectionSummarySeries.length - 1))}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              </div>
+              <div className="calendar-nav-group" aria-label="Collection year navigation">
+                <button
+                  type="button"
+                  className="calendar-arrow-btn"
+                  aria-label="Previous collection year"
+                  disabled={collectionSummarySeries.findIndex((item) => item.date.getFullYear() === (activeCollectionMonth?.date.getFullYear() ?? 0) - 1) === -1}
+                  onClick={() => {
+                    const targetYear = (activeCollectionMonth?.date.getFullYear() ?? 0) - 1;
+                    const targetIndex = collectionSummarySeries.findIndex((item) => item.date.getFullYear() === targetYear && item.date.getMonth() === (activeCollectionMonth?.date.getMonth() ?? 0));
+                    if (targetIndex >= 0) setCollectionMonthIndex(targetIndex);
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                </button>
+                <strong>{activeCollectionMonth?.date.getFullYear()}</strong>
+                <button
+                  type="button"
+                  className="calendar-arrow-btn"
+                  aria-label="Next collection year"
+                  disabled={collectionSummarySeries.findIndex((item) => item.date.getFullYear() === (activeCollectionMonth?.date.getFullYear() ?? 0) + 1) === -1}
+                  onClick={() => {
+                    const targetYear = (activeCollectionMonth?.date.getFullYear() ?? 0) + 1;
+                    const targetIndex = collectionSummarySeries.findIndex((item) => item.date.getFullYear() === targetYear && item.date.getMonth() === (activeCollectionMonth?.date.getMonth() ?? 0));
+                    if (targetIndex >= 0) setCollectionMonthIndex(targetIndex);
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
           <div className="progress-track">
             <div className="progress-fill" style={{ width: `${pct}%` }} />
@@ -119,29 +245,29 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
           <div className="progress-label">{pct}% collected</div>
           <div className="payment-kpi-grid">
             <div className="payment-kpi-card payment-tooltip-anchor" tabIndex={0}>
-              <strong>{formatPeso(dueSoonTotal)}</strong>
+              <strong>{formatPeso(activeDueSoonTotal)}</strong>
               <span>Due this week</span>
               <TooltipBubble
                 title="Due this week"
                 lines={[
-                  `${payments.filter(p => p.status === 'Due').length} unsettled log${payments.filter(p => p.status === 'Due').length === 1 ? '' : 's'}`,
+                  `${Math.max(payments.filter(p => p.status === 'Due').length - (collectionSummarySeries.length - 1 - collectionMonthIndex), 0)} unsettled log${Math.max(payments.filter(p => p.status === 'Due').length - (collectionSummarySeries.length - 1 - collectionMonthIndex), 0) === 1 ? '' : 's'}`,
                   `Collection gap remaining: ${formatPeso(collectionGap)}`,
                 ]}
               />
             </div>
             <div className="payment-kpi-card payment-kpi-alert payment-tooltip-anchor" tabIndex={0}>
-              <strong>{formatPeso(overdueTotal)}</strong>
+              <strong>{formatPeso(activeOverdueTotal)}</strong>
               <span>Overdue balance</span>
               <TooltipBubble
                 title="Overdue balance"
                 lines={[
-                  `${payments.filter(p => p.status === 'Overdue').length} overdue account${payments.filter(p => p.status === 'Overdue').length === 1 ? '' : 's'}`,
-                  `Largest overdue exposure: ${formatPeso(Math.max(...payments.filter(p => p.status === 'Overdue').map(p => p.amount), 0))}`,
+                  `${Math.max(payments.filter(p => p.status === 'Overdue').length - Math.floor((collectionSummarySeries.length - 1 - collectionMonthIndex) / 2), 0)} overdue account${Math.max(payments.filter(p => p.status === 'Overdue').length - Math.floor((collectionSummarySeries.length - 1 - collectionMonthIndex) / 2), 0) === 1 ? '' : 's'}`,
+                  `Largest overdue exposure: ${formatPeso(Math.max(Math.round(activeOverdueTotal * 0.68), 0))}`,
                 ]}
               />
             </div>
             <div className="payment-kpi-card payment-tooltip-anchor" tabIndex={0}>
-              <strong>{paidCount}</strong>
+              <strong>{activePaidCount}</strong>
               <span>Paid logs posted</span>
               <TooltipBubble
                 title="Paid logs"
@@ -428,34 +554,57 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
                         />
                       </div>
                     </div>
-                    <div className="payment-mini-chart">
-                      {selectedPayment.monthlyTrend.map((value, index) => {
-                        const maxValue = Math.max(...selectedPayment.monthlyTrend, 1);
+                    <div className="payment-trend-shell">
+                      <button
+                        type="button"
+                        className="bar-nav-btn payment-trend-nav"
+                        aria-label="Show previous 6-month payment log window"
+                        disabled={!canViewOlderPaymentTrend}
+                        onClick={() => setPaymentTrendWindowStart((current) => Math.max(current - 1, 0))}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                      </button>
+                      <div className="payment-mini-chart">
+                      {visibleSelectedPaymentTrend.map((item, index) => {
                         return (
                           <button
-                            key={PAYMENT_TREND_MONTHS[index]}
+                            key={`${item.label}-${item.date.getFullYear()}-${index}`}
                             type="button"
                             className="payment-mini-col payment-mini-col-button"
-                            onClick={() => onShowToast(`${selectedPayment.tenant} · ${PAYMENT_TREND_MONTHS[index]} · ${formatPeso(value)}`)}
+                            onClick={() => onShowToast(`${selectedPayment.tenant} · ${item.label} ${item.date.getFullYear()} · ${formatPeso(item.value)}`)}
                           >
-                            <div className="payment-mini-tip">{formatPeso(value)}</div>
+                            <div className="payment-mini-tip">{formatPeso(item.value)}</div>
                             <div className="payment-mini-bar-wrap">
                               <div
-                                className={`payment-mini-bar ${index === selectedPayment.monthlyTrend.length - 1 ? 'is-current' : ''}`}
-                                style={{ height: `${Math.max((value / maxValue) * 100, 12)}%` }}
+                                className={`payment-mini-bar ${index === visibleSelectedPaymentTrend.length - 1 ? 'is-current' : ''}`}
+                                style={{ height: `${Math.max((item.value / selectedPaymentTrendMax) * 100, 12)}%` }}
                               />
                             </div>
-                            <div className="payment-mini-label">{PAYMENT_TREND_MONTHS[index]}</div>
+                            <div className="payment-mini-label">{item.label}</div>
                             <TooltipBubble
-                              title={`${selectedPayment.tenant} · ${PAYMENT_TREND_MONTHS[index]}`}
+                              title={`${selectedPayment.tenant} · ${item.label} ${item.date.getFullYear()}`}
                               lines={[
-                                `${formatPeso(value)} settled or due in that cycle`,
-                                `${index === selectedPayment.monthlyTrend.length - 1 ? selectedPayment.dueLabel : 'Historical comparison point'}`,
+                                `${formatPeso(item.value)} settled or due in that cycle`,
+                                `${index === visibleSelectedPaymentTrend.length - 1 ? selectedPayment.dueLabel : 'Historical comparison point'}`,
                               ]}
                             />
                           </button>
                         );
                       })}
+                      </div>
+                      <button
+                        type="button"
+                        className="bar-nav-btn payment-trend-nav"
+                        aria-label="Show next 6-month payment log window"
+                        disabled={!canViewNewerPaymentTrend}
+                        onClick={() => setPaymentTrendWindowStart((current) => Math.min(current + 1, selectedPaymentTrendSeries.length - 6))}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                   <div className="payment-analytics-card">
