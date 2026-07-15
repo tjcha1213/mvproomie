@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Unit, Inquiry, Payment, Activity } from '../data';
-import { WEEK_VIEWS, WEEK_DAYS, CALENDAR_VIEWS, formatPesoShort } from '../data';
+import { WEEK_VIEWS, CALENDAR_VIEWS, formatPesoShort } from '../data';
 import type { Tab } from '../components/LandlordNav';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
@@ -26,9 +26,7 @@ const ACTIVITY_ICONS = {
   listing: <><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></>,
 };
 
-const WEEK_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const CALENDAR_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const WEEK_DATES = ['2026-07-06', '2026-07-07', '2026-07-08', '2026-07-09', '2026-07-10', '2026-07-11', '2026-07-12'];
 
 const TASK_ICONS = {
   inquiry: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>,
@@ -62,6 +60,18 @@ function buildCalendarMonth(baseMonth: Date) {
   });
 }
 
+function buildWeeklyWindow(baseDate: Date) {
+  return Array.from({ length: 7 }, (_, index) => {
+    const current = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + index);
+    const isoDate = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
+    const seed = (current.getMonth() + 1) * 19 + current.getDate() * 7 + (current.getFullYear() - 2026) * 13;
+    const baseViews = WEEK_VIEWS[index % WEEK_VIEWS.length] ?? 36;
+    const shifted = baseViews + ((seed % 11) - 5);
+    const views = Math.max(10, Math.min(74, shifted));
+    return { date: isoDate, views };
+  });
+}
+
 function formatLongDate(dateString: string) {
   return new Date(`${dateString}T12:00:00`).toLocaleDateString('en-US', {
     month: 'short',
@@ -70,8 +80,22 @@ function formatLongDate(dateString: string) {
   });
 }
 
+function formatShortDate(dateString: string) {
+  return new Date(`${dateString}T12:00:00`).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function formatWeekday(dateString: string) {
+  return new Date(`${dateString}T12:00:00`).toLocaleDateString('en-US', {
+    weekday: 'short',
+  });
+}
+
 export default function DashboardScreen({ units, inquiries, payments, activities, onGoTo, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
   const [viewMode, setViewMode] = useState<'weekly' | 'calendar' | 'map'>('weekly');
+  const [weekStartDate, setWeekStartDate] = useState(() => new Date(2026, 6, 6));
   const [calendarMonth, setCalendarMonth] = useState(() => new Date(2026, 6, 1));
   const published = units.filter(u => u.status !== 'Draft');
   const mappableUnits = units.filter((unit) => Number.isFinite(unit.lat) && Number.isFinite(unit.lng));
@@ -84,9 +108,10 @@ export default function DashboardScreen({ units, inquiries, payments, activities
   const unverified = units.filter(u => u.status !== 'Draft' && !u.verified);
   const drafts = units.filter(u => u.status === 'Draft');
 
-  const totalViews = WEEK_VIEWS.reduce((a, b) => a + b, 0);
-  const maxViews = Math.max(...WEEK_VIEWS);
-  const averageViews = Math.round(totalViews / WEEK_VIEWS.length);
+  const weeklyData = useMemo(() => buildWeeklyWindow(weekStartDate), [weekStartDate]);
+  const totalViews = weeklyData.reduce((sum, item) => sum + item.views, 0);
+  const maxViews = Math.max(...weeklyData.map((item) => item.views));
+  const averageViews = Math.round(totalViews / weeklyData.length);
   const calendarMonthEntries = buildCalendarMonth(calendarMonth);
   const calendarLeadingBlanks = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1).getDay();
   const calendarCells = [
@@ -172,30 +197,52 @@ export default function DashboardScreen({ units, inquiries, payments, activities
             </div>
           </div>
           {viewMode === 'weekly' ? (
-            <div className="bar-chart">
-              {WEEK_VIEWS.map((v, i) => (
+            <div className="bar-chart-shell">
+              <button
+                type="button"
+                className="bar-nav-btn"
+                aria-label="Show previous 7 days"
+                onClick={() => setWeekStartDate((current) => new Date(current.getFullYear(), current.getMonth(), current.getDate() - 7))}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+              <div className="bar-chart">
+              {weeklyData.map((item, i) => (
                 <div key={i} className="bar-col">
                   <button
                     type="button"
                     className="bar-hitbox"
-                    aria-label={`${formatLongDate(WEEK_DATES[i])}: ${v} views`}
-                    onClick={() => onShowToast(`${formatLongDate(WEEK_DATES[i])} · ${v} views`)}
+                    aria-label={`${formatLongDate(item.date)}: ${item.views} views`}
+                    onClick={() => onShowToast(`${formatLongDate(item.date)} · ${item.views} views`)}
                   >
                     <div className="bar-tooltip" role="tooltip">
-                      <div className="bar-tooltip-title">{formatLongDate(WEEK_DATES[i])}</div>
-                      <div className="bar-tooltip-value">{v} listing views</div>
+                      <div className="bar-tooltip-title">{formatLongDate(item.date)}</div>
+                      <div className="bar-tooltip-value">{item.views} listing views</div>
                       <div className="bar-tooltip-meta">
-                        {WEEK_DAY_LABELS[i]} · {v >= averageViews ? `${v - averageViews} above` : `${averageViews - v} below`} weekly average
+                        {formatWeekday(item.date)} · {item.views >= averageViews ? `${item.views - averageViews} above` : `${averageViews - item.views} below`} weekly average
                       </div>
                     </div>
                     <div
-                      className={`bar ${i === WEEK_VIEWS.length - 1 ? 'bar-today' : ''}`}
-                      style={{ height: `${(v / maxViews) * 100}%` }}
+                      className={`bar ${i === weeklyData.length - 1 ? 'bar-today' : ''}`}
+                      style={{ height: `${(item.views / maxViews) * 100}%` }}
                     />
                   </button>
-                  <span className="bar-day">{WEEK_DAYS[i]}</span>
+                  <span className="bar-day">{formatShortDate(item.date)}</span>
                 </div>
               ))}
+              </div>
+              <button
+                type="button"
+                className="bar-nav-btn"
+                aria-label="Show next 7 days"
+                onClick={() => setWeekStartDate((current) => new Date(current.getFullYear(), current.getMonth(), current.getDate() + 7))}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
             </div>
           ) : viewMode === 'calendar' ? (
             <div className="calendar-views">
@@ -203,35 +250,47 @@ export default function DashboardScreen({ units, inquiries, payments, activities
                 <div className="calendar-nav-group" aria-label="Calendar month navigation">
                   <button
                     type="button"
-                    className="unit-btn"
+                    className="calendar-arrow-btn"
                     onClick={() => setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
+                    aria-label="Previous month"
                   >
-                    Prev month
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
                   </button>
                   <strong>{calendarMonth.toLocaleString('en-US', { month: 'long' })}</strong>
                   <button
                     type="button"
-                    className="unit-btn"
+                    className="calendar-arrow-btn"
                     onClick={() => setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
+                    aria-label="Next month"
                   >
-                    Next month
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
                   </button>
                 </div>
                 <div className="calendar-nav-group" aria-label="Calendar year navigation">
                   <button
                     type="button"
-                    className="unit-btn"
+                    className="calendar-arrow-btn"
                     onClick={() => setCalendarMonth((current) => new Date(current.getFullYear() - 1, current.getMonth(), 1))}
+                    aria-label="Previous year"
                   >
-                    Prev year
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
                   </button>
                   <strong>{calendarMonth.getFullYear()}</strong>
                   <button
                     type="button"
-                    className="unit-btn"
+                    className="calendar-arrow-btn"
                     onClick={() => setCalendarMonth((current) => new Date(current.getFullYear() + 1, current.getMonth(), 1))}
+                    aria-label="Next year"
                   >
-                    Next year
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
                   </button>
                 </div>
               </div>
