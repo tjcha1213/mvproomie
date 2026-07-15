@@ -2905,10 +2905,33 @@ img {
   box-shadow: 0 20px 60px rgba(15, 23, 42, 0.28);
 }
 
+.listing-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.listing-modal-head h3 {
+  margin-top: 8px;
+  font-size: 24px;
+  line-height: 1.08;
+  color: var(--text);
+}
+
+.listing-modal-head p {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 .listing-modal-media {
   position: relative;
   height: 220px;
   background: var(--surface-2);
+  overflow: hidden;
 }
 
 .listing-modal-close {
@@ -2924,6 +2947,11 @@ img {
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-sm);
+}
+
+.listing-modal-head .listing-modal-close {
+  position: static;
+  flex-shrink: 0;
 }
 
 .listing-modal-body {
@@ -2974,6 +3002,56 @@ img {
   font-size: 13px;
   font-weight: 500;
   color: var(--text-muted);
+}
+
+.listing-modal-carousel {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.listing-modal-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.listing-modal-carousel-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: start;
+}
+
+.listing-modal-carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.listing-modal-carousel-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+
+.listing-modal-carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.24);
+}
+
+.listing-modal-carousel-dot.active {
+  width: 20px;
+  border-radius: 999px;
+  background: #fff;
 }
 
 .listing-modal-gallery {
@@ -3079,6 +3157,87 @@ img {
   margin-top: 10px;
 }
 
+.listing-history-calendar-shell {
+  border: 1px solid var(--border-light);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface-2) 82%, #ffffff);
+  padding: 12px;
+  margin-top: 10px;
+}
+
+.listing-history-calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.listing-history-calendar-head strong {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.listing-history-calendar-weekdays,
+.listing-history-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.listing-history-calendar-weekdays {
+  margin-top: 12px;
+}
+
+.listing-history-calendar-weekdays span {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+.listing-history-calendar-grid {
+  margin-top: 8px;
+}
+
+.listing-history-calendar-cell {
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.listing-history-calendar-cell small {
+  font-size: 10px;
+  color: var(--primary);
+}
+
+.listing-history-calendar-cell.has-events {
+  background: color-mix(in srgb, var(--primary) 8%, #ffffff);
+  border-color: color-mix(in srgb, var(--primary) 24%, var(--border-light));
+}
+
+.listing-history-calendar-cell.is-selected {
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  color: #fff;
+}
+
+.listing-history-calendar-cell.is-selected small {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.listing-history-calendar-cell.is-empty {
+  border-style: dashed;
+  background: transparent;
+}
+
 .listing-history-item {
   border: 1px solid var(--border-light);
   border-radius: 14px;
@@ -3142,6 +3301,18 @@ img {
 .listing-modal-actions .unit-btn {
   flex: 1;
   min-height: 42px;
+}
+
+.listing-edit-modal {
+  width: min(100%, 760px);
+  max-height: min(88dvh, 760px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.listing-edit-body {
+  overflow-y: auto;
 }
 
 .new-listing-modal {
@@ -4097,6 +4268,11 @@ img {
 
   .listing-modal-media {
     height: 180px;
+  }
+
+  .listing-modal-head {
+    padding-left: 14px;
+    padding-right: 14px;
   }
 
   .payment-modal {

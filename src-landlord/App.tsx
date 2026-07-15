@@ -70,6 +70,10 @@ function App() {
     setUnits(prev => prev.map(u => (u.id === id ? { ...u, status } : u)));
   }, []);
 
+  const updateUnit = useCallback((id: number, updates: Partial<Unit>) => {
+    setUnits((prev) => prev.map((unit) => (unit.id === id ? { ...unit, ...updates, lastUpdated: 'Updated just now' } : unit)));
+  }, []);
+
   const setInquiryStatus = useCallback((id: number, status: Inquiry['status']) => {
     setInquiries(prev => prev.map(i => (i.id === id ? { ...i, status } : i)));
   }, []);
@@ -212,6 +216,7 @@ function App() {
             <ListingsScreen
               units={units}
               onSetStatus={setUnitStatus}
+              onUpdateUnit={updateUnit}
               onOpenProfile={() => setTab('profile')}
               notifications={notifications}
               onOpenNotification={openNotification}

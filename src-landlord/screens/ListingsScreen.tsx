@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Unit, UnitStatus } from '../data';
 import { formatPeso } from '../data';
 import Header from '../components/Header';
@@ -7,6 +7,7 @@ import type { HeaderNotification } from '../components/Header';
 interface Props {
   units: Unit[];
   onSetStatus: (id: number, status: UnitStatus) => void;
+  onUpdateUnit: (id: number, updates: Partial<Unit>) => void;
   onOpenProfile: () => void;
   notifications: HeaderNotification[];
   onOpenNotification: (notification: HeaderNotification) => void;
@@ -27,16 +28,110 @@ function unitStatusClass(status: UnitStatus) {
   return 'unit-card-draft';
 }
 
-export default function ListingsScreen({ units, onSetStatus, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const CALENDAR_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function parseHistoryDate(label: string) {
+  const [monthToken, dayToken] = label.split(' ');
+  const monthIndex = MONTH_NAMES.findIndex((month) => month.toLowerCase() === monthToken.toLowerCase());
+  const day = Number(dayToken);
+  return new Date(2026, monthIndex >= 0 ? monthIndex : 6, Number.isFinite(day) ? day : 1);
+}
+
+function buildEditDraft(unit: Unit) {
+  return {
+    title: unit.title,
+    location: unit.location,
+    price: String(unit.price),
+    status: unit.status,
+    bedrooms: String(unit.bedrooms),
+    bathrooms: String(unit.bathrooms),
+    sqm: String(unit.sqm),
+    description: unit.description,
+    amenities: unit.amenities.join(', '),
+  };
+}
+
+export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
+  const [editUnitId, setEditUnitId] = useState<number | null>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [selectedHistoryDate, setSelectedHistoryDate] = useState<string | null>(null);
+  const [historyMonthIndex, setHistoryMonthIndex] = useState(0);
+  const [editDraft, setEditDraft] = useState({
+    title: '',
+    location: '',
+    price: '',
+    status: 'Draft' as UnitStatus,
+    bedrooms: '',
+    bathrooms: '',
+    sqm: '',
+    description: '',
+    amenities: '',
+  });
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   const filtered = filter === 'All' ? units : units.filter(u => u.status === filter);
   const selectedUnit = selectedUnitId === null ? null : units.find((u) => u.id === selectedUnitId) ?? null;
   const selectedUnitGallery = selectedUnit ? (selectedUnit.gallery?.length ? selectedUnit.gallery : [selectedUnit.image]) : [];
+  const editUnit = editUnitId === null ? null : units.find((u) => u.id === editUnitId) ?? null;
+
+  const historyMonths = useMemo(() => {
+    if (!selectedUnit) return [];
+    const buckets = new Map<string, Date>();
+    selectedUnit.history.forEach((entry) => {
+      const date = parseHistoryDate(entry.date);
+      const key = `${date.getFullYear()}-${date.getMonth()}`;
+      if (!buckets.has(key)) buckets.set(key, new Date(date.getFullYear(), date.getMonth(), 1));
+    });
+    return Array.from(buckets.values()).sort((a, b) => a.getTime() - b.getTime());
+  }, [selectedUnit]);
+
+  const activeHistoryMonth = historyMonths[historyMonthIndex] ?? null;
+  const historyEntriesForMonth = useMemo(() => {
+    if (!selectedUnit || !activeHistoryMonth) return [];
+    return selectedUnit.history.filter((entry) => {
+      const date = parseHistoryDate(entry.date);
+      const monthMatch = date.getMonth() === activeHistoryMonth.getMonth() && date.getFullYear() === activeHistoryMonth.getFullYear();
+      const dayKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+      return monthMatch && (!selectedHistoryDate || selectedHistoryDate === dayKey);
+    });
+  }, [selectedUnit, activeHistoryMonth, selectedHistoryDate]);
+
+  const historyCalendarCells = useMemo(() => {
+    if (!selectedUnit || !activeHistoryMonth) return [];
+    const month = activeHistoryMonth.getMonth();
+    const year = activeHistoryMonth.getFullYear();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const eventCounts = new Map<string, number>();
+    selectedUnit.history.forEach((entry) => {
+      const date = parseHistoryDate(entry.date);
+      if (date.getMonth() !== month || date.getFullYear() !== year) return;
+      const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+      eventCounts.set(key, (eventCounts.get(key) ?? 0) + 1);
+    });
+    return [
+      ...Array.from({ length: firstDay }, (_, index) => ({ kind: 'blank' as const, id: `blank-${index}` })),
+      ...Array.from({ length: daysInMonth }, (_, index) => {
+        const day = index + 1;
+        const key = `${year}-${month}-${day}`;
+        return {
+          kind: 'day' as const,
+          key,
+          day,
+          count: eventCounts.get(key) ?? 0,
+        };
+      }),
+    ];
+  }, [activeHistoryMonth, selectedUnit]);
 
   const openUnitModal = (id: number) => setSelectedUnitId(id);
-  const closeUnitModal = () => setSelectedUnitId(null);
+  const closeUnitModal = () => {
+    setSelectedUnitId(null);
+    setEditUnitId(null);
+  };
 
   function handleStatusAction(unit: Unit) {
     if (unit.status === 'Active') {
@@ -60,6 +155,40 @@ export default function ListingsScreen({ units, onSetStatus, onOpenProfile, noti
     if (unit.status === 'Occupied') return 'Relist';
     return 'Publish';
   }
+
+  function openEditModal(unit: Unit) {
+    setEditUnitId(unit.id);
+    setEditDraft(buildEditDraft(unit));
+  }
+
+  function saveUnitEdits() {
+    if (!editUnit) return;
+    onUpdateUnit(editUnit.id, {
+      title: editDraft.title.trim(),
+      location: editDraft.location.trim(),
+      price: Number(editDraft.price),
+      status: editDraft.status,
+      bedrooms: Number(editDraft.bedrooms),
+      bathrooms: Number(editDraft.bathrooms),
+      sqm: Number(editDraft.sqm),
+      description: editDraft.description.trim(),
+      amenities: editDraft.amenities.split(',').map((item) => item.trim()).filter(Boolean),
+    });
+    onShowToast(`✏️ ${editDraft.title.trim()} updated`);
+    setEditUnitId(null);
+  }
+
+  useEffect(() => {
+    setCarouselIndex(0);
+    setSelectedHistoryDate(null);
+    setHistoryMonthIndex(Math.max(historyMonths.length - 1, 0));
+  }, [selectedUnitId, historyMonths.length]);
+
+  useEffect(() => {
+    const track = carouselRef.current;
+    if (!track) return;
+    track.scrollTo({ left: carouselIndex * track.clientWidth, behavior: 'smooth' });
+  }, [carouselIndex]);
 
   return (
     <>
@@ -138,7 +267,7 @@ export default function ListingsScreen({ units, onSetStatus, onOpenProfile, noti
                     className="unit-btn"
                     onClick={(event) => {
                       event.stopPropagation();
-                      onShowToast('Edit listing — coming soon');
+                      openEditModal(u);
                     }}
                   >
                     Edit
@@ -162,7 +291,32 @@ export default function ListingsScreen({ units, onSetStatus, onOpenProfile, noti
             onClick={(event) => event.stopPropagation()}
           >
             <div className="listing-modal-media">
-              <img src={selectedUnit.image} alt={selectedUnit.title} />
+              <div
+                className="listing-modal-carousel"
+                ref={carouselRef}
+                onScroll={(event) => {
+                  const target = event.currentTarget;
+                  const nextIndex = Math.round(target.scrollLeft / Math.max(target.clientWidth, 1));
+                  if (nextIndex !== carouselIndex) setCarouselIndex(nextIndex);
+                }}
+              >
+                {selectedUnitGallery.map((image, index) => (
+                  <div key={`${selectedUnit.id}-hero-${index}`} className="listing-modal-carousel-slide">
+                    <img src={image} alt={`${selectedUnit.title} photo ${index + 1}`} />
+                  </div>
+                ))}
+              </div>
+              <div className="listing-modal-carousel-dots">
+                {selectedUnitGallery.map((_, index) => (
+                  <button
+                    key={`${selectedUnit.id}-dot-${index}`}
+                    type="button"
+                    className={`listing-modal-carousel-dot ${carouselIndex === index ? 'active' : ''}`}
+                    onClick={() => setCarouselIndex(index)}
+                    aria-label={`Go to photo ${index + 1}`}
+                  />
+                ))}
+              </div>
               <button className="listing-modal-close" onClick={closeUnitModal} aria-label="Close listing details">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
                   <line x1="18" y1="6" x2="6" y2="18" />
@@ -240,8 +394,54 @@ export default function ListingsScreen({ units, onSetStatus, onOpenProfile, noti
 
               <div className="listing-modal-section">
                 <div className="listing-modal-section-title">History and transaction log</div>
+                {activeHistoryMonth && (
+                  <div className="listing-history-calendar-shell">
+                    <div className="listing-history-calendar-head">
+                      <button
+                        type="button"
+                        className="unit-btn"
+                        onClick={() => setHistoryMonthIndex((index) => Math.max(index - 1, 0))}
+                        disabled={historyMonthIndex === 0}
+                      >
+                        Prev
+                      </button>
+                      <strong>{MONTH_NAMES[activeHistoryMonth.getMonth()]} {activeHistoryMonth.getFullYear()}</strong>
+                      <button
+                        type="button"
+                        className="unit-btn"
+                        onClick={() => setHistoryMonthIndex((index) => Math.min(index + 1, historyMonths.length - 1))}
+                        disabled={historyMonthIndex === historyMonths.length - 1}
+                      >
+                        Next
+                      </button>
+                    </div>
+                    <div className="listing-history-calendar-weekdays">
+                      {CALENDAR_WEEKDAYS.map((day) => (
+                        <span key={day}>{day}</span>
+                      ))}
+                    </div>
+                    <div className="listing-history-calendar-grid">
+                      {historyCalendarCells.map((cell) => {
+                        if (cell.kind === 'blank') {
+                          return <div key={cell.id} className="listing-history-calendar-cell is-empty" aria-hidden="true" />;
+                        }
+                        return (
+                          <button
+                            key={cell.key}
+                            type="button"
+                            className={`listing-history-calendar-cell ${cell.count > 0 ? 'has-events' : ''} ${selectedHistoryDate === cell.key ? 'is-selected' : ''}`}
+                            onClick={() => setSelectedHistoryDate((value) => (value === cell.key ? null : cell.key))}
+                          >
+                            <span>{cell.day}</span>
+                            {cell.count > 0 && <small>{cell.count}</small>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 <div className="listing-history-list">
-                  {selectedUnit.history.map((entry) => (
+                  {historyEntriesForMonth.map((entry) => (
                     <div key={entry.id} className="listing-history-item">
                       <div className="listing-history-topline">
                         <span className="listing-history-date">{entry.date}</span>
@@ -269,10 +469,75 @@ export default function ListingsScreen({ units, onSetStatus, onOpenProfile, noti
                 </button>
                 <button
                   className="unit-btn"
-                  onClick={() => onShowToast('Edit listing — coming soon')}
+                  onClick={() => openEditModal(selectedUnit)}
                 >
                   Edit
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editUnit && (
+        <div className="listing-modal-overlay" onClick={() => setEditUnitId(null)}>
+          <div className="listing-modal listing-edit-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="listing-modal-head">
+              <div>
+                <div className="listing-modal-topline">Edit listing</div>
+                <h3>{editUnit.title}</h3>
+                <p>Update the mock listing details shown across the landlord demo.</p>
+              </div>
+              <button className="listing-modal-close" onClick={() => setEditUnitId(null)} aria-label="Close edit listing">
+                ×
+              </button>
+            </div>
+            <div className="listing-modal-body listing-edit-body">
+              <div className="new-listing-grid">
+                <label className="new-listing-field">
+                  <span>Listing title</span>
+                  <input value={editDraft.title} onChange={(event) => setEditDraft((prev) => ({ ...prev, title: event.target.value }))} />
+                </label>
+                <label className="new-listing-field">
+                  <span>Location</span>
+                  <input value={editDraft.location} onChange={(event) => setEditDraft((prev) => ({ ...prev, location: event.target.value }))} />
+                </label>
+                <label className="new-listing-field">
+                  <span>Monthly rent</span>
+                  <input type="number" value={editDraft.price} onChange={(event) => setEditDraft((prev) => ({ ...prev, price: event.target.value }))} />
+                </label>
+                <label className="new-listing-field">
+                  <span>Status</span>
+                  <select value={editDraft.status} onChange={(event) => setEditDraft((prev) => ({ ...prev, status: event.target.value as UnitStatus }))}>
+                    <option value="Active">Active</option>
+                    <option value="Occupied">Occupied</option>
+                    <option value="Draft">Draft</option>
+                  </select>
+                </label>
+                <label className="new-listing-field">
+                  <span>Bedrooms</span>
+                  <input type="number" value={editDraft.bedrooms} onChange={(event) => setEditDraft((prev) => ({ ...prev, bedrooms: event.target.value }))} />
+                </label>
+                <label className="new-listing-field">
+                  <span>Bathrooms</span>
+                  <input type="number" value={editDraft.bathrooms} onChange={(event) => setEditDraft((prev) => ({ ...prev, bathrooms: event.target.value }))} />
+                </label>
+                <label className="new-listing-field">
+                  <span>Floor area</span>
+                  <input type="number" value={editDraft.sqm} onChange={(event) => setEditDraft((prev) => ({ ...prev, sqm: event.target.value }))} />
+                </label>
+                <label className="new-listing-field">
+                  <span>Amenities</span>
+                  <input value={editDraft.amenities} onChange={(event) => setEditDraft((prev) => ({ ...prev, amenities: event.target.value }))} />
+                </label>
+              </div>
+              <label className="new-listing-field">
+                <span>Description</span>
+                <textarea value={editDraft.description} onChange={(event) => setEditDraft((prev) => ({ ...prev, description: event.target.value }))} />
+              </label>
+              <div className="listing-modal-actions">
+                <button className="unit-btn" onClick={() => setEditUnitId(null)}>Cancel</button>
+                <button className="unit-btn unit-btn-primary" onClick={saveUnitEdits}>Save changes</button>
               </div>
             </div>
           </div>
