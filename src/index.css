@@ -587,6 +587,29 @@ img {
   overflow: hidden;
 }
 
+.detail-image-strip {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.detail-image-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.detail-image-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: start;
+}
+
 .detail-image-container img {
   width: 100%;
   height: 100%;

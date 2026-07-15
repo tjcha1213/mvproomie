@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, type UIEvent } from 'react';
 import type { Listing } from '../data/listings';
 
 interface Props {
@@ -16,11 +16,13 @@ function TypeBadge({ type }: { type: string }) {
 export default function DetailScreen({ listing, onBack, onToggleSave, onShowToast }: Props) {
   const [activeImg, setActiveImg] = useState(0);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const imageStripRef = useRef<HTMLDivElement>(null);
 
   // Always open the detail at the top — without this the body can inherit a
   // scroll offset that hides the title, type and location behind the hero image.
   useEffect(() => {
     bodyRef.current?.scrollTo(0, 0);
+    imageStripRef.current?.scrollTo({ left: 0 });
     setActiveImg(0);
   }, [listing.id]);
 
@@ -28,11 +30,33 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
   const MAX_THUMBS = 4;
   const extraCount = imgs.length - MAX_THUMBS;
 
+  const handleImageScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
+    const el = event.currentTarget;
+    if (!el.clientWidth) return;
+    const nextIndex = Math.round(el.scrollLeft / el.clientWidth);
+    setActiveImg(Math.max(0, Math.min(imgs.length - 1, nextIndex)));
+  }, [imgs.length]);
+
+  const jumpToImage = useCallback((index: number) => {
+    const boundedIndex = Math.max(0, Math.min(imgs.length - 1, index));
+    setActiveImg(boundedIndex);
+    imageStripRef.current?.scrollTo({
+      left: imageStripRef.current.clientWidth * boundedIndex,
+      behavior: 'smooth',
+    });
+  }, [imgs.length]);
+
   return (
     <div className="detail-screen">
       {/* Image hero */}
       <div className="detail-image-container">
-        <img src={imgs[activeImg]} alt={listing.title} />
+        <div className="detail-image-strip" ref={imageStripRef} onScroll={handleImageScroll}>
+          {imgs.map((img, index) => (
+            <div className="detail-image-slide" key={`${listing.id}-${index}`}>
+              <img src={img} alt={`${listing.title} photo ${index + 1}`} />
+            </div>
+          ))}
+        </div>
         <div className="detail-image-overlay" />
 
         {/* Nav bar */}
@@ -69,7 +93,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
             <div
               key={i}
               className={`detail-thumb ${i === activeImg ? 'active' : ''}`}
-              onClick={() => setActiveImg(i)}
+              onClick={() => jumpToImage(i)}
             >
               <img src={img} alt="" />
             </div>
@@ -77,7 +101,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
           {extraCount > 0 && (
             <div
               className="detail-thumb-more"
-              onClick={() => setActiveImg(MAX_THUMBS)}
+              onClick={() => jumpToImage(MAX_THUMBS)}
             >+{extraCount}</div>
           )}
         </div>
