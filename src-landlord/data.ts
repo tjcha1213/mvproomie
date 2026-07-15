@@ -5,13 +5,30 @@ const withBase = (p: string) => `${import.meta.env.BASE_URL}${p}`;
 
 export const LANDLORD_PROFILE = {
   name: 'Juan Dela Cruz',
+  userId: 'LL-0001',
   avatar: withBase('assets/avatars/juan-landlord.png'),
 };
+
+export const PLATFORM_CONTACTS = {
+  admin: { name: 'MVProomie Admin', userId: 'ADM-0001' },
+  broker: { name: 'Broker Partner Desk', userId: 'BRK-0001' },
+} as const;
+
+export function formatListingId(id: number) {
+  return `LST-${String(1000 + id).padStart(4, '0')}`;
+}
+
+export function formatPropertyId(id: number) {
+  return `PRP-${String(2000 + id).padStart(4, '0')}`;
+}
 
 export type UnitStatus = 'Active' | 'Occupied' | 'Draft';
 
 export interface Unit {
   id: number;
+  listingId: string;
+  propertyId: string;
+  ownerUserId: string;
   title: string;
   type: 'Studio' | 'Bedspace' | 'Apartment';
   location: string;
@@ -44,6 +61,9 @@ export interface Unit {
 export const UNITS: Unit[] = [
   {
     id: 1,
+    listingId: formatListingId(1),
+    propertyId: formatPropertyId(1),
+    ownerUserId: LANDLORD_PROFILE.userId,
     title: 'Cozy Studio Unit',
     type: 'Studio',
     location: 'Katipunan, Quezon City',
@@ -75,6 +95,9 @@ export const UNITS: Unit[] = [
   },
   {
     id: 2,
+    listingId: formatListingId(2),
+    propertyId: formatPropertyId(2),
+    ownerUserId: LANDLORD_PROFILE.userId,
     title: 'Male Bedspace',
     type: 'Bedspace',
     location: 'Espana, Manila',
@@ -106,6 +129,9 @@ export const UNITS: Unit[] = [
   },
   {
     id: 3,
+    listingId: formatListingId(3),
+    propertyId: formatPropertyId(3),
+    ownerUserId: LANDLORD_PROFILE.userId,
     title: '1BR Apartment',
     type: 'Apartment',
     location: 'Cubao, QC',
@@ -137,6 +163,9 @@ export const UNITS: Unit[] = [
   },
   {
     id: 4,
+    listingId: formatListingId(4),
+    propertyId: formatPropertyId(4),
+    ownerUserId: LANDLORD_PROFILE.userId,
     title: 'Modern Studio',
     type: 'Studio',
     location: 'Timog, QC',
@@ -168,6 +197,9 @@ export const UNITS: Unit[] = [
   },
   {
     id: 5,
+    listingId: formatListingId(5),
+    propertyId: formatPropertyId(5),
+    ownerUserId: LANDLORD_PROFILE.userId,
     title: 'Female Bedspace',
     type: 'Bedspace',
     location: 'Sampaloc, Manila',
@@ -199,6 +231,9 @@ export const UNITS: Unit[] = [
   },
   {
     id: 6,
+    listingId: formatListingId(6),
+    propertyId: formatPropertyId(6),
+    ownerUserId: LANDLORD_PROFILE.userId,
     title: '2BR Apartment',
     type: 'Apartment',
     location: 'Ortigas, Pasig',
@@ -234,6 +269,7 @@ export type InquiryStatus = 'New' | 'Replied' | 'Viewing';
 
 export interface Inquiry {
   id: number;
+  userId: string;
   name: string;
   avatar?: string;
   unitId: number;
@@ -251,6 +287,7 @@ export interface Inquiry {
 export const INQUIRIES: Inquiry[] = [
   {
     id: 1,
+    userId: 'TEN-1001',
     name: 'Carlo Dizon',
     avatar: withBase('assets/avatars/carlo-dizon.png'),
     unitId: 2,
@@ -263,6 +300,7 @@ export const INQUIRIES: Inquiry[] = [
   },
   {
     id: 2,
+    userId: 'TEN-1002',
     name: 'Grace Tan',
     avatar: withBase('assets/avatars/grace-tan.png'),
     unitId: 3,
@@ -275,6 +313,7 @@ export const INQUIRIES: Inquiry[] = [
   },
   {
     id: 3,
+    userId: 'TEN-1003',
     name: 'Miguel Ramos',
     avatar: withBase('assets/avatars/miguel-ramos.png'),
     unitId: 2,
@@ -287,6 +326,7 @@ export const INQUIRIES: Inquiry[] = [
   },
   {
     id: 4,
+    userId: 'TEN-1004',
     name: 'Bea Aquino',
     unitId: 3,
     message: 'Thank you! See you on Saturday at 2pm.',
@@ -300,6 +340,7 @@ export const INQUIRIES: Inquiry[] = [
   },
   {
     id: 5,
+    userId: 'TEN-1005',
     name: 'Leo Garcia',
     unitId: 2,
     message: 'Sure, I will send my requirements tonight.',
@@ -318,6 +359,7 @@ export type PaymentStatus = 'Paid' | 'Due' | 'Overdue';
 export interface Payment {
   id: number;
   tenant: string;
+  tenantId: string;
   unitId: number;
   amount: number;
   dueLabel: string;
@@ -337,6 +379,7 @@ export const PAYMENTS: Payment[] = [
   {
     id: 1,
     tenant: 'Maria Reyes',
+    tenantId: 'TEN-2001',
     unitId: 1,
     amount: 6000,
     dueLabel: 'Paid Jul 1',
@@ -353,6 +396,7 @@ export const PAYMENTS: Payment[] = [
   {
     id: 2,
     tenant: 'Ken Villanueva',
+    tenantId: 'TEN-2002',
     unitId: 4,
     amount: 7000,
     dueLabel: 'Paid Jul 2',
@@ -369,6 +413,7 @@ export const PAYMENTS: Payment[] = [
   {
     id: 3,
     tenant: 'Alyssa Cruz',
+    tenantId: 'TEN-2003',
     unitId: 5,
     amount: 2500,
     dueLabel: 'Paid Jul 1',
@@ -385,6 +430,7 @@ export const PAYMENTS: Payment[] = [
   {
     id: 4,
     tenant: 'Janine Lopez',
+    tenantId: 'TEN-2004',
     unitId: 5,
     amount: 2500,
     dueLabel: 'Due Jul 15',
@@ -401,6 +447,7 @@ export const PAYMENTS: Payment[] = [
   {
     id: 5,
     tenant: 'Rhea Mendoza',
+    tenantId: 'TEN-2005',
     unitId: 5,
     amount: 2500,
     dueLabel: '5 days late',

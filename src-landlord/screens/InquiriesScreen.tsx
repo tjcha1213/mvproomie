@@ -114,6 +114,9 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddTh
                       <span className="inbox-name">{i.name}</span>
                       <StatusBadge status={i.status} />
                     </div>
+                    <div className="listing-id-row">
+                      <span className="entity-id-tag">{i.userId}</span>
+                    </div>
                     <div className="inquiry-unit">{unitTitle(i.unitId)}</div>
                     <div className="inbox-preview">{i.message}</div>
                   </div>
@@ -177,6 +180,9 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddTh
                 <div>
                   <span className="listing-modal-type">Inquiry chat</span>
                   <h2 id="inquiry-chat-title" className="inquiry-chat-title">{activeChat.name}</h2>
+                  <div className="listing-id-row listing-id-row-modal">
+                    <span className="entity-id-tag">{activeChat.userId}</span>
+                  </div>
                   <div className="listing-modal-location">{unitTitle(activeChat.unitId)}</div>
                 </div>
                 <div className="inquiry-chat-header-side">

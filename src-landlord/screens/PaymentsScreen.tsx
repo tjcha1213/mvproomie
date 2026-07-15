@@ -321,6 +321,9 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
               <div className="inbox-avatar">{p.tenant[0]}</div>
               <div className="payment-info">
                 <div className="payment-name">{p.tenant}</div>
+                <div className="listing-id-row">
+                  <span className="entity-id-tag">{p.tenantId}</span>
+                </div>
                 <div className="payment-unit">{unitTitle(p.unitId)} · {p.dueLabel} · {p.method}</div>
               </div>
               <div className="payment-right">
@@ -366,6 +369,9 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
               <div>
                 <div className="listing-modal-topline">Payment log</div>
                 <h3>{selectedPayment.tenant}</h3>
+                <div className="listing-id-row listing-id-row-modal">
+                  <span className="entity-id-tag">{selectedPayment.tenantId}</span>
+                </div>
                 <p>{unitTitle(selectedPayment.unitId)}</p>
               </div>
               <button className="listing-modal-close" onClick={() => setSelectedPaymentId(null)} aria-label="Close payment log">

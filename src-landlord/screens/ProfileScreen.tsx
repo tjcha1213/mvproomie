@@ -38,6 +38,9 @@ export default function ProfileScreen({ units, onOpenTheme, notifications, onOpe
               <path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
+          <div className="listing-id-row listing-id-row-modal">
+            <span className="entity-id-tag">{LANDLORD_PROFILE.userId}</span>
+          </div>
           <div className="profile-email">Verified Landlord · ★ 4.9 (128 reviews)</div>
 
           <div className="profile-stats">

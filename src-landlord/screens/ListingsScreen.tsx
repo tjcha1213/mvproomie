@@ -243,11 +243,16 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
               <div className="unit-card-top">
                 <div className="unit-thumb">
                   <img src={u.image} alt={u.title} loading="lazy" />
+                  <div className="listing-id-badge">{u.listingId}</div>
                 </div>
                 <div className="unit-info">
                   <div className="unit-title-row">
                     <span className="unit-title">{u.title}</span>
                     <StatusBadge status={u.status} />
+                  </div>
+                  <div className="listing-id-row">
+                    <span className="entity-id-tag">{u.propertyId}</span>
+                    <span className="entity-id-tag entity-id-tag-muted">{u.ownerUserId}</span>
                   </div>
                   <div className="unit-location">{u.location}</div>
                   <div className="unit-price">{formatPeso(u.price)} <span>/ month</span></div>
@@ -345,10 +350,17 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
 
             <div className="listing-modal-body">
               <div className="listing-modal-topline">
-                <span className="listing-modal-type">{selectedUnit.type}</span>
+                <div className="listing-modal-topline-left">
+                  <span className="listing-modal-type">{selectedUnit.type}</span>
+                  <span className="entity-id-tag">{selectedUnit.listingId}</span>
+                </div>
                 <StatusBadge status={selectedUnit.status} />
               </div>
               <h2 id="listing-modal-title" className="listing-modal-title">{selectedUnit.title}</h2>
+              <div className="listing-id-row listing-id-row-modal">
+                <span className="entity-id-tag">{selectedUnit.propertyId}</span>
+                <span className="entity-id-tag entity-id-tag-muted">{selectedUnit.ownerUserId}</span>
+              </div>
               <div className="listing-modal-location">{selectedUnit.location}</div>
               <div className="listing-modal-price">{formatPeso(selectedUnit.price)} <span>/ month</span></div>
 

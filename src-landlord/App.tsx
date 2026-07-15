@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { UNITS, INQUIRIES, PAYMENTS, ACTIVITY, formatPesoShort } from './data';
+import { UNITS, INQUIRIES, PAYMENTS, ACTIVITY, formatListingId, formatPesoShort, formatPropertyId, LANDLORD_PROFILE } from './data';
 import type { Unit, UnitStatus, Inquiry, Payment, Activity } from './data';
 import { DEFAULT_PRIMARY, THEME_STORAGE_KEY } from './theme';
 import LandlordNav from './components/LandlordNav';
@@ -136,6 +136,9 @@ function App() {
     const initialInquiries = draft.status === 'Active' ? 1 : 0;
     const nextUnit: Unit = {
       id: nextId,
+      listingId: formatListingId(nextId),
+      propertyId: formatPropertyId(nextId),
+      ownerUserId: LANDLORD_PROFILE.userId,
       title: draft.title,
       type: draft.type,
       location: draft.location,
