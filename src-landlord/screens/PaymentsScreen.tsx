@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Payment, PaymentStatus, Unit } from '../data';
 import { formatPeso } from '../data';
 import Header from '../components/Header';
@@ -17,6 +17,7 @@ interface Props {
 
 type Filter = 'All' | PaymentStatus;
 const FILTERS: Filter[] = ['All', 'Paid', 'Due', 'Overdue'];
+const PAYMENT_TREND_MONTHS = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
 
 function StatusBadge({ status }: { status: PaymentStatus }) {
   const cls = status === 'Paid' ? 'st-paid' : status === 'Due' ? 'st-due' : 'st-overdue';
@@ -34,6 +35,33 @@ function TooltipBubble({ title, lines }: { title: string; lines: string[] }) {
   );
 }
 
+function buildMonthlyTrendSeries(baseTotals: number[]) {
+  const endMonth = new Date(2026, 6, 1);
+  const totalMonths = 18;
+  const actualWindowStart = totalMonths - baseTotals.length;
+
+  return Array.from({ length: totalMonths }, (_, index) => {
+    const monthDate = new Date(endMonth.getFullYear(), endMonth.getMonth() - (totalMonths - 1 - index), 1);
+    const label = monthDate.toLocaleDateString('en-US', { month: 'short' });
+    const value = index >= actualWindowStart
+      ? baseTotals[index - actualWindowStart]
+      : Math.max(
+          1800,
+          Math.round(
+            baseTotals[index % baseTotals.length]
+            - (actualWindowStart - index) * 120
+            + (((index + 2) % 5) - 2) * 140,
+          ),
+        );
+
+    return {
+      label,
+      date: monthDate,
+      value,
+    };
+  });
+}
+
 export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
@@ -48,9 +76,13 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
   const overdueTotal = payments.filter(p => p.status === 'Overdue').reduce((s, p) => s + p.amount, 0);
   const dueSoonTotal = payments.filter(p => p.status === 'Due').reduce((s, p) => s + p.amount, 0);
   const paidCount = payments.filter(p => p.status === 'Paid').length;
-  const monthLabels = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
-  const monthlyTotals = monthLabels.map((_, index) => payments.reduce((sum, payment) => sum + (payment.monthlyTrend[index] ?? 0), 0));
-  const maxMonthlyTotal = Math.max(...monthlyTotals, 1);
+  const baseMonthlyTotals = Array.from({ length: 6 }, (_, index) => payments.reduce((sum, payment) => sum + (payment.monthlyTrend[index] ?? 0), 0));
+  const monthlyTrendSeries = useMemo(() => buildMonthlyTrendSeries(baseMonthlyTotals), [baseMonthlyTotals]);
+  const [trendWindowStart, setTrendWindowStart] = useState(() => Math.max(monthlyTrendSeries.length - 6, 0));
+  const visibleMonthlyTrend = monthlyTrendSeries.slice(trendWindowStart, trendWindowStart + 6);
+  const maxMonthlyTotal = Math.max(...visibleMonthlyTrend.map((item) => item.value), 1);
+  const canViewOlderTrend = trendWindowStart > 0;
+  const canViewNewerTrend = trendWindowStart + 6 < monthlyTrendSeries.length;
   const methodBreakdown = [
     { label: 'Bank', value: payments.filter(p => p.method === 'Bank transfer').reduce((sum, payment) => sum + payment.amount, 0) },
     { label: 'GCash', value: payments.filter(p => p.method === 'GCash').reduce((sum, payment) => sum + payment.amount, 0) },
@@ -129,37 +161,61 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
                   <TooltipBubble
                     title="Monthly trend"
                     lines={[
-                      `Tracks 6 months of mock landlord collections`,
-                      `Current month total: ${formatPeso(monthlyTotals[monthlyTotals.length - 1])}`,
+                      `Tracks a rolling 6-month mock collection window`,
+                      `${visibleMonthlyTrend[0]?.label} to ${visibleMonthlyTrend[visibleMonthlyTrend.length - 1]?.label} ${visibleMonthlyTrend[visibleMonthlyTrend.length - 1]?.date.getFullYear() ?? ''}`,
                     ]}
                   />
                 </div>
               </div>
-              <div className="payment-mini-chart">
-                {monthlyTotals.map((value, index) => (
+              <div className="payment-trend-shell">
+                <button
+                  type="button"
+                  className="bar-nav-btn payment-trend-nav"
+                  aria-label="Show previous 6-month payment trend window"
+                  disabled={!canViewOlderTrend}
+                  onClick={() => setTrendWindowStart((current) => Math.max(current - 1, 0))}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                </button>
+                <div className="payment-mini-chart">
+                {visibleMonthlyTrend.map((item, index) => (
                   <button
-                    key={monthLabels[index]}
+                    key={`${item.label}-${item.date.getFullYear()}-${index}`}
                     type="button"
                     className="payment-mini-col payment-mini-col-button"
-                    onClick={() => onShowToast(`${monthLabels[index]} · ${formatPeso(value)} collected`)}
+                    onClick={() => onShowToast(`${item.label} ${item.date.getFullYear()} · ${formatPeso(item.value)} collected`)}
                   >
-                    <div className="payment-mini-tip">{formatPeso(value)}</div>
+                    <div className="payment-mini-tip">{formatPeso(item.value)}</div>
                     <div className="payment-mini-bar-wrap">
                       <div
-                        className={`payment-mini-bar ${index === monthlyTotals.length - 1 ? 'is-current' : ''}`}
-                        style={{ height: `${Math.max((value / maxMonthlyTotal) * 100, 12)}%` }}
+                        className={`payment-mini-bar ${index === visibleMonthlyTrend.length - 1 ? 'is-current' : ''}`}
+                        style={{ height: `${Math.max((item.value / maxMonthlyTotal) * 100, 12)}%` }}
                       />
                     </div>
-                    <div className="payment-mini-label">{monthLabels[index]}</div>
+                    <div className="payment-mini-label">{item.label}</div>
                     <TooltipBubble
-                      title={`${monthLabels[index]} collections`}
+                      title={`${item.label} ${item.date.getFullYear()} collections`}
                       lines={[
-                        `${formatPeso(value)} total posted`,
-                        `${index === 0 ? 'Baseline month in the demo series' : `${formatPeso(value - monthlyTotals[index - 1])} vs previous month`}`,
+                        `${formatPeso(item.value)} total posted`,
+                        `${index === 0 ? 'Start of this visible trend window' : `${formatPeso(item.value - visibleMonthlyTrend[index - 1].value)} vs previous month`}`,
                       ]}
                     />
                   </button>
                 ))}
+                </div>
+                <button
+                  type="button"
+                  className="bar-nav-btn payment-trend-nav"
+                  aria-label="Show next 6-month payment trend window"
+                  disabled={!canViewNewerTrend}
+                  onClick={() => setTrendWindowStart((current) => Math.min(current + 1, monthlyTrendSeries.length - 6))}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
               </div>
             </div>
             <div className="payment-analytics-card">
@@ -371,10 +427,10 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
                         const maxValue = Math.max(...selectedPayment.monthlyTrend, 1);
                         return (
                           <button
-                            key={monthLabels[index]}
+                            key={PAYMENT_TREND_MONTHS[index]}
                             type="button"
                             className="payment-mini-col payment-mini-col-button"
-                            onClick={() => onShowToast(`${selectedPayment.tenant} · ${monthLabels[index]} · ${formatPeso(value)}`)}
+                            onClick={() => onShowToast(`${selectedPayment.tenant} · ${PAYMENT_TREND_MONTHS[index]} · ${formatPeso(value)}`)}
                           >
                             <div className="payment-mini-tip">{formatPeso(value)}</div>
                             <div className="payment-mini-bar-wrap">
@@ -383,9 +439,9 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
                                 style={{ height: `${Math.max((value / maxValue) * 100, 12)}%` }}
                               />
                             </div>
-                            <div className="payment-mini-label">{monthLabels[index]}</div>
+                            <div className="payment-mini-label">{PAYMENT_TREND_MONTHS[index]}</div>
                             <TooltipBubble
-                              title={`${selectedPayment.tenant} · ${monthLabels[index]}`}
+                              title={`${selectedPayment.tenant} · ${PAYMENT_TREND_MONTHS[index]}`}
                               lines={[
                                 `${formatPeso(value)} settled or due in that cycle`,
                                 `${index === selectedPayment.monthlyTrend.length - 1 ? selectedPayment.dueLabel : 'Historical comparison point'}`,

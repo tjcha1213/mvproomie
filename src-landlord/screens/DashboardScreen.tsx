@@ -362,24 +362,26 @@ export default function DashboardScreen({ units, inquiries, payments, activities
         </div>
 
         {/* Recent activity */}
-        <div className="ll-card ll-activity-card">
-          <div className="ll-card-head">
-            <span className="ll-card-title">Recent activity</span>
-          </div>
-          <div className="activity-list">
-            {activities.map(a => (
-              <div key={a.id} className="activity-item">
-                <div className={`activity-icon activity-icon-${a.icon}`}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
-                    {ACTIVITY_ICONS[a.icon]}
-                  </svg>
+        <div className="ll-dashboard-rail">
+          <div className="ll-card ll-activity-card">
+            <div className="ll-card-head">
+              <span className="ll-card-title">Recent activity</span>
+            </div>
+            <div className="activity-list">
+              {activities.map(a => (
+                <div key={a.id} className="activity-item">
+                  <div className={`activity-icon activity-icon-${a.icon}`}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
+                      {ACTIVITY_ICONS[a.icon]}
+                    </svg>
+                  </div>
+                  <div className="activity-body">
+                    <div className="activity-text">{a.text}</div>
+                    <div className="activity-time">{a.time}</div>
+                  </div>
                 </div>
-                <div className="activity-body">
-                  <div className="activity-text">{a.text}</div>
-                  <div className="activity-time">{a.time}</div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
