@@ -7,11 +7,20 @@ export const LANDLORD_PROFILE = {
   name: 'Juan Dela Cruz',
   userId: 'LL-0001',
   avatar: withBase('assets/avatars/juan-landlord.png'),
+  roomieScore: 91,
+  roomieTemperature: 'Cool' as RoomieTemperature,
 };
 
+export type RoomieTemperature = 'Cool' | 'Warm' | 'Hot';
+
+export interface RoomieTrust {
+  roomieScore: number;
+  roomieTemperature: RoomieTemperature;
+}
+
 export const PLATFORM_CONTACTS = {
-  admin: { name: 'MVProomie Admin', userId: 'ADM-0001' },
-  broker: { name: 'Broker Partner Desk', userId: 'BRK-0001' },
+  admin: { name: 'MVProomie Admin', userId: 'ADM-0001', roomieScore: 95, roomieTemperature: 'Cool' as RoomieTemperature },
+  broker: { name: 'Broker Partner Desk', userId: 'BRK-0001', roomieScore: 86, roomieTemperature: 'Warm' as RoomieTemperature },
 } as const;
 
 export function formatListingId(id: number) {
@@ -272,6 +281,7 @@ export interface Inquiry {
   userId: string;
   name: string;
   avatar?: string;
+  trust: RoomieTrust;
   unitId: number;
   message: string;
   time: string;
@@ -290,6 +300,7 @@ export const INQUIRIES: Inquiry[] = [
     userId: 'TEN-1001',
     name: 'Carlo Dizon',
     avatar: withBase('assets/avatars/carlo-dizon.png'),
+    trust: { roomieScore: 78, roomieTemperature: 'Warm' },
     unitId: 2,
     message: 'Hi po! Is the bedspace still available? Looking to move in Aug 1 🙂',
     time: '5m ago',
@@ -303,6 +314,7 @@ export const INQUIRIES: Inquiry[] = [
     userId: 'TEN-1002',
     name: 'Grace Tan',
     avatar: withBase('assets/avatars/grace-tan.png'),
+    trust: { roomieScore: 83, roomieTemperature: 'Cool' },
     unitId: 3,
     message: 'Can I schedule a viewing this weekend? 😊',
     time: '1h ago',
@@ -316,6 +328,7 @@ export const INQUIRIES: Inquiry[] = [
     userId: 'TEN-1003',
     name: 'Miguel Ramos',
     avatar: withBase('assets/avatars/miguel-ramos.png'),
+    trust: { roomieScore: 74, roomieTemperature: 'Warm' },
     unitId: 2,
     message: 'Is water included in the rent? 👀',
     time: '3h ago',
@@ -328,6 +341,7 @@ export const INQUIRIES: Inquiry[] = [
     id: 4,
     userId: 'TEN-1004',
     name: 'Bea Aquino',
+    trust: { roomieScore: 88, roomieTemperature: 'Cool' },
     unitId: 3,
     message: 'Thank you! See you on Saturday at 2pm.',
     time: 'Yesterday',
@@ -342,6 +356,7 @@ export const INQUIRIES: Inquiry[] = [
     id: 5,
     userId: 'TEN-1005',
     name: 'Leo Garcia',
+    trust: { roomieScore: 69, roomieTemperature: 'Hot' },
     unitId: 2,
     message: 'Sure, I will send my requirements tonight.',
     time: 'Mon',
@@ -360,6 +375,7 @@ export interface Payment {
   id: number;
   tenant: string;
   tenantId: string;
+  trust: RoomieTrust;
   unitId: number;
   amount: number;
   dueLabel: string;
@@ -380,6 +396,7 @@ export const PAYMENTS: Payment[] = [
     id: 1,
     tenant: 'Maria Reyes',
     tenantId: 'TEN-2001',
+    trust: { roomieScore: 93, roomieTemperature: 'Cool' },
     unitId: 1,
     amount: 6000,
     dueLabel: 'Paid Jul 1',
@@ -397,6 +414,7 @@ export const PAYMENTS: Payment[] = [
     id: 2,
     tenant: 'Ken Villanueva',
     tenantId: 'TEN-2002',
+    trust: { roomieScore: 89, roomieTemperature: 'Cool' },
     unitId: 4,
     amount: 7000,
     dueLabel: 'Paid Jul 2',
@@ -414,6 +432,7 @@ export const PAYMENTS: Payment[] = [
     id: 3,
     tenant: 'Alyssa Cruz',
     tenantId: 'TEN-2003',
+    trust: { roomieScore: 85, roomieTemperature: 'Warm' },
     unitId: 5,
     amount: 2500,
     dueLabel: 'Paid Jul 1',
@@ -431,6 +450,7 @@ export const PAYMENTS: Payment[] = [
     id: 4,
     tenant: 'Janine Lopez',
     tenantId: 'TEN-2004',
+    trust: { roomieScore: 72, roomieTemperature: 'Warm' },
     unitId: 5,
     amount: 2500,
     dueLabel: 'Due Jul 15',
@@ -448,6 +468,7 @@ export const PAYMENTS: Payment[] = [
     id: 5,
     tenant: 'Rhea Mendoza',
     tenantId: 'TEN-2005',
+    trust: { roomieScore: 58, roomieTemperature: 'Hot' },
     unitId: 5,
     amount: 2500,
     dueLabel: '5 days late',
@@ -506,6 +527,33 @@ export interface Activity {
   text: string;
   time: string;
 }
+
+export const LANDLORD_REVIEWS = [
+  {
+    id: 1,
+    author: 'Maria Reyes',
+    authorId: 'TEN-2001',
+    rating: 5,
+    date: 'Jul 12, 2026',
+    quote: 'Fast replies, clear payment records, and smooth lease renewals.',
+  },
+  {
+    id: 2,
+    author: 'Ken Villanueva',
+    authorId: 'TEN-2002',
+    rating: 5,
+    date: 'Jul 4, 2026',
+    quote: 'The unit stays well maintained and concerns are addressed quickly.',
+  },
+  {
+    id: 3,
+    author: 'Grace Tan',
+    authorId: 'TEN-1002',
+    rating: 4,
+    date: 'Jun 28, 2026',
+    quote: 'Viewing coordination was organized and the listing details matched the visit.',
+  },
+];
 
 export const ACTIVITY: Activity[] = [
   { id: 1, icon: 'inquiry', text: 'New inquiry from Carlo Dizon · Male Bedspace', time: '5m ago' },

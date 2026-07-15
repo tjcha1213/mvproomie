@@ -116,6 +116,7 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddTh
                     </div>
                     <div className="listing-id-row">
                       <span className="entity-id-tag">{i.userId}</span>
+                      <span className={`roomie-score-chip is-${i.trust.roomieTemperature.toLowerCase()}`}>{i.trust.roomieTemperature === 'Cool' ? '❄️' : i.trust.roomieTemperature === 'Warm' ? '🌤️' : '🔥'} Roomie {i.trust.roomieScore}</span>
                     </div>
                     <div className="inquiry-unit">{unitTitle(i.unitId)}</div>
                     <div className="inbox-preview">{i.message}</div>
@@ -182,6 +183,7 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddTh
                   <h2 id="inquiry-chat-title" className="inquiry-chat-title">{activeChat.name}</h2>
                   <div className="listing-id-row listing-id-row-modal">
                     <span className="entity-id-tag">{activeChat.userId}</span>
+                    <span className={`roomie-score-chip is-${activeChat.trust.roomieTemperature.toLowerCase()}`}>{activeChat.trust.roomieTemperature === 'Cool' ? '❄️' : activeChat.trust.roomieTemperature === 'Warm' ? '🌤️' : '🔥'} Roomie {activeChat.trust.roomieScore}</span>
                   </div>
                   <div className="listing-modal-location">{unitTitle(activeChat.unitId)}</div>
                 </div>

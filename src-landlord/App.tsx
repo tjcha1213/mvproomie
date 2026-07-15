@@ -13,6 +13,7 @@ import ListingsScreen from './screens/ListingsScreen';
 import InquiriesScreen from './screens/InquiriesScreen';
 import PaymentsScreen from './screens/PaymentsScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import ReviewsScreen from './screens/ReviewsScreen';
 import Toast from './components/Toast';
 import ThemePicker from './components/ThemePicker';
 
@@ -265,9 +266,17 @@ function App() {
             <ProfileScreen
               units={units}
               onOpenTheme={() => setThemeOpen(true)}
+              onOpenReviews={() => setTab('reviews')}
               notifications={notifications}
               onOpenNotification={openNotification}
               onShowToast={showToast}
+            />
+          )}
+          {tab === 'reviews' && (
+            <ReviewsScreen
+              onOpenProfile={() => setTab('profile')}
+              notifications={notifications}
+              onOpenNotification={openNotification}
             />
           )}
         </div>

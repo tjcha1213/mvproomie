@@ -96,9 +96,8 @@ function formatWeekday(dateString: string) {
 function formatDateRange(startDate: string, endDate: string) {
   const start = new Date(`${startDate}T12:00:00`);
   const end = new Date(`${endDate}T12:00:00`);
-  const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
-  const startLabel = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const endLabel = end.toLocaleDateString('en-US', sameMonth ? { day: 'numeric', year: 'numeric' } : { month: 'short', day: 'numeric', year: 'numeric' });
+  const startLabel = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const endLabel = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   return `${startLabel} - ${endLabel}`;
 }
 

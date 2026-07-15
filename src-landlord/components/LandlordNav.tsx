@@ -1,4 +1,4 @@
-export type Tab = 'dashboard' | 'listings' | 'inquiries' | 'payments' | 'profile';
+export type Tab = 'dashboard' | 'listings' | 'inquiries' | 'payments' | 'profile' | 'reviews';
 
 interface Props {
   activeTab: Tab;

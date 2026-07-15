@@ -183,6 +183,8 @@ img {
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  position: relative;
+  z-index: 30;
   /* Clear the home indicator on full-screen phones (0 elsewhere). */
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
   box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
@@ -225,6 +227,8 @@ img {
   gap: 4px;
   padding: 8px 0;
   cursor: pointer;
+  position: relative;
+  z-index: 32;
 }
 
 .nav-add-circle {
@@ -238,6 +242,8 @@ img {
   margin-top: -20px;
   box-shadow: 0 4px 16px color-mix(in srgb, var(--primary) 40%, transparent);
   transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  z-index: 33;
 }
 
 .nav-add-circle:active {
@@ -1454,6 +1460,70 @@ img {
 
 .profile-menu-item:last-child {
   border-bottom: none;
+}
+
+.reviews-summary-card {
+  align-items: flex-start;
+}
+
+.reviews-trust-grid {
+  display: grid;
+  gap: 12px;
+  margin: 12px 16px 0;
+}
+
+.reviews-trust-card,
+.reviews-item {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+}
+
+.reviews-trust-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.reviews-trust-card strong,
+.reviews-item strong {
+  display: block;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.reviews-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reviews-item-head span {
+  font-size: 12px;
+  font-weight: 800;
+  color: #f59e0b;
+}
+
+.reviews-item p {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.reviews-item small {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-light);
 }
 
 .profile-menu-item:active {
@@ -2994,6 +3064,33 @@ img {
 .entity-id-tag-muted {
   background: var(--surface-2);
   color: var(--text-muted);
+}
+
+.roomie-score-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.roomie-score-chip.is-cool {
+  background: color-mix(in srgb, #22c55e 14%, #ffffff);
+  color: #166534;
+}
+
+.roomie-score-chip.is-warm {
+  background: color-mix(in srgb, #f59e0b 16%, #ffffff);
+  color: #92400e;
+}
+
+.roomie-score-chip.is-hot {
+  background: color-mix(in srgb, #ef4444 16%, #ffffff);
+  color: #991b1b;
 }
 
 .unit-title-row {
