@@ -2181,6 +2181,7 @@ img {
 .ll-card-meta b { color: var(--text); }
 
 .ll-up { color: var(--success); }
+.ll-down { color: #dc2626; }
 
 .ll-view-toggle {
   display: inline-flex;
@@ -2455,48 +2456,48 @@ img {
   position: absolute;
   inset: 0;
   border-radius: 12px;
-  background: #eef4ff;
+  background: color-mix(in srgb, var(--primary) 8%, #ffffff);
   pointer-events: none;
 }
 
 .heat-level-1 .calendar-day-fill {
   background:
-    linear-gradient(135deg, #f8fbff, #eef4ff),
+    linear-gradient(135deg, color-mix(in srgb, var(--primary) 4%, #ffffff), color-mix(in srgb, var(--primary) 8%, #ffffff)),
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.32) 0 8px, rgba(255, 255, 255, 0) 8px 16px);
   opacity: 1 !important;
 }
 
 .heat-level-2 .calendar-day-fill {
   background:
-    linear-gradient(135deg, #e7f0ff, #d9e8ff),
+    linear-gradient(135deg, color-mix(in srgb, var(--primary) 14%, #ffffff), color-mix(in srgb, var(--primary) 22%, #ffffff)),
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.24) 0 7px, rgba(255, 255, 255, 0) 7px 14px);
   opacity: 1 !important;
 }
 
 .heat-level-3 .calendar-day-fill {
   background:
-    linear-gradient(135deg, #c9ddff, #b2ceff),
+    linear-gradient(135deg, color-mix(in srgb, var(--primary) 28%, #ffffff), color-mix(in srgb, var(--primary) 40%, #ffffff)),
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0 7px, rgba(255, 255, 255, 0) 7px 14px);
   opacity: 1 !important;
 }
 
 .heat-level-4 .calendar-day-fill {
   background:
-    linear-gradient(135deg, #8ab4ff, #6fa1ff),
+    linear-gradient(135deg, color-mix(in srgb, var(--primary) 54%, #ffffff), color-mix(in srgb, var(--primary) 66%, #ffffff)),
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0 6px, rgba(255, 255, 255, 0) 6px 12px);
   opacity: 1 !important;
 }
 
 .heat-level-5 .calendar-day-fill {
   background:
-    linear-gradient(135deg, #4f88ff, #2c6ff2),
+    linear-gradient(135deg, color-mix(in srgb, var(--primary) 78%, #ffffff), var(--primary)),
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0 6px, rgba(255, 255, 255, 0) 6px 12px);
   opacity: 1 !important;
 }
 
 .heat-level-6 .calendar-day-fill {
   background:
-    linear-gradient(135deg, #2358db, #143eaa),
+    linear-gradient(135deg, var(--primary), var(--primary-dark)),
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0 5px, rgba(255, 255, 255, 0) 5px 10px);
   opacity: 1 !important;
 }
@@ -2790,6 +2791,23 @@ img {
 .activity-list { display: flex; flex-direction: column; gap: 12px; }
 
 .activity-item { display: flex; gap: 10px; align-items: flex-start; }
+
+.activity-item-button {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  transition: transform 0.14s ease, opacity 0.14s ease;
+}
+
+.activity-item-button:hover {
+  transform: translateX(2px);
+}
+
+.activity-item-button:active {
+  opacity: 0.82;
+}
 
 .activity-icon {
   width: 30px;

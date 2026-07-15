@@ -93,6 +93,11 @@ function formatWeekday(dateString: string) {
   });
 }
 
+function calculatePercentDelta(currentValue: number, previousValue: number) {
+  if (previousValue <= 0) return 0;
+  return Math.round(((currentValue - previousValue) / previousValue) * 100);
+}
+
 export default function DashboardScreen({ units, inquiries, payments, activities, onGoTo, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
   const [viewMode, setViewMode] = useState<'weekly' | 'calendar' | 'map'>('weekly');
   const [weekStartDate, setWeekStartDate] = useState(() => new Date(2026, 6, 6));
@@ -109,11 +114,20 @@ export default function DashboardScreen({ units, inquiries, payments, activities
   const drafts = units.filter(u => u.status === 'Draft');
 
   const weeklyData = useMemo(() => buildWeeklyWindow(weekStartDate), [weekStartDate]);
+  const previousWeeklyData = useMemo(
+    () => buildWeeklyWindow(new Date(weekStartDate.getFullYear(), weekStartDate.getMonth(), weekStartDate.getDate() - 7)),
+    [weekStartDate],
+  );
   const totalViews = weeklyData.reduce((sum, item) => sum + item.views, 0);
   const maxViews = Math.max(...weeklyData.map((item) => item.views));
   const averageViews = Math.round(totalViews / weeklyData.length);
+  const previousWeekTotalViews = previousWeeklyData.reduce((sum, item) => sum + item.views, 0);
   const calendarMonthEntries = buildCalendarMonth(calendarMonth);
   const calendarLeadingBlanks = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1).getDay();
+  const previousCalendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1);
+  const previousCalendarMonthEntries = buildCalendarMonth(previousCalendarMonth);
+  const calendarMonthTotalViews = calendarMonthEntries.reduce((sum, item) => sum + item.views, 0);
+  const previousCalendarMonthTotalViews = previousCalendarMonthEntries.reduce((sum, item) => sum + item.views, 0);
   const calendarCells = [
     ...Array.from({ length: calendarLeadingBlanks }, (_, index) => ({ kind: 'blank' as const, id: `blank-${index}` })),
     ...calendarMonthEntries.map((entry) => ({ kind: 'day' as const, ...entry })),
@@ -126,6 +140,17 @@ export default function DashboardScreen({ units, inquiries, payments, activities
     ...unverified.map(u => ({ id: `ver-${u.id}`, text: `${u.title} is not verified yet`, tab: 'listings' as Tab, kind: 'verification' as const })),
     ...drafts.map(u => ({ id: `draft-${u.id}`, text: `${u.title} is still a draft`, tab: 'listings' as Tab, kind: 'draft' as const })),
   ];
+  const activityTabByIcon: Record<Activity['icon'], Tab> = {
+    inquiry: 'inquiries',
+    payment: 'payments',
+    views: 'listings',
+    review: 'profile',
+    listing: 'listings',
+  };
+  const weeklyDelta = calculatePercentDelta(totalViews, previousWeekTotalViews);
+  const calendarDelta = calculatePercentDelta(calendarMonthTotalViews, previousCalendarMonthTotalViews);
+  const chartDelta = viewMode === 'weekly' ? weeklyDelta : viewMode === 'calendar' ? calendarDelta : null;
+  const chartDeltaClass = chartDelta !== null && chartDelta < 0 ? 'll-down' : 'll-up';
 
   return (
     <>
@@ -169,7 +194,12 @@ export default function DashboardScreen({ units, inquiries, payments, activities
                   ? `${totalViews} this week`
                   : viewMode === 'calendar'
                     ? `${calendarMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })} activity`
-                    : 'Live listing positions by status'} · <b className="ll-up">+18%</b>
+                    : `${mappableUnits.length} mapped listings · ${occupancy}% occupied`}
+                {chartDelta !== null && (
+                  <>
+                    {' '}· <b className={chartDeltaClass}>{chartDelta >= 0 ? `+${chartDelta}%` : `${chartDelta}%`}</b>
+                  </>
+                )}
               </span>
             </div>
             <div className="ll-view-toggle" role="tablist" aria-label="Listing view chart mode">
@@ -369,7 +399,12 @@ export default function DashboardScreen({ units, inquiries, payments, activities
             </div>
             <div className="activity-list">
               {activities.map(a => (
-                <div key={a.id} className="activity-item">
+                <button
+                  key={a.id}
+                  type="button"
+                  className="activity-item activity-item-button"
+                  onClick={() => onGoTo(activityTabByIcon[a.icon])}
+                >
                   <div className={`activity-icon activity-icon-${a.icon}`}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
                       {ACTIVITY_ICONS[a.icon]}
@@ -379,7 +414,7 @@ export default function DashboardScreen({ units, inquiries, payments, activities
                     <div className="activity-text">{a.text}</div>
                     <div className="activity-time">{a.time}</div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>
