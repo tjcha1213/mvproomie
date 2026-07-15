@@ -28,6 +28,7 @@ const ACTIVITY_ICONS = {
 
 const WEEK_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const CALENDAR_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const WEEK_DATES = ['2026-07-06', '2026-07-07', '2026-07-08', '2026-07-09', '2026-07-10', '2026-07-11', '2026-07-12'];
 
 const TASK_ICONS = {
   inquiry: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>,
@@ -37,15 +38,41 @@ const TASK_ICONS = {
 };
 
 function heatLevelClass(views: number) {
-  if (views >= 62) return 'heat-level-5';
-  if (views >= 52) return 'heat-level-4';
-  if (views >= 42) return 'heat-level-3';
-  if (views >= 30) return 'heat-level-2';
+  if (views >= 66) return 'heat-level-6';
+  if (views >= 56) return 'heat-level-5';
+  if (views >= 46) return 'heat-level-4';
+  if (views >= 36) return 'heat-level-3';
+  if (views >= 24) return 'heat-level-2';
   return 'heat-level-1';
+}
+
+function buildCalendarMonth(baseMonth: Date) {
+  const month = baseMonth.getMonth();
+  const year = baseMonth.getFullYear();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  return Array.from({ length: daysInMonth }, (_, index) => {
+    const day = index + 1;
+    const seed = (month + 1) * 11 + day * 7 + (year - 2026) * 13;
+    const baseViews = CALENDAR_VIEWS[index % CALENDAR_VIEWS.length]?.views ?? 38;
+    const shifted = baseViews + ((seed % 17) - 8) + ((month % 4) - 1) * 3 + (year - 2026) * 2;
+    const views = Math.max(12, Math.min(78, shifted));
+    const isoDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return { date: isoDate, day, views };
+  });
+}
+
+function formatLongDate(dateString: string) {
+  return new Date(`${dateString}T12:00:00`).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 export default function DashboardScreen({ units, inquiries, payments, activities, onGoTo, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
   const [viewMode, setViewMode] = useState<'weekly' | 'calendar' | 'map'>('weekly');
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date(2026, 6, 1));
   const published = units.filter(u => u.status !== 'Draft');
   const mappableUnits = units.filter((unit) => Number.isFinite(unit.lat) && Number.isFinite(unit.lng));
   const occupied = units.filter(u => u.status === 'Occupied');
@@ -60,10 +87,11 @@ export default function DashboardScreen({ units, inquiries, payments, activities
   const totalViews = WEEK_VIEWS.reduce((a, b) => a + b, 0);
   const maxViews = Math.max(...WEEK_VIEWS);
   const averageViews = Math.round(totalViews / WEEK_VIEWS.length);
-  const calendarLeadingBlanks = new Date('2026-07-01').getDay();
+  const calendarMonthEntries = buildCalendarMonth(calendarMonth);
+  const calendarLeadingBlanks = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1).getDay();
   const calendarCells = [
     ...Array.from({ length: calendarLeadingBlanks }, (_, index) => ({ kind: 'blank' as const, id: `blank-${index}` })),
-    ...CALENDAR_VIEWS.map((entry) => ({ kind: 'day' as const, ...entry })),
+    ...calendarMonthEntries.map((entry) => ({ kind: 'day' as const, ...entry })),
   ];
 
   // Actionable items, computed from live state so acting on them clears them.
@@ -109,10 +137,14 @@ export default function DashboardScreen({ units, inquiries, payments, activities
         {/* Views chart */}
         <div className="ll-card ll-chart-card">
           <div className="ll-card-head">
-            <div>
+            <div className="ll-card-head-copy">
               <span className="ll-card-title">Listing views</span>
               <span className="ll-card-meta">
-                {viewMode === 'weekly' ? `${totalViews} this week` : viewMode === 'calendar' ? 'July 2026 view activity' : 'Live listing positions by status'} · <b className="ll-up">+18%</b>
+                {viewMode === 'weekly'
+                  ? `${totalViews} this week`
+                  : viewMode === 'calendar'
+                    ? `${calendarMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })} activity`
+                    : 'Live listing positions by status'} · <b className="ll-up">+18%</b>
               </span>
             </div>
             <div className="ll-view-toggle" role="tablist" aria-label="Listing view chart mode">
@@ -146,14 +178,14 @@ export default function DashboardScreen({ units, inquiries, payments, activities
                   <button
                     type="button"
                     className="bar-hitbox"
-                    aria-label={`${WEEK_DAY_LABELS[i]}: ${v} views`}
-                    onClick={() => onShowToast(`${WEEK_DAY_LABELS[i]} · ${v} views`)}
+                    aria-label={`${formatLongDate(WEEK_DATES[i])}: ${v} views`}
+                    onClick={() => onShowToast(`${formatLongDate(WEEK_DATES[i])} · ${v} views`)}
                   >
                     <div className="bar-tooltip" role="tooltip">
-                      <div className="bar-tooltip-title">{WEEK_DAY_LABELS[i]}</div>
+                      <div className="bar-tooltip-title">{formatLongDate(WEEK_DATES[i])}</div>
                       <div className="bar-tooltip-value">{v} listing views</div>
                       <div className="bar-tooltip-meta">
-                        {v >= averageViews ? `${v - averageViews} above` : `${averageViews - v} below`} weekly average
+                        {WEEK_DAY_LABELS[i]} · {v >= averageViews ? `${v - averageViews} above` : `${averageViews - v} below`} weekly average
                       </div>
                     </div>
                     <div
@@ -167,6 +199,42 @@ export default function DashboardScreen({ units, inquiries, payments, activities
             </div>
           ) : viewMode === 'calendar' ? (
             <div className="calendar-views">
+              <div className="calendar-nav">
+                <div className="calendar-nav-group" aria-label="Calendar month navigation">
+                  <button
+                    type="button"
+                    className="unit-btn"
+                    onClick={() => setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
+                  >
+                    Prev month
+                  </button>
+                  <strong>{calendarMonth.toLocaleString('en-US', { month: 'long' })}</strong>
+                  <button
+                    type="button"
+                    className="unit-btn"
+                    onClick={() => setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
+                  >
+                    Next month
+                  </button>
+                </div>
+                <div className="calendar-nav-group" aria-label="Calendar year navigation">
+                  <button
+                    type="button"
+                    className="unit-btn"
+                    onClick={() => setCalendarMonth((current) => new Date(current.getFullYear() - 1, current.getMonth(), 1))}
+                  >
+                    Prev year
+                  </button>
+                  <strong>{calendarMonth.getFullYear()}</strong>
+                  <button
+                    type="button"
+                    className="unit-btn"
+                    onClick={() => setCalendarMonth((current) => new Date(current.getFullYear() + 1, current.getMonth(), 1))}
+                  >
+                    Next year
+                  </button>
+                </div>
+              </div>
               <div className="calendar-header-row">
                 {CALENDAR_WEEKDAYS.map((day) => (
                   <span key={day} className="calendar-weekday">{day}</span>
@@ -183,14 +251,14 @@ export default function DashboardScreen({ units, inquiries, payments, activities
                       key={cell.date}
                       type="button"
                       className={`calendar-day ${heatLevelClass(cell.views)}`}
-                      aria-label={`${cell.date}: ${cell.views} listing views`}
-                      onClick={() => onShowToast(`${cell.date} · ${cell.views} views`)}
+                      aria-label={`${formatLongDate(cell.date)}: ${cell.views} listing views`}
+                      onClick={() => onShowToast(`${formatLongDate(cell.date)} · ${cell.views} views`)}
                     >
                       <div className="calendar-day-fill" />
                       <span className="calendar-day-number">{cell.day}</span>
                       <span className="calendar-day-count">{cell.views}</span>
                       <div className="bar-tooltip calendar-tooltip" role="tooltip">
-                        <div className="bar-tooltip-title">{cell.date}</div>
+                        <div className="bar-tooltip-title">{formatLongDate(cell.date)}</div>
                         <div className="bar-tooltip-value">{cell.views} listing views</div>
                         <div className="bar-tooltip-meta">
                           {cell.views >= averageViews ? `${cell.views - averageViews} above` : `${averageViews - cell.views} below`} weekly average

@@ -71,7 +71,18 @@ function App() {
   }, []);
 
   const updateUnit = useCallback((id: number, updates: Partial<Unit>) => {
-    setUnits((prev) => prev.map((unit) => (unit.id === id ? { ...unit, ...updates, lastUpdated: 'Updated just now' } : unit)));
+    setUnits((prev) =>
+      prev.map((unit) =>
+        unit.id === id
+          ? {
+              ...unit,
+              ...updates,
+              image: updates.gallery?.[0] ?? updates.image ?? unit.image,
+              lastUpdated: 'Updated just now',
+            }
+          : unit,
+      ),
+    );
   }, []);
 
   const setInquiryStatus = useCallback((id: number, status: Inquiry['status']) => {

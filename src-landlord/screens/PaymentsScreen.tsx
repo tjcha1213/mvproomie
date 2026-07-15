@@ -239,7 +239,7 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
           </div>
         </div>
 
-        <div className="search-filter-chips" style={{ paddingTop: 4 }}>
+        <div className="search-filter-chips payment-filter-chips">
           {FILTERS.map(f => (
             <button key={f} className={`filter-chip ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
               {f}

@@ -57,6 +57,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
   const [editUnitId, setEditUnitId] = useState<number | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [historyView, setHistoryView] = useState<'log' | 'calendar'>('log');
   const [selectedHistoryDate, setSelectedHistoryDate] = useState<string | null>(null);
   const [historyMonthIndex, setHistoryMonthIndex] = useState(0);
   const [editDraft, setEditDraft] = useState({
@@ -70,6 +71,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
     description: '',
     amenities: '',
   });
+  const [editPhotos, setEditPhotos] = useState<string[]>([]);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const filtered = filter === 'All' ? units : units.filter(u => u.status === filter);
@@ -159,6 +161,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
   function openEditModal(unit: Unit) {
     setEditUnitId(unit.id);
     setEditDraft(buildEditDraft(unit));
+    setEditPhotos(unit.gallery?.length ? unit.gallery : [unit.image]);
   }
 
   function saveUnitEdits() {
@@ -173,13 +176,28 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
       sqm: Number(editDraft.sqm),
       description: editDraft.description.trim(),
       amenities: editDraft.amenities.split(',').map((item) => item.trim()).filter(Boolean),
+      gallery: editPhotos,
     });
     onShowToast(`✏️ ${editDraft.title.trim()} updated`);
     setEditUnitId(null);
   }
 
+  async function handleEditPhotoChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []).slice(0, 4);
+    if (files.length === 0) return;
+    const nextPhotos = await Promise.all(files.map((file) => new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    })));
+    setEditPhotos(nextPhotos.filter(Boolean));
+    event.target.value = '';
+  }
+
   useEffect(() => {
     setCarouselIndex(0);
+    setHistoryView('log');
     setSelectedHistoryDate(null);
     setHistoryMonthIndex(Math.max(historyMonths.length - 1, 0));
   }, [selectedUnitId, historyMonths.length]);
@@ -393,8 +411,18 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
               </div>
 
               <div className="listing-modal-section">
-                <div className="listing-modal-section-title">History and transaction log</div>
-                {activeHistoryMonth && (
+                <div className="listing-history-head">
+                  <div className="listing-modal-section-title">Transaction history</div>
+                  <div className="listing-history-toggle" role="tablist" aria-label="Transaction history view">
+                    <button type="button" className={`listing-history-toggle-btn ${historyView === 'log' ? 'active' : ''}`} onClick={() => setHistoryView('log')}>
+                      Log
+                    </button>
+                    <button type="button" className={`listing-history-toggle-btn ${historyView === 'calendar' ? 'active' : ''}`} onClick={() => setHistoryView('calendar')}>
+                      Calendar
+                    </button>
+                  </div>
+                </div>
+                {historyView === 'calendar' && activeHistoryMonth && (
                   <div className="listing-history-calendar-shell">
                     <div className="listing-history-calendar-head">
                       <button
@@ -441,7 +469,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
                   </div>
                 )}
                 <div className="listing-history-list">
-                  {historyEntriesForMonth.map((entry) => (
+                  {(historyView === 'log' ? selectedUnit.history : historyEntriesForMonth).map((entry) => (
                     <div key={entry.id} className="listing-history-item">
                       <div className="listing-history-topline">
                         <span className="listing-history-date">{entry.date}</span>
@@ -530,6 +558,23 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
                   <span>Amenities</span>
                   <input value={editDraft.amenities} onChange={(event) => setEditDraft((prev) => ({ ...prev, amenities: event.target.value }))} />
                 </label>
+              </div>
+              <div className="new-listing-field">
+                <span>Listing photos</span>
+                <label className="new-listing-upload">
+                  <input type="file" accept="image/*" multiple onChange={handleEditPhotoChange} />
+                  <div className="new-listing-upload-copy">
+                    <strong>Replace listing photos</strong>
+                    <small>Upload up to 4 images. The first image becomes the cover photo.</small>
+                  </div>
+                </label>
+                <div className="new-listing-photo-grid">
+                  {editPhotos.slice(0, 4).map((photo, index) => (
+                    <div key={`edit-photo-${index}`} className="new-listing-photo-slot has-photo">
+                      <img src={photo} alt={`Listing edit photo ${index + 1}`} />
+                    </div>
+                  ))}
+                </div>
               </div>
               <label className="new-listing-field">
                 <span>Description</span>
