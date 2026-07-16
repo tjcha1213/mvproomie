@@ -14,6 +14,7 @@ export interface Conversation {
   participantRole: 'Landlord';
   listingTitle: string;
   listingLocation: string;
+  pinned: boolean;
   unreadCount: number;
   messages: ChatMessage[];
 }
@@ -41,6 +42,26 @@ function message(id: string, author: ChatMessage['author'], text: string, timest
   return { id, author, text, timestamp };
 }
 
+function orderConversations(conversations: Conversation[]): Conversation[] {
+  return [
+    ...conversations.filter((conversation) => conversation.pinned),
+    ...conversations.filter((conversation) => !conversation.pinned),
+  ];
+}
+
+function focusConversation(conversations: Conversation[], conversationId: string): Conversation[] {
+  const selected = conversations.find((conversation) => conversation.id === conversationId);
+  if (!selected) return orderConversations(conversations);
+
+  const rest = conversations.filter((conversation) => conversation.id !== conversationId);
+  const pinned = rest.filter((conversation) => conversation.pinned);
+  const unpinned = rest.filter((conversation) => !conversation.pinned);
+
+  return selected.pinned
+    ? [selected, ...pinned, ...unpinned]
+    : [...pinned, selected, ...unpinned];
+}
+
 export function conversationIdForListing(listingId: number): string {
   return `listing-${listingId}`;
 }
@@ -59,6 +80,7 @@ export function createInitialConversations(listings: Listing[]): Conversation[] 
       participantRole: 'Landlord',
       listingTitle: listing.title,
       listingLocation: listing.location,
+      pinned: false,
       unreadCount: index % 2 === 0 ? 1 + (index % 3) : 0,
       messages: [
         message(`${conversationId}-a`, 'other', exchange.other, now - (index + 2) * 1000 * 60 * 90),
@@ -78,6 +100,7 @@ function createConversation(listing: Listing, timestamp: number): Conversation {
     participantRole: 'Landlord',
     listingTitle: listing.title,
     listingLocation: listing.location,
+    pinned: false,
     unreadCount: 0,
     messages: [
       message(
@@ -90,12 +113,6 @@ function createConversation(listing: Listing, timestamp: number): Conversation {
   };
 }
 
-function moveToTop(conversations: Conversation[], id: string): Conversation[] {
-  const selected = conversations.find((conversation) => conversation.id === id);
-  if (!selected) return conversations;
-  return [selected, ...conversations.filter((conversation) => conversation.id !== id)];
-}
-
 export function openConversation(
   conversations: Conversation[],
   listing: Listing
@@ -106,7 +123,7 @@ export function openConversation(
   if (existing) {
     return {
       conversationId: id,
-      conversations: moveToTop(
+      conversations: focusConversation(
         conversations.map((conversation) =>
           conversation.id === id ? { ...conversation, unreadCount: 0 } : conversation
         ),
@@ -140,7 +157,7 @@ export function openConversationWithPrompt(
 
   return {
     conversationId: id,
-    conversations: moveToTop(
+    conversations: focusConversation(
       opened.conversations.map((conversation) => {
         if (conversation.id !== id) return conversation;
         const nextMessages = [
@@ -182,5 +199,23 @@ export function sendConversationReply(
     };
   });
 
-  return moveToTop(updated, conversationId);
+  return focusConversation(updated, conversationId);
+}
+
+export function toggleConversationPin(
+  conversations: Conversation[],
+  conversationId: string
+): Conversation[] {
+  const updated = conversations.map((conversation) =>
+    conversation.id === conversationId ? { ...conversation, pinned: !conversation.pinned } : conversation
+  );
+
+  return focusConversation(updated, conversationId);
+}
+
+export function deleteConversation(
+  conversations: Conversation[],
+  conversationId: string
+): Conversation[] {
+  return orderConversations(conversations.filter((conversation) => conversation.id !== conversationId));
 }

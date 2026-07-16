@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Listing } from '../data/listings';
 import Logo from '../components/Logo';
 
@@ -14,13 +15,15 @@ function TypeBadge({ type }: { type: string }) {
 }
 
 export default function SavedScreen({ listings, onSelectListing, onToggleSave, onShowToast }: Props) {
+  const [editing, setEditing] = useState(false);
+
   return (
     <>
       <div className="app-header">
         <Logo />
         <div className="header-actions">
-          <button onClick={() => onShowToast('Edit saved list — coming soon')} style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', padding: '6px 12px', borderRadius: 8, cursor: 'pointer' }}>
-            Edit
+          <button onClick={() => setEditing((value) => !value)} style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', padding: '6px 12px', borderRadius: 8, cursor: 'pointer' }}>
+            {editing ? 'Done' : 'Edit'}
           </button>
         </div>
       </div>
@@ -43,7 +46,7 @@ export default function SavedScreen({ listings, onSelectListing, onToggleSave, o
         ) : (
           <div className="saved-list">
             {listings.map(l => (
-              <div key={l.id} className="saved-item" onClick={() => onSelectListing(l)}>
+              <div key={l.id} className={`saved-item ${editing ? 'editing' : ''}`} onClick={() => { if (!editing) onSelectListing(l); }}>
                 <div className="saved-item-img">
                   <img src={l.image} alt={l.title} loading="lazy" />
                 </div>
@@ -62,6 +65,15 @@ export default function SavedScreen({ listings, onSelectListing, onToggleSave, o
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                   </svg>
                 </button>
+                {editing && (
+                  <button
+                    className="saved-item-remove"
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onToggleSave(l.id); }}
+                  >
+                    Remove
+                  </button>
+                )}
               </div>
             ))}
           </div>
