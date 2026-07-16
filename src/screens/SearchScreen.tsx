@@ -10,13 +10,11 @@ interface Props {
   listings: Listing[];
   onSelectListing: (l: Listing) => void;
   onToggleSave: (id: number) => void;
-  onOpenMenu: () => void;
-  onShowToast: (msg: string) => void;
 }
 
 const QUICK_TYPES: ListingType[] = ['Studio', 'Bedspace', 'Apartment'];
 
-export default function SearchScreen({ listings, onSelectListing, onToggleSave, onOpenMenu }: Props) {
+export default function SearchScreen({ listings, onSelectListing, onToggleSave }: Props) {
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -36,15 +34,6 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
       {/* Header */}
       <div className="app-header">
         <Logo />
-        <div className="header-actions">
-          <button className="icon-btn" onClick={onOpenMenu} aria-label="Menu">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="3" y1="12" x2="21" y2="12"/>
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
-          </button>
-        </div>
       </div>
 
       {/* Search */}

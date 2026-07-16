@@ -10,9 +10,10 @@ const MENU_ITEMS = [
 
 interface Props {
   onShowToast: (msg: string) => void;
+  onOpenTheme: () => void;
 }
 
-export default function ProfileScreen({ onShowToast }: Props) {
+export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
   return (
     <>
       <div className="app-header">
@@ -22,9 +23,9 @@ export default function ProfileScreen({ onShowToast }: Props) {
       <div className="scroll-area">
         {/* Profile header */}
         <div className="profile-header">
-          <div className="profile-avatar">T</div>
-          <div className="profile-name">Takashi B.</div>
-          <div className="profile-email">takashi@roomie.ph</div>
+          <div className="profile-avatar">J</div>
+          <div className="profile-name">Juan D.</div>
+          <div className="profile-email">juan@roomie.ph</div>
         </div>
 
         <div className="section-header">
@@ -48,6 +49,20 @@ export default function ProfileScreen({ onShowToast }: Props) {
               </span>
             </div>
           ))}
+          <button type="button" className="profile-menu-item" onClick={onOpenTheme}>
+            <div className="profile-menu-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M8 15h.01M9 8h.01M15 8h.01M17 14h.01M12 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+              </svg>
+            </div>
+            <span className="profile-menu-label">Theme color</span>
+            <span className="profile-menu-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </span>
+          </button>
         </div>
 
         <div style={{ height: 32 }} />

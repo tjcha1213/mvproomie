@@ -29,8 +29,6 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
   }, [listing.id]);
 
   const imgs = listing.images.length > 0 ? listing.images : [listing.image];
-  const MAX_THUMBS = 4;
-  const extraCount = imgs.length - MAX_THUMBS;
 
   const handleImageScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
     const el = event.currentTarget;
@@ -89,23 +87,18 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
         {/* Image counter */}
         <div className="image-counter">{activeImg + 1} / {imgs.length}</div>
 
-        {/* Thumbnails */}
+        {/* Swipe navigation dots */}
         <div className="detail-thumbnails">
-          {imgs.slice(0, MAX_THUMBS).map((img, i) => (
-            <div
+          {imgs.map((_, i) => (
+            <button
               key={i}
+              type="button"
               className={`detail-thumb ${i === activeImg ? 'active' : ''}`}
               onClick={() => jumpToImage(i)}
+              aria-label={`Show photo ${i + 1}`}
             >
-              <img src={img} alt="" />
-            </div>
+            </button>
           ))}
-          {extraCount > 0 && (
-            <div
-              className="detail-thumb-more"
-              onClick={() => jumpToImage(MAX_THUMBS)}
-            >+{extraCount}</div>
-          )}
         </div>
       </div>
 

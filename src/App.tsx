@@ -123,8 +123,6 @@ function App() {
               onSelectListing={(l) => navigate('detail', l)}
               onToggleSave={toggleSave}
               onOpenSearch={() => handleTabChange('search')}
-              onOpenMenu={() => setThemeOpen(true)}
-              onShowToast={showToast}
             />
           )}
           {currentScreen === 'search' && (
@@ -132,8 +130,6 @@ function App() {
               listings={listings}
               onSelectListing={(l) => navigate('detail', l)}
               onToggleSave={toggleSave}
-              onOpenMenu={() => setThemeOpen(true)}
-              onShowToast={showToast}
             />
           )}
           {currentScreen === 'detail' && selectedListing && (
@@ -163,7 +159,7 @@ function App() {
               onSendMessage={sendReply}
             />
           )}
-          {currentScreen === 'profile' && <ProfileScreen onShowToast={showToast} />}
+          {currentScreen === 'profile' && <ProfileScreen onShowToast={showToast} onOpenTheme={() => setThemeOpen(true)} />}
         </div>
 
         {currentScreen !== 'detail' && (

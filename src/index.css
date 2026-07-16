@@ -218,13 +218,13 @@ img {
 
 /* ─── Header ─── */
 .app-header {
-  background: var(--surface);
+  background: transparent;
   /* Top inset clears the notch / OS status bar on full-screen phones. */
   padding: calc(12px + env(safe-area-inset-top)) 20px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: none;
   flex-shrink: 0;
 }
 
@@ -313,7 +313,7 @@ img {
 /* ─── Search Bar ─── */
 .search-container {
   padding: 12px 16px;
-  background: var(--surface);
+  background: transparent;
   display: flex;
   gap: 10px;
   align-items: center;
@@ -324,7 +324,7 @@ img {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--surface-2);
+  background: transparent;
   border-radius: 12px;
   padding: 10px 14px;
   border: 1.5px solid transparent;
@@ -680,43 +680,23 @@ img {
 }
 
 .detail-thumb {
-  width: 48px;
-  height: 36px;
-  border-radius: 6px;
-  overflow: hidden;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.58);
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: border-color 0.15s, transform 0.15s;
+  border: none;
+  transition: background 0.15s, transform 0.15s;
   flex-shrink: 0;
 }
 
 .detail-thumb.active {
-  border-color: white;
+  background: white;
+  transform: scale(1.35);
 }
 
 .detail-thumb:active {
   transform: scale(0.94);
-}
-
-.detail-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.detail-thumb-more {
-  width: 48px;
-  height: 36px;
-  border-radius: 6px;
-  overflow: hidden;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  flex-shrink: 0;
 }
 
 /* Detail body */

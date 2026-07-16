@@ -165,7 +165,7 @@ function App() {
               onSendMessage={sendReply}
             />
           )}
-          {currentScreen === 'profile' && <ProfileScreen onShowToast={showToast} />}
+          {currentScreen === 'profile' && <ProfileScreen onShowToast={showToast} onOpenTheme={() => setThemeOpen(true)} />}
         </div>
 
         {currentScreen !== 'detail' && (
