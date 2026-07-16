@@ -1787,6 +1787,15 @@ img {
   white-space: nowrap;
 }
 
+.mvp1-map-overlay .mvp1-map-count {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+  display: inline-flex;
+  margin-top: 8px;
+}
+
 /* Price pins */
 .map-pin-wrap { background: transparent; border: none; }
 
