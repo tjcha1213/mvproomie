@@ -1096,10 +1096,37 @@ const rawListings: Listing[] = [
 // dev ('/') and on GitHub Pages ('/mvproomie/').
 const withBase = (p: string) => `${import.meta.env.BASE_URL}${p.replace(/^\//, '')}`;
 
-export const listings: Listing[] = rawListings.map((l) => ({
+const TYPE_IMAGE_POOL: Record<ListingType, string[]> = {
+  Studio: [
+    '/assets/studio_cozy.png',
+    '/assets/studio_modern.png',
+    '/assets/apartment_1br.png',
+    '/assets/apartment_2br.png',
+  ],
+  Bedspace: [
+    '/assets/bedspace_male.png',
+    '/assets/bedspace_female.png',
+    '/assets/studio_cozy.png',
+    '/assets/studio_modern.png',
+  ],
+  Apartment: [
+    '/assets/apartment_1br.png',
+    '/assets/apartment_2br.png',
+    '/assets/studio_modern.png',
+    '/assets/studio_cozy.png',
+  ],
+};
+
+function expandListingImages(listing: Listing): string[] {
+  return [listing.image, ...listing.images, ...TYPE_IMAGE_POOL[listing.type]].filter(
+    (image, index, images) => images.indexOf(image) === index
+  );
+}
+
+export const listings: Listing[] = rawListings.slice(0, 30).map((l) => ({
   ...l,
   image: withBase(l.image),
-  images: l.images.map(withBase),
+  images: expandListingImages(l).map(withBase),
 }));
 
 // Compact price for map pins, e.g. 6000 -> "₱6K", 13500 -> "₱13.5K".

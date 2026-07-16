@@ -9,6 +9,7 @@ interface Props {
   onOpenSearch: () => void;
   onOpenMenu: () => void;
   onShowToast: (msg: string) => void;
+  onSendInquiry: (listing: Listing) => void;
 }
 
 function TypeBadge({ type }: { type: string }) {
@@ -34,6 +35,7 @@ export default function HomeScreen({
   onOpenSearch,
   onOpenMenu,
   onShowToast,
+  onSendInquiry: _onSendInquiry,
 }: Props) {
   const sections = useMemo<ListingRailSection[]>(() => {
     const qcListings = listings.filter((listing) => listing.district === 'QC');

@@ -1,18 +1,100 @@
+import { useMemo, useState } from 'react';
 import AppLogo from '../components/AppLogo';
-
-const CONVERSATIONS = [
-  { id: 1, name: 'Juan Dela Cruz', preview: 'Hi! Is the unit still available?', time: '2m ago', unread: 3 },
-  { id: 2, name: 'Maria Santos', preview: 'Yes, you can move in on July 1st.', time: '1h ago', unread: 0 },
-  { id: 3, name: 'Roberto Lim', preview: 'Please send valid IDs for verification.', time: '3h ago', unread: 1 },
-  { id: 4, name: 'Ana Reyes', preview: 'The unit includes all utilities! 😊', time: 'Yesterday', unread: 0 },
-  { id: 5, name: 'Leon Garcia', preview: 'I can schedule a viewing this Saturday.', time: 'Mon', unread: 0 },
-];
+import type { Conversation } from '../chat';
 
 interface Props {
-  onShowToast: (msg: string) => void;
+  conversations: Conversation[];
+  activeConversationId: string | null;
+  onOpenConversation: (conversationId: string) => void;
+  onBackToList: () => void;
+  onSendMessage: (conversationId: string, text: string) => void;
 }
 
-export default function InboxScreen({ onShowToast }: Props) {
+function formatConversationTime(timestamp: number): string {
+  const deltaMinutes = Math.round((Date.now() - timestamp) / (1000 * 60));
+  if (deltaMinutes < 1) return 'Now';
+  if (deltaMinutes < 60) return `${deltaMinutes}m`;
+  if (deltaMinutes < 1440) return `${Math.floor(deltaMinutes / 60)}h`;
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(timestamp);
+}
+
+function formatMessageTime(timestamp: number): string {
+  return new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(timestamp);
+}
+
+export default function InboxScreen({
+  conversations,
+  activeConversationId,
+  onOpenConversation,
+  onBackToList,
+  onSendMessage,
+}: Props) {
+  const [draft, setDraft] = useState('');
+  const activeConversation = useMemo(
+    () => conversations.find((conversation) => conversation.id === activeConversationId) ?? null,
+    [activeConversationId, conversations]
+  );
+
+  const submit = () => {
+    if (!activeConversation || !draft.trim()) return;
+    onSendMessage(activeConversation.id, draft);
+    setDraft('');
+  };
+
+  if (activeConversation) {
+    return (
+      <>
+        <div className="app-header">
+          <div className="logo"><AppLogo /></div>
+        </div>
+
+        <div className="inbox-chat-header">
+          <button className="inbox-chat-back" type="button" onClick={onBackToList} aria-label="Back to inbox">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <div className="inbox-chat-title-block">
+            <div className="inbox-chat-title">{activeConversation.participantName}</div>
+            <div className="inbox-chat-subtitle">
+              {activeConversation.listingTitle} · {activeConversation.listingLocation}
+            </div>
+          </div>
+        </div>
+
+        <div className="inbox-chat-thread">
+          {activeConversation.messages.map((message) => (
+            <div
+              key={message.id}
+              className={`inbox-bubble-row ${message.author === 'self' ? 'self' : 'other'}`}
+            >
+              <div className={`inbox-bubble ${message.author === 'self' ? 'self' : 'other'}`}>
+                <div>{message.text}</div>
+                <div className="inbox-bubble-time">{formatMessageTime(message.timestamp)}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="inbox-composer">
+          <textarea
+            className="inbox-composer-input"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder={`Message ${activeConversation.participantName.split(' ')[0]}...`}
+            rows={1}
+          />
+          <button className="inbox-send-btn" type="button" onClick={submit}>
+            Send
+          </button>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="app-header">
@@ -25,19 +107,28 @@ export default function InboxScreen({ onShowToast }: Props) {
 
       <div className="scroll-area">
         <div className="inbox-list">
-          {CONVERSATIONS.map(c => (
-            <div key={c.id} className="inbox-item" onClick={() => onShowToast(`Opening chat with ${c.name}…`)}>
-              <div className="inbox-avatar">{c.name[0]}</div>
-              <div className="inbox-info">
-                <div className="inbox-name">{c.name}</div>
-                <div className="inbox-preview">{c.preview}</div>
-              </div>
-              <div className="inbox-meta">
-                <div className="inbox-time">{c.time}</div>
-                {c.unread > 0 && <div className="inbox-unread">{c.unread}</div>}
-              </div>
-            </div>
-          ))}
+          {conversations.map((conversation) => {
+            const lastMessage = conversation.messages[conversation.messages.length - 1];
+            return (
+              <button
+                key={conversation.id}
+                className="inbox-item"
+                type="button"
+                onClick={() => onOpenConversation(conversation.id)}
+              >
+                <div className="inbox-avatar">{conversation.participantName[0]}</div>
+                <div className="inbox-info">
+                  <div className="inbox-name">{conversation.participantName}</div>
+                  <div className="inbox-preview">{lastMessage?.text}</div>
+                  <div className="inbox-listing-meta">{conversation.listingTitle}</div>
+                </div>
+                <div className="inbox-meta">
+                  <div className="inbox-time">{lastMessage ? formatConversationTime(lastMessage.timestamp) : ''}</div>
+                  {conversation.unreadCount > 0 && <div className="inbox-unread">{conversation.unreadCount}</div>}
+                </div>
+              </button>
+            );
+          })}
         </div>
 
         <div style={{ height: 32 }} />
