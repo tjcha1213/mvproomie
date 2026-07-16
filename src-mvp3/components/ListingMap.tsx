@@ -57,8 +57,7 @@ export default function ListingMap({ listings, selectedId, onSelect, onOpenListi
   const wireTooltipNavigation = (marker: L.Marker, listing: Listing) => {
     marker.on('tooltipopen', () => {
       const tooltipEl = marker.getTooltip()?.getElement();
-      const card = tooltipEl?.querySelector('.map-listing-tooltip') as HTMLDivElement | null;
-      if (!tooltipEl || !card) return;
+      if (!tooltipEl) return;
 
       L.DomEvent.disableClickPropagation(tooltipEl);
       L.DomEvent.disableScrollPropagation(tooltipEl);
@@ -68,7 +67,7 @@ export default function ListingMap({ listings, selectedId, onSelect, onOpenListi
       L.DomEvent.on(tooltipEl, 'touchstart', () => {
         suppressNextMapClearRef.current = true;
       });
-      L.DomEvent.on(card, 'click', (event) => {
+      L.DomEvent.on(tooltipEl, 'click', (event) => {
         suppressNextMapClearRef.current = true;
         L.DomEvent.stop(event);
         onOpenListingRef.current(listing);

@@ -2096,10 +2096,12 @@ img {
   background: transparent;
   border: 0;
   box-shadow: none;
+  pointer-events: auto;
 }
 
 .map-listing-tooltip-wrap .leaflet-tooltip-content {
   margin: 0;
+  pointer-events: auto;
 }
 
 .map-listing-tooltip-wrap::before {
@@ -2115,6 +2117,7 @@ img {
   border: 1px solid rgba(226, 232, 240, 0.92);
   backdrop-filter: blur(14px);
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .map-listing-tooltip-thumb {
