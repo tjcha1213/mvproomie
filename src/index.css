@@ -1691,10 +1691,47 @@ img {
 }
 
 /* ─── Home map + synced carousel ─── */
-.home-map-wrap {
-  flex: 1;
+.mvp1-home-map-stage {
   position: relative;
-  min-height: 180px;
+  flex: 1;
+  min-height: 220px;
+  overflow: hidden;
+}
+
+.mvp1-map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 850;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
+  pointer-events: none;
+}
+
+.mvp1-map-overlay > * {
+  pointer-events: auto;
+}
+
+.mvp1-map-header {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  margin-bottom: 12px;
+}
+
+.mvp1-map-search {
+  padding: 0;
+  background: transparent;
+}
+
+.mvp1-map-search .search-input-wrap {
+  background: rgba(255,255,255,0.94);
+  box-shadow: 0 10px 24px rgba(15,23,42,0.14);
+}
+
+.home-map-wrap {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
 }
 
