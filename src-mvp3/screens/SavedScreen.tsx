@@ -26,7 +26,7 @@ export default function SavedScreen({ listings, onSelectListing, onToggleSave, o
       </div>
 
       <div className="section-header">
-        <span className="section-title">Saved Listings</span>
+        <span className="section-title">Wishlist</span>
       </div>
 
       <div className="scroll-area">
@@ -37,8 +37,8 @@ export default function SavedScreen({ listings, onSelectListing, onToggleSave, o
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
             </div>
-            <div className="empty-title">No saved listings yet</div>
-            <div className="empty-sub">Tap the ♡ icon on any listing to save it here for later.</div>
+            <div className="empty-title">No wishlisted listings yet</div>
+            <div className="empty-sub">Tap the heart icon on any listing to keep it here for later.</div>
           </div>
         ) : (
           <div className="saved-list">

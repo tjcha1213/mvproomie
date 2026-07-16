@@ -13,13 +13,22 @@ import InboxScreen from './screens/InboxScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import Toast from './components/Toast';
 import ThemePicker from './components/ThemePicker';
+import {
+  createInitialConversations,
+  openConversationWithPrompt,
+  openConversation,
+  sendConversationReply,
+  type Conversation,
+} from './chat';
 
 
 function App() {
   const [listings, setListings] = useState<Listing[]>(initialListings);
+  const [conversations, setConversations] = useState<Conversation[]>(() => createInitialConversations(initialListings));
   const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [prevScreen, setPrevScreen] = useState<Screen>('home');
   const [toast, setToast] = useState<string | null>(null);
   const [primary, setPrimary] = useState<string>(
@@ -54,7 +63,34 @@ function App() {
     setActiveTab(tab);
     setPrevScreen(currentScreen);
     setCurrentScreen(tab);
+    if (tab !== 'inbox') setActiveConversationId(null);
   }, [currentScreen]);
+
+  const openInboxThread = useCallback((
+    listing: Listing,
+    mode: 'message' | 'inquiry'
+  ) => {
+    setConversations((prev) => {
+      const next = openConversationWithPrompt(prev, listing, mode);
+      setActiveConversationId(next.conversationId);
+      return next.conversations;
+    });
+    setActiveTab('inbox');
+    setPrevScreen(currentScreen);
+    setCurrentScreen('inbox');
+  }, [currentScreen]);
+
+  const openConversationFromList = useCallback((conversationId: string) => {
+    const listing = listings.find((item) => `listing-${item.id}` === conversationId);
+    if (listing) {
+      setConversations((prev) => openConversation(prev, listing).conversations);
+    }
+    setActiveConversationId(conversationId);
+  }, [listings]);
+
+  const sendReply = useCallback((conversationId: string, text: string) => {
+    setConversations((prev) => sendConversationReply(prev, conversationId, text));
+  }, []);
 
   const toggleSave = useCallback((id: number) => {
     setListings(prev =>
@@ -106,6 +142,8 @@ function App() {
               onBack={goBack}
               onToggleSave={toggleSave}
               onShowToast={showToast}
+              onOpenChat={(listing) => openInboxThread(listing, 'message')}
+              onSendInquiry={(listing) => openInboxThread(listing, 'inquiry')}
             />
           )}
           {currentScreen === 'saved' && (
@@ -116,7 +154,15 @@ function App() {
               onShowToast={showToast}
             />
           )}
-          {currentScreen === 'inbox' && <InboxScreen onShowToast={showToast} />}
+          {currentScreen === 'inbox' && (
+            <InboxScreen
+              conversations={conversations}
+              activeConversationId={activeConversationId}
+              onOpenConversation={openConversationFromList}
+              onBackToList={() => setActiveConversationId(null)}
+              onSendMessage={sendReply}
+            />
+          )}
           {currentScreen === 'profile' && <ProfileScreen onShowToast={showToast} />}
         </div>
 
@@ -125,7 +171,6 @@ function App() {
             activeTab={activeTab}
             onTabChange={handleTabChange}
             savedCount={savedListings.length}
-            onAdd={() => showToast('📝 Post a listing — coming soon')}
           />
         )}
 

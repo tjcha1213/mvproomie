@@ -9,13 +9,14 @@ interface Props {
   onToggleSave: (id: number) => void;
   onOpenMenu: () => void;
   onShowToast: (msg: string) => void;
+  onSendInquiry: (listing: Listing) => void;
 }
 
 type FilterType = 'All' | 'Studio' | 'Bedspace' | 'Apartment';
 
 const FILTERS: FilterType[] = ['All', 'Studio', 'Bedspace', 'Apartment'];
 
-export default function SearchScreen({ listings, onSelectListing, onToggleSave, onOpenMenu, onShowToast }: Props) {
+export default function SearchScreen({ listings, onSelectListing, onToggleSave, onOpenMenu, onShowToast, onSendInquiry: _onSendInquiry }: Props) {
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
   const [filtersOpen, setFiltersOpen] = useState(false);

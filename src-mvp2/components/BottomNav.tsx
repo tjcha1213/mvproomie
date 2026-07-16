@@ -4,10 +4,9 @@ interface Props {
   activeTab: NavTab;
   onTabChange: (tab: NavTab) => void;
   savedCount: number;
-  onAdd: () => void;
 }
 
-export default function BottomNav({ activeTab, onTabChange, savedCount, onAdd }: Props) {
+export default function BottomNav({ activeTab, onTabChange, savedCount }: Props) {
   return (
     <nav className="bottom-nav">
       <button className={`bottom-nav-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => onTabChange('home')}>
@@ -26,15 +25,6 @@ export default function BottomNav({ activeTab, onTabChange, savedCount, onAdd }:
         Search
       </button>
 
-      <button className="nav-add-btn" onClick={onAdd} aria-label="Post a listing">
-        <div className="nav-add-circle">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-        </div>
-      </button>
-
       <button className={`bottom-nav-item ${activeTab === 'saved' ? 'active' : ''}`} onClick={() => onTabChange('saved')} style={{ position: 'relative' }}>
         <svg viewBox="0 0 24 24" fill={activeTab === 'saved' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -48,7 +38,7 @@ export default function BottomNav({ activeTab, onTabChange, savedCount, onAdd }:
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>{savedCount}</span>
         )}
-        Saved
+        Wishlist
       </button>
 
       <button className={`bottom-nav-item ${activeTab === 'inbox' ? 'active' : ''}`} onClick={() => onTabChange('inbox')}>
@@ -56,7 +46,15 @@ export default function BottomNav({ activeTab, onTabChange, savedCount, onAdd }:
           <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
           <polyline points="22,6 12,13 2,6"/>
         </svg>
-        Inbox
+        Chat
+      </button>
+
+      <button className={`bottom-nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => onTabChange('profile')}>
+        <svg viewBox="0 0 24 24" fill={activeTab === 'profile' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 20v-1a8 8 0 0 1 16 0v1"/>
+        </svg>
+        Profile
       </button>
     </nav>
   );

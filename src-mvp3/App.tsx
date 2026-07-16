@@ -135,6 +135,7 @@ function App() {
               onToggleSave={toggleSave}
               onOpenMenu={() => setThemeOpen(true)}
               onShowToast={showToast}
+              onSendInquiry={(listing) => openInboxThread(listing, 'inquiry')}
             />
           )}
           {currentScreen === 'detail' && selectedListing && (
@@ -172,7 +173,6 @@ function App() {
             activeTab={activeTab}
             onTabChange={handleTabChange}
             savedCount={savedListings.length}
-            onAdd={() => showToast('📝 Post a listing — coming soon')}
           />
         )}
 

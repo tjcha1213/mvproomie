@@ -9,6 +9,7 @@ interface Props {
   onToggleSave: (id: number) => void;
   onOpenMenu: () => void;
   onShowToast: (msg: string) => void;
+  onSendInquiry: (listing: Listing) => void;
 }
 
 function TypeBadge({ type }: { type: string }) {
@@ -100,7 +101,7 @@ function ListingPhotoCarousel({
   );
 }
 
-export default function SearchScreen({ listings, onSelectListing, onToggleSave, onOpenMenu, onShowToast }: Props) {
+export default function SearchScreen({ listings, onSelectListing, onToggleSave, onOpenMenu, onShowToast, onSendInquiry }: Props) {
   const [query, setQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [minPrice, setMinPrice] = useState('');
@@ -534,7 +535,7 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    onShowToast('Inquiry Sent! Check your inbox.');
+                    onSendInquiry(l);
                   }}
                 >
                   Send inquiry

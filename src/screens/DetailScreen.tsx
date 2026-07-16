@@ -6,6 +6,8 @@ interface Props {
   onBack: () => void;
   onToggleSave: (id: number) => void;
   onShowToast: (msg: string) => void;
+  onOpenChat: (listing: Listing) => void;
+  onSendInquiry: (listing: Listing) => void;
 }
 
 function TypeBadge({ type }: { type: string }) {
@@ -13,7 +15,7 @@ function TypeBadge({ type }: { type: string }) {
   return <span className={`detail-type-badge ${cls}`}>{type}</span>;
 }
 
-export default function DetailScreen({ listing, onBack, onToggleSave, onShowToast }: Props) {
+export default function DetailScreen({ listing, onBack, onToggleSave, onShowToast, onOpenChat, onSendInquiry }: Props) {
   const [activeImg, setActiveImg] = useState(0);
   const bodyRef = useRef<HTMLDivElement>(null);
   const imageStripRef = useRef<HTMLDivElement>(null);
@@ -187,7 +189,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
             </div>
           </div>
           <div className="landlord-actions">
-            <button className="action-btn-sm btn-message" onClick={() => onShowToast('Opening messages...')}>
+            <button className="action-btn-sm btn-message" onClick={() => onOpenChat(listing)}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
@@ -210,7 +212,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
 
         {/* CTA */}
         <div className="detail-cta">
-          <button className="cta-primary" onClick={() => onShowToast('Inquiry Sent! Check your inbox.')}>
+          <button className="cta-primary" onClick={() => onSendInquiry(listing)}>
             Send Inquiry
           </button>
         </div>

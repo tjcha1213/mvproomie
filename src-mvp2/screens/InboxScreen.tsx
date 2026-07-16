@@ -102,7 +102,7 @@ export default function InboxScreen({
       </div>
 
       <div className="section-header">
-        <span className="section-title">Inbox</span>
+        <span className="section-title">Chat</span>
       </div>
 
       <div className="scroll-area">

@@ -218,42 +218,6 @@ img {
 }
 
 /* Add Listing button in nav */
-.nav-add-btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 0;
-  cursor: pointer;
-}
-
-.nav-add-circle {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, var(--primary-light), var(--primary));
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: -20px;
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--primary) 40%, transparent);
-  transition: transform 0.2s, box-shadow 0.2s;
-  position: relative;
-  z-index: 2;
-}
-
-.nav-add-circle:active {
-  transform: scale(0.94);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 35%, transparent);
-}
-
-.nav-add-circle svg {
-  width: 24px;
-  height: 24px;
-  color: white;
-}
-
 /* ─── Header ─── */
 .app-header {
   background: var(--surface);

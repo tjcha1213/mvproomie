@@ -48,6 +48,10 @@ export default function ListingMap({ listings, selectedId, onSelect, onOpenListi
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Record<number, L.Marker>>({});
   const suppressNextMapClearRef = useRef(false);
+  const listingsRef = useRef(listings);
+  listingsRef.current = listings;
+  const selectedIdRef = useRef<number | null>(selectedId);
+  selectedIdRef.current = selectedId;
   // Keep the latest onSelect without re-binding markers on every render.
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
@@ -107,7 +111,15 @@ export default function ListingMap({ listings, selectedId, onSelect, onOpenListi
       markersRef.current[l.id] = marker;
     });
 
-    map.on('click', () => {
+    map.on('click', (event: L.LeafletMouseEvent & { originalEvent?: MouseEvent }) => {
+      const target = event.originalEvent?.target;
+      if (target instanceof HTMLElement && target.closest('.map-listing-tooltip-wrap')) {
+        const listing = listingsRef.current.find((item) => item.id === selectedIdRef.current);
+        if (listing) {
+          onOpenListingRef.current(listing);
+          return;
+        }
+      }
       if (suppressNextMapClearRef.current) {
         suppressNextMapClearRef.current = false;
         return;
