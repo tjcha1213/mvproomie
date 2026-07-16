@@ -27,6 +27,21 @@ function pinIcon(listing: Listing, active: boolean): L.DivIcon {
   });
 }
 
+function tooltipHtml(listing: Listing): string {
+  return `
+    <div class="map-listing-tooltip">
+      <div class="map-listing-tooltip-thumb">
+        <img src="${listing.image}" alt="${listing.title}" />
+      </div>
+      <div class="map-listing-tooltip-body">
+        <div class="map-listing-tooltip-title">${listing.title}</div>
+        <div class="map-listing-tooltip-meta">${listing.location}</div>
+        <div class="map-listing-tooltip-price">₱${listing.price.toLocaleString()} / month</div>
+      </div>
+    </div>
+  `;
+}
+
 export default function ListingMap({ listings, selectedId, onSelect, bottomInset, topInset, sheetMode }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -113,6 +128,20 @@ export default function ListingMap({ listings, selectedId, onSelect, bottomInset
       const active = l.id === selectedId;
       marker.setIcon(pinIcon(l, active));
       marker.setZIndexOffset(active ? 1000 : 0);
+      if (active && sheetMode === 'peek') {
+        marker
+          .bindTooltip(tooltipHtml(l), {
+            direction: 'top',
+            offset: [0, -18],
+            opacity: 1,
+            permanent: true,
+            className: 'map-listing-tooltip-wrap',
+          })
+          .openTooltip();
+      } else {
+        marker.closeTooltip();
+        marker.unbindTooltip();
+      }
       if (active) {
         const selectedPoint = map.project([l.lat, l.lng], map.getZoom());
         const visibleOffset =
