@@ -110,7 +110,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
   const [minSqm, setMinSqm] = useState('');
   const [maxSqm, setMaxSqm] = useState('');
   const [listingType, setListingType] = useState<'Any' | Listing['type']>('Any');
-  const [selectedId, setSelectedId] = useState<number>(listings[0]?.id ?? 0);
+  const [selectedId, setSelectedId] = useState<number | null>(listings[0]?.id ?? null);
   const [sheetHeight, setSheetHeight] = useState(320);
   const [stageHeight, setStageHeight] = useState(0);
   const [topInset, setTopInset] = useState(0);
@@ -193,9 +193,13 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
   }, [filteredListings]);
 
   // Pin tap → select and centre the matching card.
-  const selectFromMap = useCallback((id: number) => {
-    setSelectedId(id);
-    centerCard(id);
+  const selectFromMap = useCallback((id: number | null) => {
+    setSelectedId((prev) => {
+      if (id === null) return null;
+      const next = prev === id ? null : id;
+      if (next !== null) centerCard(next);
+      return next;
+    });
   }, [centerCard]);
 
   // Swiping the carousel → select the card nearest the centre (map follows).
@@ -205,7 +209,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
       const el = listRef.current;
       if (!el) return;
       const center = el.scrollTop + el.clientHeight / 2;
-      let bestId = filteredListings[0]?.id ?? 0;
+      let bestId = filteredListings[0]?.id ?? null;
       let bestDist = Infinity;
       Array.from(el.children).forEach((child, i) => {
         const c = (child as HTMLElement).offsetTop + (child as HTMLElement).offsetHeight / 2;
@@ -220,7 +224,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
 
   useEffect(() => {
     if (filteredListings.length === 0) return;
-    if (!filteredListings.some((listing) => listing.id === selectedId)) {
+    if (selectedId !== null && !filteredListings.some((listing) => listing.id === selectedId)) {
       setSelectedId(filteredListings[0].id);
     }
   }, [filteredListings, selectedId]);
@@ -458,6 +462,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
           listings={filteredListings}
           selectedId={selectedId}
           onSelect={selectFromMap}
+          onOpenListing={onSelectListing}
           bottomInset={mapBottom}
           topInset={topInset}
           sheetMode={sheetMode}

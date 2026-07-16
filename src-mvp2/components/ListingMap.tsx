@@ -6,8 +6,9 @@ import { formatPriceShort } from '../data/listings';
 
 interface Props {
   listings: Listing[];
-  selectedId: number;
-  onSelect: (id: number) => void;
+  selectedId: number | null;
+  onSelect: (id: number | null) => void;
+  onOpenListing: (listing: Listing) => void;
   bottomInset: number;
   topInset: number;
   sheetMode: 'peek' | 'mid' | 'full';
@@ -42,13 +43,15 @@ function tooltipHtml(listing: Listing): string {
   `;
 }
 
-export default function ListingMap({ listings, selectedId, onSelect, bottomInset, topInset, sheetMode }: Props) {
+export default function ListingMap({ listings, selectedId, onSelect, onOpenListing, bottomInset, topInset, sheetMode }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Record<number, L.Marker>>({});
   // Keep the latest onSelect without re-binding markers on every render.
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
+  const onOpenListingRef = useRef(onOpenListing);
+  onOpenListingRef.current = onOpenListing;
 
   // Init map once.
   useEffect(() => {
@@ -78,8 +81,20 @@ export default function ListingMap({ listings, selectedId, onSelect, bottomInset
       })
         .addTo(map)
         .on('click', () => onSelectRef.current(l.id));
+      marker.on('tooltipopen', () => {
+        const tooltipEl = marker.getTooltip()?.getElement();
+        const card = tooltipEl?.querySelector('.map-listing-tooltip') as HTMLDivElement | null;
+        if (!card) return;
+        card.onclick = (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onOpenListingRef.current(l);
+        };
+      });
       markersRef.current[l.id] = marker;
     });
+
+    map.on('click', () => onSelectRef.current(null));
 
     // Use a fixed center + zoom so the view isn't zoomed out to fit all pins.
     // Metro Manila center; zoom 11 shows the whole metro at a comfortable density.
@@ -111,6 +126,16 @@ export default function ListingMap({ listings, selectedId, onSelect, bottomInset
       })
         .addTo(map)
         .on('click', () => onSelectRef.current(l.id));
+      marker.on('tooltipopen', () => {
+        const tooltipEl = marker.getTooltip()?.getElement();
+        const card = tooltipEl?.querySelector('.map-listing-tooltip') as HTMLDivElement | null;
+        if (!card) return;
+        card.onclick = (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onOpenListingRef.current(l);
+        };
+      });
       markersRef.current[l.id] = marker;
     });
 
