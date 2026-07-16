@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo, type PointerEvent as ReactPointerEvent } from 'react';
-import type { Listing } from '../data/listings';
+import { formatListingId, type Listing } from '../data/listings';
 import ListingMap, { MiniListingMap } from '../components/ListingMap';
 import AppLogo from '../components/AppLogo';
 
@@ -511,6 +511,7 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
                   lat={l.lat}
                   lng={l.lng}
                 />
+                <span className="listing-id-tag">{formatListingId(l.id)}</span>
                 <TypeBadge type={l.type} />
                 <button
                   className={`save-btn ${l.saved ? 'saved' : ''}`}

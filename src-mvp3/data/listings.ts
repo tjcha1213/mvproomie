@@ -1129,6 +1129,10 @@ export const listings: Listing[] = rawListings.slice(0, 30).map((l) => ({
   images: expandListingImages(l).map(withBase),
 }));
 
+export function formatListingId(id: number): string {
+  return `RM-${String(id).padStart(4, '0')}`;
+}
+
 // Compact price for map pins, e.g. 6000 -> "₱6K", 13500 -> "₱13.5K".
 export function formatPriceShort(price: number): string {
   const k = price / 1000;

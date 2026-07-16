@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import type { Listing } from '../data/listings';
+import { formatListingId, type Listing } from '../data/listings';
 import ListingMap from '../components/ListingMap';
 import Logo from '../components/Logo';
 
@@ -79,10 +79,10 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
               </svg>
             </button>
           </div>
+          <div className="home-map-count mvp1-map-count">{listings.length} homes in this area</div>
         </div>
         <div className="home-map-wrap">
           <ListingMap listings={listings} selectedId={selectedId} onSelect={selectFromMap} />
-          <div className="home-map-count">{listings.length} homes in this area</div>
         </div>
       </div>
 
@@ -96,6 +96,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
           >
             <div className="carousel-card-img">
               <img src={l.image} alt={l.title} loading="lazy" />
+              <span className="listing-id-tag">{formatListingId(l.id)}</span>
               <TypeBadge type={l.type} />
               <button
                 className={`save-btn ${l.saved ? 'saved' : ''}`}

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, type UIEvent } from 'react';
-import type { Listing } from '../data/listings';
+import { formatListingId, type Listing } from '../data/listings';
 import { MiniListingMap } from '../components/ListingMap';
 
 interface Props {
@@ -86,6 +86,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
 
         {/* Image counter */}
         <div className="image-counter">{activeImg + 1} / {imgs.length}</div>
+        <div className="detail-listing-id">{formatListingId(listing.id)}</div>
 
         {/* Swipe navigation dots */}
         <div className="detail-thumbnails">

@@ -1,4 +1,4 @@
-import type { Listing } from '../data/listings';
+import { formatListingId, type Listing } from '../data/listings';
 
 interface Props {
   listing: Listing;
@@ -16,6 +16,7 @@ export default function ListingCard({ listing, onSelect, onToggleSave }: Props) 
     <div className="listing-card" onClick={() => onSelect(listing)}>
       <div className="listing-card-img">
         <img src={listing.image} alt={listing.title} loading="lazy" />
+        <span className="listing-id-tag">{formatListingId(listing.id)}</span>
         <TypeBadge type={listing.type} />
         <button
           className={`save-btn ${listing.saved ? 'saved' : ''}`}
