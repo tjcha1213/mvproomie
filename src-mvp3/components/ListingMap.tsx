@@ -85,11 +85,11 @@ export default function ListingMap({ listings, selectedId, onSelect, onOpenListi
         const tooltipEl = marker.getTooltip()?.getElement();
         const card = tooltipEl?.querySelector('.map-listing-tooltip') as HTMLDivElement | null;
         if (!card) return;
-        card.onclick = (event) => {
-          event.preventDefault();
-          event.stopPropagation();
+        L.DomEvent.disableClickPropagation(card);
+        L.DomEvent.on(card, 'click', (event) => {
+          L.DomEvent.stop(event);
           onOpenListingRef.current(l);
-        };
+        });
       });
       markersRef.current[l.id] = marker;
     });
@@ -130,11 +130,11 @@ export default function ListingMap({ listings, selectedId, onSelect, onOpenListi
         const tooltipEl = marker.getTooltip()?.getElement();
         const card = tooltipEl?.querySelector('.map-listing-tooltip') as HTMLDivElement | null;
         if (!card) return;
-        card.onclick = (event) => {
-          event.preventDefault();
-          event.stopPropagation();
+        L.DomEvent.disableClickPropagation(card);
+        L.DomEvent.on(card, 'click', (event) => {
+          L.DomEvent.stop(event);
           onOpenListingRef.current(l);
-        };
+        });
       });
       markersRef.current[l.id] = marker;
     });
@@ -160,6 +160,7 @@ export default function ListingMap({ listings, selectedId, onSelect, onOpenListi
             offset: [0, -18],
             opacity: 1,
             permanent: true,
+            interactive: true,
             className: 'map-listing-tooltip-wrap',
           })
           .openTooltip();
