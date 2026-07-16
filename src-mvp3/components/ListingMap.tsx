@@ -47,11 +47,34 @@ export default function ListingMap({ listings, selectedId, onSelect, onOpenListi
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Record<number, L.Marker>>({});
+  const suppressNextMapClearRef = useRef(false);
   // Keep the latest onSelect without re-binding markers on every render.
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
   const onOpenListingRef = useRef(onOpenListing);
   onOpenListingRef.current = onOpenListing;
+
+  const wireTooltipNavigation = (marker: L.Marker, listing: Listing) => {
+    marker.on('tooltipopen', () => {
+      const tooltipEl = marker.getTooltip()?.getElement();
+      const card = tooltipEl?.querySelector('.map-listing-tooltip') as HTMLDivElement | null;
+      if (!tooltipEl || !card) return;
+
+      L.DomEvent.disableClickPropagation(tooltipEl);
+      L.DomEvent.disableScrollPropagation(tooltipEl);
+      L.DomEvent.on(tooltipEl, 'mousedown', () => {
+        suppressNextMapClearRef.current = true;
+      });
+      L.DomEvent.on(tooltipEl, 'touchstart', () => {
+        suppressNextMapClearRef.current = true;
+      });
+      L.DomEvent.on(card, 'click', (event) => {
+        suppressNextMapClearRef.current = true;
+        L.DomEvent.stop(event);
+        onOpenListingRef.current(listing);
+      });
+    });
+  };
 
   // Init map once.
   useEffect(() => {
@@ -81,20 +104,17 @@ export default function ListingMap({ listings, selectedId, onSelect, onOpenListi
       })
         .addTo(map)
         .on('click', () => onSelectRef.current(l.id));
-      marker.on('tooltipopen', () => {
-        const tooltipEl = marker.getTooltip()?.getElement();
-        const card = tooltipEl?.querySelector('.map-listing-tooltip') as HTMLDivElement | null;
-        if (!card) return;
-        L.DomEvent.disableClickPropagation(card);
-        L.DomEvent.on(card, 'click', (event) => {
-          L.DomEvent.stop(event);
-          onOpenListingRef.current(l);
-        });
-      });
+      wireTooltipNavigation(marker, l);
       markersRef.current[l.id] = marker;
     });
 
-    map.on('click', () => onSelectRef.current(null));
+    map.on('click', () => {
+      if (suppressNextMapClearRef.current) {
+        suppressNextMapClearRef.current = false;
+        return;
+      }
+      onSelectRef.current(null);
+    });
 
     // Use a fixed center + zoom so the view isn't zoomed out to fit all pins.
     // Metro Manila center; zoom 13 shows the whole metro at a comfortable density.
@@ -126,16 +146,7 @@ export default function ListingMap({ listings, selectedId, onSelect, onOpenListi
       })
         .addTo(map)
         .on('click', () => onSelectRef.current(l.id));
-      marker.on('tooltipopen', () => {
-        const tooltipEl = marker.getTooltip()?.getElement();
-        const card = tooltipEl?.querySelector('.map-listing-tooltip') as HTMLDivElement | null;
-        if (!card) return;
-        L.DomEvent.disableClickPropagation(card);
-        L.DomEvent.on(card, 'click', (event) => {
-          L.DomEvent.stop(event);
-          onOpenListingRef.current(l);
-        });
-      });
+      wireTooltipNavigation(marker, l);
       markersRef.current[l.id] = marker;
     });
 
