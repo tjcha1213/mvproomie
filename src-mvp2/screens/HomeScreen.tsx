@@ -8,7 +8,6 @@ interface Props {
   onSelectListing: (l: Listing) => void;
   onToggleSave: (id: number) => void;
   onOpenSearch: () => void;
-  onOpenMenu: () => void;
   onShowToast: (msg: string) => void;
   onSendInquiry: (listing: Listing) => void;
 }
@@ -102,7 +101,7 @@ function ListingPhotoCarousel({
   );
 }
 
-export default function HomeScreen({ listings, onSelectListing, onToggleSave, onOpenSearch, onOpenMenu, onShowToast, onSendInquiry }: Props) {
+export default function HomeScreen({ listings, onSelectListing, onToggleSave, onOpenSearch, onShowToast, onSendInquiry }: Props) {
   const [query, setQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [minPrice, setMinPrice] = useState('');

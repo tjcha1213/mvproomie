@@ -7,7 +7,6 @@ interface Props {
   listings: Listing[];
   onSelectListing: (l: Listing) => void;
   onToggleSave: (id: number) => void;
-  onOpenMenu: () => void;
   onShowToast: (msg: string) => void;
   onSendInquiry: (listing: Listing) => void;
 }
@@ -16,7 +15,7 @@ type FilterType = 'All' | 'Studio' | 'Bedspace' | 'Apartment';
 
 const FILTERS: FilterType[] = ['All', 'Studio', 'Bedspace', 'Apartment'];
 
-export default function SearchScreen({ listings, onSelectListing, onToggleSave, onOpenMenu, onShowToast, onSendInquiry: _onSendInquiry }: Props) {
+export default function SearchScreen({ listings, onSelectListing, onToggleSave, onShowToast, onSendInquiry: _onSendInquiry }: Props) {
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -91,15 +90,6 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
       {/* Header */}
       <div className="app-header">
         <div className="logo"><AppLogo /></div>
-        <div className="header-actions">
-          <button className="icon-btn" onClick={onOpenMenu} aria-label="Menu">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="3" y1="12" x2="21" y2="12"/>
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
-          </button>
-        </div>
       </div>
 
       {/* Search */}

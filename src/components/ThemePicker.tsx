@@ -11,7 +11,7 @@ export default function ThemePicker({ open, primary, onSelect, onClose }: Props)
   if (!open) return null;
 
   return (
-    <div className="sheet-overlay" onClick={onClose}>
+    <div className="sheet-overlay theme-picker-overlay" onClick={onClose}>
       <div className="theme-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="sheet-handle" />
         <div className="sheet-header">

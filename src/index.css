@@ -186,6 +186,8 @@ img {
   /* Clear the home indicator on full-screen phones (0 elsewhere). */
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
   box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  position: relative;
+  z-index: 1000;
 }
 
 .bottom-nav-item {
@@ -1577,6 +1579,10 @@ img {
   animation: overlayIn 0.2s ease-out;
 }
 
+.theme-picker-overlay {
+  z-index: 1100;
+}
+
 @keyframes overlayIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -1792,8 +1798,9 @@ img {
   top: auto;
   left: auto;
   transform: none;
-  display: inline-flex;
-  margin-top: 8px;
+  display: flex;
+  width: max-content;
+  margin: 8px auto 0;
 }
 
 /* Price pins */

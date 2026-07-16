@@ -186,7 +186,7 @@ img {
   padding-bottom: 8px;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
   position: relative;
-  z-index: 950;
+  z-index: 1000;
 }
 
 .bottom-nav-item {
@@ -1841,6 +1841,10 @@ img {
   flex-direction: column;
   justify-content: flex-end;
   animation: overlayIn 0.2s ease-out;
+}
+
+.theme-picker-overlay {
+  z-index: 1100;
 }
 
 @keyframes overlayIn {

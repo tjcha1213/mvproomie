@@ -123,7 +123,6 @@ function App() {
               onSelectListing={(l) => navigate('detail', l)}
               onToggleSave={toggleSave}
               onOpenSearch={() => handleTabChange('search')}
-              onOpenMenu={() => setThemeOpen(true)}
               onShowToast={showToast}
               onSendInquiry={(listing) => openInboxThread(listing, 'inquiry')}
             />
@@ -133,7 +132,6 @@ function App() {
               listings={listings}
               onSelectListing={(l) => navigate('detail', l)}
               onToggleSave={toggleSave}
-              onOpenMenu={() => setThemeOpen(true)}
               onShowToast={showToast}
               onSendInquiry={(listing) => openInboxThread(listing, 'inquiry')}
             />
