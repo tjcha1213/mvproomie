@@ -112,6 +112,7 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
   const [wifi, setWifi] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(listings[0]?.id ?? null);
   const [sheetHeight, setSheetHeight] = useState(320);
+  const [isDragging, setIsDragging] = useState(false);
   const [stageHeight, setStageHeight] = useState(0);
   const [topInset, setTopInset] = useState(0);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -281,13 +282,16 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
       if (Math.abs(delta) > 6) {
         dragState.current.moved = true;
       }
-      setSheetHeight(clampHeight(dragState.current.startHeight + delta));
+      const nextHeight = clampHeight(dragState.current.startHeight + delta);
+      sheetHeightRef.current = nextHeight;
+      setSheetHeight(nextHeight);
     };
 
     const handlePointerUp = () => {
       if (!dragState.current.dragging) return;
       const shouldToggle = !dragState.current.moved;
       dragState.current.dragging = false;
+      setIsDragging(false);
       if (shouldToggle) {
         expandSheet();
         return;
@@ -312,6 +316,7 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
       dragging: true,
       moved: false,
     };
+    setIsDragging(true);
     if ('setPointerCapture' in event.currentTarget) {
       event.currentTarget.setPointerCapture(event.pointerId);
     }
@@ -345,7 +350,7 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
 
   return (
     <>
-      <div className={`home-stage sheet-${sheetMode}`} ref={stageRef}>
+      <div className={`home-stage sheet-${sheetMode} ${isDragging ? 'is-dragging' : ''}`} ref={stageRef}>
       <div className="mvp2-map-overlay" ref={overlayRef}>
         <button
           className="mvp2-logo-pill"
@@ -483,7 +488,7 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
       </div>
 
       <div
-        className={`home-sheet ${sheetMode}`}
+        className={`home-sheet ${sheetMode} ${isDragging ? 'is-dragging' : ''}`}
         style={{ height: `${sheetHeight}px` }}
       >
         <div

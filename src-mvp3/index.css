@@ -2032,6 +2032,11 @@ img {
   transition: bottom 0.22s ease;
 }
 
+.home-stage.is-dragging .home-map-wrap,
+.home-sheet.is-dragging {
+  transition: none;
+}
+
 .home-map {
   position: absolute;
   inset: 0;
@@ -2191,7 +2196,7 @@ img {
   border-top: 1px solid var(--border-light);
   box-shadow: 0 -16px 32px rgba(15, 23, 42, 0.12);
   z-index: 700;
-  transition: height 0.18s ease;
+  transition: height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .home-sheet.peek {
