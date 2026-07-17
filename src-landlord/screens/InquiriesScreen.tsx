@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { Inquiry, InquiryStatus, Unit } from '../data';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
@@ -12,6 +12,8 @@ interface Props {
     message: { sender: 'tenant' | 'landlord' | 'system'; text: string; time: string },
     status?: InquiryStatus,
   ) => void;
+  onDeleteInquiry: (id: number) => void;
+  onTogglePinInquiry: (id: number) => void;
   onOpenProfile: () => void;
   notifications: HeaderNotification[];
   onOpenNotification: (notification: HeaderNotification) => void;
@@ -30,11 +32,30 @@ function timeStampLabel() {
   return 'Just now';
 }
 
-export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddThreadMessage, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
+type SwipeAction = 'delete' | 'pin';
+interface SwipeState { id: number; startX: number; offset: number; action: SwipeAction | null; }
+
+export default function InquiriesScreen({
+  inquiries,
+  units,
+  onSetStatus,
+  onAddThreadMessage,
+  onDeleteInquiry,
+  onTogglePinInquiry,
+  onOpenProfile,
+  notifications,
+  onOpenNotification,
+  onShowToast,
+}: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [openId, setOpenId] = useState<number | null>(null);
   const [chatOpenId, setChatOpenId] = useState<number | null>(null);
   const [draftReplies, setDraftReplies] = useState<Record<number, string>>({});
+  const [openSwipe, setOpenSwipe] = useState<{ id: number; action: SwipeAction } | null>(null);
+  const [swipe, setSwipe] = useState<SwipeState | null>(null);
+  const swipeRef = useRef<SwipeState | null>(null);
+  const swipeMoved = useRef(false);
+  const suppressNextClick = useRef(false);
 
   const filtered = filter === 'All' ? inquiries : inquiries.filter(i => i.status === filter);
   const unitTitle = (id: number) => units.find(u => u.id === id)?.title ?? '';
@@ -74,6 +95,45 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddTh
     onShowToast(`📅 Viewing scheduled with ${inquiry.name}`);
   }
 
+  const beginSwipe = (event: React.PointerEvent<HTMLButtonElement>, id: number) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    swipeMoved.current = false;
+    const next = { id, startX: event.clientX, offset: 0, action: null as SwipeAction | null };
+    swipeRef.current = next;
+    setSwipe(next);
+  };
+
+  const moveSwipe = (event: React.PointerEvent<HTMLButtonElement>, id: number) => {
+    const activeSwipe = swipeRef.current;
+    if (!activeSwipe || activeSwipe.id !== id) return;
+    const delta = event.clientX - activeSwipe.startX;
+    if (Math.abs(delta) < 4) return;
+    event.preventDefault();
+    swipeMoved.current = true;
+    const next = {
+      ...activeSwipe,
+      offset: Math.max(-88, Math.min(88, delta)),
+      action: delta < 0 ? 'delete' as const : 'pin' as const,
+    };
+    swipeRef.current = next;
+    setSwipe(next);
+  };
+
+  const endSwipe = (event: React.PointerEvent<HTMLButtonElement>, id: number, openTap = true) => {
+    const activeSwipe = swipeRef.current;
+    if (!activeSwipe || activeSwipe.id !== id) return;
+    const action = Math.abs(activeSwipe.offset) >= 52 ? activeSwipe.action : null;
+    setOpenSwipe(action ? { id, action } : null);
+    swipeRef.current = null;
+    setSwipe(null);
+    if (!action && openTap && !swipeMoved.current) {
+      suppressNextClick.current = true;
+      setOpenId(openId === id ? null : id);
+    }
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+
   return (
     <>
       <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
@@ -104,8 +164,61 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddTh
         ) : (
           <div className="inbox-list">
             {filtered.map(i => (
-              <div key={i.id} className="inquiry-item">
-                <button className="inquiry-main" onClick={() => setOpenId(openId === i.id ? null : i.id)}>
+              <div key={i.id} className={`inquiry-item inquiry-swipe-row ${i.pinned ? 'is-pinned' : ''} ${openSwipe?.id === i.id ? 'is-open' : ''}`}>
+                <div className="inquiry-swipe-actions">
+                  <button
+                    className="inquiry-swipe-action inquiry-pin-action"
+                    type="button"
+                    aria-label={i.pinned ? 'Unpin inquiry' : 'Pin inquiry'}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onTogglePinInquiry(i.id);
+                      setOpenSwipe(null);
+                    }}
+                  >
+                    <span className="inbox-action-icon">{i.pinned ? '★' : '☆'}</span>
+                    <span>{i.pinned ? 'Unpin' : 'Pin'}</span>
+                  </button>
+                  <button
+                    className="inquiry-swipe-action inquiry-delete-action"
+                    type="button"
+                    aria-label="Delete inquiry"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setOpenSwipe(null);
+                      if (chatOpenId === i.id) setChatOpenId(null);
+                      if (openId === i.id) setOpenId(null);
+                      onDeleteInquiry(i.id);
+                    }}
+                  >
+                    <span className="inbox-action-icon">×</span>
+                    <span>Delete</span>
+                  </button>
+                </div>
+
+                <button
+                  className="inquiry-main"
+                  style={{ transform: `translateX(${swipe?.id === i.id ? swipe.offset : openSwipe?.id === i.id ? (openSwipe.action === 'delete' ? -88 : 88) : 0}px)` }}
+                  onPointerDown={(event) => beginSwipe(event, i.id)}
+                  onPointerMove={(event) => moveSwipe(event, i.id)}
+                  onPointerUp={(event) => endSwipe(event, i.id)}
+                  onPointerCancel={(event) => endSwipe(event, i.id, false)}
+                  onClick={() => {
+                    if (suppressNextClick.current) {
+                      suppressNextClick.current = false;
+                      return;
+                    }
+                    if (swipeMoved.current) {
+                      swipeMoved.current = false;
+                      return;
+                    }
+                    if (openSwipe?.id === i.id) {
+                      setOpenSwipe(null);
+                      return;
+                    }
+                    setOpenId(openId === i.id ? null : i.id);
+                  }}
+                >
                   <div className="inbox-avatar">
                     {i.avatar ? <img src={i.avatar} alt={i.name} /> : i.name[0]}
                   </div>
@@ -176,9 +289,13 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddTh
             aria-labelledby="inquiry-chat-title"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="inquiry-chat-shell">
+              <div className="inquiry-chat-shell">
               <div className="inquiry-chat-header">
-                <div>
+                <div className="inquiry-chat-header-main">
+                  <div className="inquiry-chat-header-avatar">
+                    {activeChat.avatar ? <img src={activeChat.avatar} alt={activeChat.name} /> : activeChat.name[0]}
+                  </div>
+                  <div className="inquiry-chat-title-block">
                   <span className="listing-modal-type">Inquiry chat</span>
                   <h2 id="inquiry-chat-title" className="inquiry-chat-title">{activeChat.name}</h2>
                   <div className="listing-id-row listing-id-row-modal">
@@ -187,10 +304,8 @@ export default function InquiriesScreen({ inquiries, units, onSetStatus, onAddTh
                   </div>
                   <div className="listing-modal-location">{unitTitle(activeChat.unitId)}</div>
                 </div>
+                </div>
                 <div className="inquiry-chat-header-side">
-                  <div className="inbox-avatar inquiry-chat-avatar">
-                    {activeChat.avatar ? <img src={activeChat.avatar} alt={activeChat.name} /> : activeChat.name[0]}
-                  </div>
                   <button className="listing-modal-close inquiry-chat-close" onClick={() => setChatOpenId(null)} aria-label="Close chat">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
                       <line x1="18" y1="6" x2="6" y2="18" />

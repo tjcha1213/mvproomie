@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useState, useEffect } from 'react';
 import type { ListingType } from '../data/listings';
 import type { Filters } from '../filters';
@@ -10,6 +11,7 @@ interface Props {
   onApply: (f: Filters) => void;
   onClose: () => void;
   fromTop?: boolean;
+  bottomInsetPx?: number;
 }
 
 const TYPES: ListingType[] = ['Studio', 'Bedspace', 'Apartment'];
@@ -22,7 +24,7 @@ function priceLabel(v: number, isMax: boolean): string {
   return `₱${v.toLocaleString()}${isMax && v >= PRICE_MAX ? '+' : ''}`;
 }
 
-export default function FilterSheet({ open, filters, countFor, onApply, onClose, fromTop = false }: Props) {
+export default function FilterSheet({ open, filters, countFor, onApply, onClose, fromTop = false, bottomInsetPx = 0 }: Props) {
   const [draft, setDraft] = useState<Filters>(filters);
 
   useEffect(() => {
@@ -44,8 +46,12 @@ export default function FilterSheet({ open, filters, countFor, onApply, onClose,
   const count = countFor(draft);
 
   if (fromTop) {
+    const topOverlayStyle: CSSProperties = bottomInsetPx > 0
+      ? { bottom: `${bottomInsetPx}px` }
+      : {};
+
     return (
-      <div className="top-filter-overlay" onClick={onClose}>
+      <div className="top-filter-overlay" style={topOverlayStyle} onClick={onClose}>
         <div className="top-filter-panel" onClick={(e) => e.stopPropagation()}>
           <div className="top-filter-header">
             <div className="top-filter-kicker">Filters</div>

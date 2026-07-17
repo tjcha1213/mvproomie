@@ -523,6 +523,7 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
         onApply={applySharedFilters}
         onClose={() => setSheetOpen(false)}
         fromTop
+        bottomInsetPx={sheetHeight}
       />
     </>
   );

@@ -84,10 +84,18 @@ export default function InboxScreen({
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
-          <div className="inbox-chat-title-block">
-            <div className="inbox-chat-title">{activeConversation.participantName}</div>
-            <div className="inbox-chat-subtitle">
-              {activeConversation.listingTitle} · {activeConversation.listingLocation}
+          <div className="inbox-chat-header-main">
+            <div className="inbox-chat-header-avatar">
+              <img src={activeConversation.participantPhoto} alt={activeConversation.participantName} />
+            </div>
+            <div className="inbox-chat-title-block">
+              <div className="inbox-chat-name-row">
+                <div className="inbox-chat-title">{activeConversation.participantName}</div>
+                <div className="inbox-chat-role">{activeConversation.participantRole}</div>
+              </div>
+              <div className="inbox-chat-subtitle">
+                {activeConversation.listingTitle} · {activeConversation.listingLocation}
+              </div>
             </div>
           </div>
         </div>

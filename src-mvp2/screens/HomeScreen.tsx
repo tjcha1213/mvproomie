@@ -467,6 +467,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
         onApply={setFilters}
         onClose={() => setSheetOpen(false)}
         fromTop
+        bottomInsetPx={sheetHeight}
       />
     </>
   );

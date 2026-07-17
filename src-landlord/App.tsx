@@ -42,10 +42,17 @@ function resolveLocationCoords(location: string, seed: number) {
   };
 }
 
+function orderInquiries(inquiries: Inquiry[]): Inquiry[] {
+  return [...inquiries].sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    return a.recencyOrder - b.recencyOrder;
+  });
+}
+
 function App() {
   const [tab, setTab] = useState<Tab>('dashboard');
   const [units, setUnits] = useState<Unit[]>(UNITS);
-  const [inquiries, setInquiries] = useState<Inquiry[]>(INQUIRIES);
+  const [inquiries, setInquiries] = useState<Inquiry[]>(() => orderInquiries(INQUIRIES));
   const [payments, setPayments] = useState<Payment[]>(PAYMENTS);
   const [activities, setActivities] = useState<Activity[]>(ACTIVITY);
   const [toast, setToast] = useState<string | null>(null);
@@ -87,7 +94,19 @@ function App() {
   }, []);
 
   const setInquiryStatus = useCallback((id: number, status: Inquiry['status']) => {
-    setInquiries(prev => prev.map(i => (i.id === id ? { ...i, status } : i)));
+    setInquiries(prev => orderInquiries(prev.map(i => (i.id === id ? { ...i, status } : i))));
+  }, []);
+
+  const toggleInquiryPin = useCallback((id: number) => {
+    setInquiries((prev) =>
+      orderInquiries(prev.map((inquiry) =>
+        inquiry.id === id ? { ...inquiry, pinned: !inquiry.pinned } : inquiry,
+      )),
+    );
+  }, []);
+
+  const deleteInquiry = useCallback((id: number) => {
+    setInquiries((prev) => prev.filter((inquiry) => inquiry.id !== id));
   }, []);
 
   const addInquiryThreadMessage = useCallback((
@@ -96,7 +115,7 @@ function App() {
     status?: Inquiry['status'],
   ) => {
     setInquiries((prev) =>
-      prev.map((inquiry) => {
+      orderInquiries(prev.map((inquiry) => {
         if (inquiry.id !== id) return inquiry;
 
         const nextThreadId = inquiry.thread.length > 0
@@ -108,7 +127,7 @@ function App() {
           status: status ?? inquiry.status,
           thread: [...inquiry.thread, { id: nextThreadId, ...message }],
         };
-      }),
+      })),
     );
   }, []);
 
@@ -244,6 +263,8 @@ function App() {
               units={units}
               onSetStatus={setInquiryStatus}
               onAddThreadMessage={addInquiryThreadMessage}
+              onDeleteInquiry={deleteInquiry}
+              onTogglePinInquiry={toggleInquiryPin}
               onOpenProfile={() => setTab('profile')}
               notifications={notifications}
               onOpenNotification={openNotification}
