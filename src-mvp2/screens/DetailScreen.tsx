@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, type UIEvent } from 'react';
 import { formatListingId, type Listing } from '../data/listings';
 import { MiniListingMap } from '../components/ListingMap';
+import PhotoModal from '../../src/components/PhotoModal';
 
 interface Props {
   listing: Listing;
@@ -18,14 +19,16 @@ function TypeBadge({ type }: { type: string }) {
 
 export default function DetailScreen({ listing, onBack, onToggleSave, onShowToast, onOpenChat, onSendInquiry }: Props) {
   const [activeImg, setActiveImg] = useState(0);
-  const bodyRef = useRef<HTMLDivElement>(null);
+  const [photoModalSrc, setPhotoModalSrc] = useState<string | null>(null);
+  const screenRef = useRef<HTMLDivElement>(null);
   const imageStripRef = useRef<HTMLDivElement>(null);
 
   // Always open the detail at the top — without this the body can inherit a
   // scroll offset that hides the title, type and location behind the hero image.
   useEffect(() => {
-    bodyRef.current?.scrollTo(0, 0);
+    screenRef.current?.scrollTo(0, 0);
     setActiveImg(0);
+    setPhotoModalSrc(null);
   }, [listing.id]);
 
   const imgs = listing.images.length > 0 ? listing.images : [listing.image];
@@ -47,14 +50,20 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
   }, [imgs.length]);
 
   return (
-    <div className="detail-screen">
+    <div className="detail-screen" ref={screenRef}>
       {/* Image hero */}
       <div className="detail-image-container">
         <div className="detail-image-strip" ref={imageStripRef} onScroll={handleImageScroll}>
           {imgs.map((img, index) => (
-            <div className="detail-image-slide" key={`${listing.id}-${index}`}>
+            <button
+              type="button"
+              className="detail-image-slide"
+              key={`${listing.id}-${index}`}
+              onClick={() => setPhotoModalSrc(img)}
+              aria-label={`Open photo ${index + 1}`}
+            >
               <img src={img} alt={`${listing.title} photo ${index + 1}`} />
-            </div>
+            </button>
           ))}
         </div>
         <div className="detail-image-overlay" />
@@ -104,7 +113,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
       </div>
 
       {/* Detail body */}
-      <div className="detail-body" ref={bodyRef}>
+      <div className="detail-body">
         <TypeBadge type={listing.type} />
         <h1 className="detail-title">{listing.title}</h1>
         <div className="detail-location-row">
@@ -224,6 +233,12 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
           </button>
         </div>
       </div>
+      <PhotoModal
+        open={photoModalSrc !== null}
+        src={photoModalSrc ?? ''}
+        alt={photoModalSrc ? `${listing.title} full photo` : ''}
+        onClose={() => setPhotoModalSrc(null)}
+      />
     </div>
   );
 }
