@@ -1,0 +1,24 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="38" y1="24" x2="220" y2="228" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DDD6FE"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="shirt" x1="86" y1="146" x2="170" y2="236" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A78BFA"/>
+      <stop offset="1" stop-color="#6D28D9"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="128" fill="url(#bg)"/>
+  <circle cx="128" cy="128" r="64" fill="#E7B894"/>
+  <path d="M70 126c3-29 24-58 57-58 24 0 48 16 57 44-7 5-15 8-24 11-12 4-17 11-27 11-10 0-17-6-27-11-7-4-19-5-36 3z" fill="#4C1D95"/>
+  <path d="M82 98c11-15 27-24 43-24 18 0 35 7 49 22 2 2 4 5 4 8-17 10-34 15-50 15-16 0-30-4-44-11 0-4 0-7 0-10z" fill="#111827"/>
+  <path d="M84 126c0-8 5-16 13-22 8-5 19-8 29-8s20 3 28 8c8 6 13 14 13 22" fill="#E7B894"/>
+  <circle cx="105" cy="131" r="5" fill="#111827"/>
+  <circle cx="150" cy="131" r="5" fill="#111827"/>
+  <path d="M111 168c5 5 11 7 17 7s12-2 17-7" stroke="#B45309" stroke-width="4.5" stroke-linecap="round"/>
+  <circle cx="88" cy="140" r="3.2" fill="#F9A8D4"/>
+  <circle cx="168" cy="140" r="3.2" fill="#F9A8D4"/>
+  <path d="M82 220c9-28 31-42 46-42 17 0 40 13 46 42" fill="url(#shirt)"/>
+  <path d="M112 218c8 7 24 7 32 0" stroke="#F5D0FE" stroke-width="5" stroke-linecap="round"/>
+</svg>

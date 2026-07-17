@@ -43,10 +43,10 @@ const STARTER_EXCHANGES = [
 
 const PARTICIPANT_PHOTOS = [
   withBase('assets/avatars/juan-landlord.png'),
-  withBase('assets/avatars/carlo-dizon.png'),
   withBase('assets/avatars/grace-tan.png'),
   withBase('assets/avatars/miguel-ramos.png'),
-  withBase('assets/avatars/juan-landlord.png'),
+  withBase('assets/avatars/avatar-female-01.svg'),
+  withBase('assets/avatars/avatar-female-04.svg'),
 ];
 
 function message(id: string, author: ChatMessage['author'], text: string, timestamp: number): ChatMessage {
