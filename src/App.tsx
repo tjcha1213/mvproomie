@@ -17,8 +17,6 @@ import {
   createInitialConversations,
   openConversationWithPrompt,
   openConversation,
-  deleteConversation,
-  toggleConversationPin,
   sendConversationReply,
   type Conversation,
 } from './chat';
@@ -90,15 +88,6 @@ function App() {
     setActiveConversationId(conversationId);
   }, [listings]);
 
-  const deleteConversationFromList = useCallback((conversationId: string) => {
-    setConversations((prev) => deleteConversation(prev, conversationId));
-    setActiveConversationId((current) => (current === conversationId ? null : current));
-  }, []);
-
-  const toggleConversationPinFromList = useCallback((conversationId: string) => {
-    setConversations((prev) => toggleConversationPin(prev, conversationId));
-  }, []);
-
   const sendReply = useCallback((conversationId: string, text: string) => {
     setConversations((prev) => sendConversationReply(prev, conversationId, text));
   }, []);
@@ -168,8 +157,6 @@ function App() {
               onOpenConversation={openConversationFromList}
               onBackToList={() => setActiveConversationId(null)}
               onSendMessage={sendReply}
-              onDeleteConversation={deleteConversationFromList}
-              onTogglePinConversation={toggleConversationPinFromList}
             />
           )}
           {currentScreen === 'profile' && <ProfileScreen onShowToast={showToast} onOpenTheme={() => setThemeOpen(true)} />}

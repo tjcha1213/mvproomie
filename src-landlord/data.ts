@@ -281,8 +281,6 @@ export interface Inquiry {
   userId: string;
   name: string;
   avatar?: string;
-  pinned: boolean;
-  recencyOrder: number;
   trust: RoomieTrust;
   unitId: number;
   message: string;
@@ -302,8 +300,6 @@ export const INQUIRIES: Inquiry[] = [
     userId: 'TEN-1001',
     name: 'Carlo Dizon',
     avatar: withBase('assets/avatars/carlo-dizon.png'),
-    pinned: false,
-    recencyOrder: 0,
     trust: { roomieScore: 78, roomieTemperature: 'Warm' },
     unitId: 2,
     message: 'Hi po! Is the bedspace still available? Looking to move in Aug 1 🙂',
@@ -318,8 +314,6 @@ export const INQUIRIES: Inquiry[] = [
     userId: 'TEN-1002',
     name: 'Grace Tan',
     avatar: withBase('assets/avatars/grace-tan.png'),
-    pinned: true,
-    recencyOrder: 1,
     trust: { roomieScore: 83, roomieTemperature: 'Cool' },
     unitId: 3,
     message: 'Can I schedule a viewing this weekend? 😊',
@@ -334,8 +328,6 @@ export const INQUIRIES: Inquiry[] = [
     userId: 'TEN-1003',
     name: 'Miguel Ramos',
     avatar: withBase('assets/avatars/miguel-ramos.png'),
-    pinned: false,
-    recencyOrder: 2,
     trust: { roomieScore: 74, roomieTemperature: 'Warm' },
     unitId: 2,
     message: 'Is water included in the rent? 👀',
@@ -350,8 +342,6 @@ export const INQUIRIES: Inquiry[] = [
     userId: 'TEN-1004',
     name: 'Bea Aquino',
     avatar: withBase('assets/avatars/grace-tan.png'),
-    pinned: false,
-    recencyOrder: 3,
     trust: { roomieScore: 88, roomieTemperature: 'Cool' },
     unitId: 3,
     message: 'Thank you! See you on Saturday at 2pm.',
@@ -368,8 +358,6 @@ export const INQUIRIES: Inquiry[] = [
     userId: 'TEN-1005',
     name: 'Leo Garcia',
     avatar: withBase('assets/avatars/miguel-ramos.png'),
-    pinned: false,
-    recencyOrder: 4,
     trust: { roomieScore: 69, roomieTemperature: 'Hot' },
     unitId: 2,
     message: 'Sure, I will send my requirements tonight.',
