@@ -11,6 +11,7 @@ export interface Conversation {
   id: string;
   listingId: number;
   participantName: string;
+  participantPhoto: string;
   participantRole: 'Landlord';
   listingTitle: string;
   listingLocation: string;
@@ -36,6 +37,14 @@ const STARTER_EXCHANGES = [
     other: 'I can reserve a 30-minute viewing slot for Saturday morning.',
     self: 'Saturday morning works for me.',
   },
+];
+
+const PARTICIPANT_PHOTOS = [
+  'https://i.pravatar.cc/96?img=12',
+  'https://i.pravatar.cc/96?img=47',
+  'https://i.pravatar.cc/96?img=32',
+  'https://i.pravatar.cc/96?img=5',
+  'https://i.pravatar.cc/96?img=44',
 ];
 
 function message(id: string, author: ChatMessage['author'], text: string, timestamp: number): ChatMessage {
@@ -77,6 +86,7 @@ export function createInitialConversations(listings: Listing[]): Conversation[] 
       id: conversationId,
       listingId: listing.id,
       participantName: listing.landlordName,
+      participantPhoto: PARTICIPANT_PHOTOS[index % PARTICIPANT_PHOTOS.length],
       participantRole: 'Landlord',
       listingTitle: listing.title,
       listingLocation: listing.location,
@@ -97,6 +107,7 @@ function createConversation(listing: Listing, timestamp: number): Conversation {
     id,
     listingId: listing.id,
     participantName: listing.landlordName,
+    participantPhoto: PARTICIPANT_PHOTOS[listing.id % PARTICIPANT_PHOTOS.length],
     participantRole: 'Landlord',
     listingTitle: listing.title,
     listingLocation: listing.location,
