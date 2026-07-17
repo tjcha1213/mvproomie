@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import AppLogo from '../components/AppLogo';
 import ModeSwitchModal from '../../src/components/ModeSwitchModal';
-const withBase = (path: string) => `${import.meta.env.BASE_URL}${path}`;
+import { JUAN_AVATAR } from '../../src/avatarPool';
 
 const MENU_ITEMS = [
   { label: 'Personal Details', icon: <><circle cx="12" cy="8" r="4"/><path d="M4 20v-1a8 8 0 0 1 16 0v1"/></> },
@@ -53,7 +53,7 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
         {/* Profile header */}
         <div className="profile-header">
           <div className="profile-avatar">
-            <img src={withBase('assets/avatars/avatar-default.svg')} alt="Juan Dela Cruz" />
+            <img src={JUAN_AVATAR} alt="Juan Dela Cruz" />
           </div>
           <div className="profile-name">Juan Dela Cruz</div>
           <div className="profile-email">juan@roomie.ph</div>

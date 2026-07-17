@@ -1,6 +1,5 @@
 import type { Listing } from './data/listings';
-
-const withBase = (path: string) => `${import.meta.env.BASE_URL}${path}`;
+import { avatarAt } from '../src/avatarPool';
 
 export interface ChatMessage {
   id: string;
@@ -41,13 +40,8 @@ const STARTER_EXCHANGES = [
   },
 ];
 
-const PARTICIPANT_PHOTOS = [
-  withBase('assets/avatars/avatar-male-01.svg'),
-  withBase('assets/avatars/avatar-female-01.svg'),
-  withBase('assets/avatars/avatar-male-02.svg'),
-  withBase('assets/avatars/avatar-female-02.svg'),
-  withBase('assets/avatars/avatar-male-03.svg'),
-];
+const PARTICIPANT_PHOTOS = Array.from({ length: 5 }, (_, index) => avatarAt(index + 10));
+
 
 function message(id: string, author: ChatMessage['author'], text: string, timestamp: number): ChatMessage {
   return { id, author, text, timestamp };
@@ -102,7 +96,7 @@ function createConversation(listing: Listing, timestamp: number): Conversation {
     id,
     listingId: listing.id,
     participantName: listing.landlordName,
-    participantPhoto: PARTICIPANT_PHOTOS[listing.id % PARTICIPANT_PHOTOS.length],
+    participantPhoto: PARTICIPANT_PHOTOS[(listing.id - 1) % PARTICIPANT_PHOTOS.length],
     participantRole: 'Landlord',
     listingTitle: listing.title,
     listingLocation: listing.location,

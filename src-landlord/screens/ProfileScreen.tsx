@@ -4,6 +4,7 @@ import type { Unit } from '../data';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
 import ModeSwitchModal from '../../src/components/ModeSwitchModal';
+import { JUAN_AVATAR } from '../../src/avatarPool';
 
 interface Props {
   units: Unit[];
@@ -57,7 +58,7 @@ export default function ProfileScreen({ units, onOpenTheme, onOpenReviews, notif
         {/* Profile header */}
         <div className="profile-header">
           <div className="profile-avatar">
-            <img src={LANDLORD_PROFILE.avatar} alt={LANDLORD_PROFILE.name} />
+            <img src={JUAN_AVATAR} alt={LANDLORD_PROFILE.name} />
           </div>
           <div className="profile-name-row-ll">
             <span className="profile-name">{LANDLORD_PROFILE.name}</span>
