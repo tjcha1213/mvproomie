@@ -92,7 +92,6 @@ export default function ProfileScreen({ units, onOpenTheme, onOpenReviews, notif
         <div className="profile-mode-card">
           <div className="profile-mode-copy">
             <div className="profile-mode-title">Account mode</div>
-            <div className="profile-mode-subtitle">Choose which demo layout Juan should open next.</div>
           </div>
           <div className="profile-mode-toggle" role="tablist" aria-label="Account mode">
             <button type="button" className={`profile-mode-btn ${mode === 'Tenant Mode' ? 'active' : ''}`} onClick={() => openChooser('Tenant Mode')}>
@@ -101,6 +100,28 @@ export default function ProfileScreen({ units, onOpenTheme, onOpenReviews, notif
             <button type="button" className={`profile-mode-btn ${mode === 'Landlord Mode' ? 'active' : ''}`} onClick={() => openChooser('Landlord Mode')}>
               Landlord Mode
             </button>
+          </div>
+        </div>
+
+        <div className="profile-details-card">
+          <div className="profile-details-title">Personal details</div>
+          <div className="profile-details-grid">
+            <div className="profile-details-item">
+              <span className="profile-details-label">Full name</span>
+              <span className="profile-details-value">{LANDLORD_PROFILE.name}</span>
+            </div>
+            <div className="profile-details-item">
+              <span className="profile-details-label">Email</span>
+              <span className="profile-details-value">juan@roomie.ph</span>
+            </div>
+            <div className="profile-details-item">
+              <span className="profile-details-label">Account type</span>
+              <span className="profile-details-value">Landlord mode</span>
+            </div>
+            <div className="profile-details-item">
+              <span className="profile-details-label">Member since</span>
+              <span className="profile-details-value">2021</span>
+            </div>
           </div>
         </div>
 
