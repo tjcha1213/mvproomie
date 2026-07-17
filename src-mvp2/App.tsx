@@ -23,10 +23,14 @@ import {
 
 
 function App() {
+  const initialScreen = (() => {
+    const tab = new URL(window.location.href).searchParams.get('tab');
+    return tab === 'home' || tab === 'search' || tab === 'saved' || tab === 'inbox' || tab === 'profile' ? tab : 'home';
+  })();
   const [listings, setListings] = useState<Listing[]>(initialListings);
   const [conversations, setConversations] = useState<Conversation[]>(() => createInitialConversations(initialListings));
-  const [activeTab, setActiveTab] = useState<NavTab>('home');
-  const [currentScreen, setCurrentScreen] = useState<Screen>('home');
+  const [activeTab, setActiveTab] = useState<NavTab>(initialScreen);
+  const [currentScreen, setCurrentScreen] = useState<Screen>(initialScreen);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [prevScreen, setPrevScreen] = useState<Screen>('home');

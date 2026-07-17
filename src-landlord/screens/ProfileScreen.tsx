@@ -3,6 +3,7 @@ import { LANDLORD_PROFILE } from '../data';
 import type { Unit } from '../data';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
+import ModeSwitchModal from '../../src/components/ModeSwitchModal';
 
 interface Props {
   units: Unit[];
@@ -23,11 +24,30 @@ const MENU_ITEMS = [
 export default function ProfileScreen({ units, onOpenTheme, onOpenReviews, notifications, onOpenNotification, onShowToast }: Props) {
   const occupied = units.filter(u => u.status === 'Occupied').length;
   const [mode, setMode] = useState<'Tenant Mode' | 'Landlord Mode'>('Landlord Mode');
+  const [chooser, setChooser] = useState<'tenant' | 'landlord' | null>(null);
 
-  const switchMode = (nextMode: 'Tenant Mode' | 'Landlord Mode') => {
-    setMode(nextMode);
-    onShowToast(`${nextMode} selected`);
+  const navigateTo = (path: string) => {
+    window.location.assign(`${import.meta.env.BASE_URL}${path}`);
   };
+
+  const openChooser = (nextMode: 'Tenant Mode' | 'Landlord Mode') => {
+    setMode(nextMode);
+    setChooser(nextMode === 'Tenant Mode' ? 'tenant' : 'landlord');
+  };
+
+  const chooserOptions = chooser === 'tenant'
+    ? [
+        { label: 'Tenant MVP 1', description: 'Open the MVP 1 profile tab.', href: 'mvp1/?tab=profile', note: 'Live profile tab' },
+        { label: 'Tenant MVP 2', description: 'Open the MVP 2 profile tab.', href: 'mvp2/?tab=profile' },
+        { label: 'Tenant MVP 3', description: 'Open the MVP 3 profile tab.', href: 'mvp3/?tab=profile' },
+      ]
+    : chooser === 'landlord'
+      ? [
+          { label: 'Landlord MVP 1', description: 'Open the landlord dashboard profile tab.', href: 'landlord/?tab=profile', note: 'MVP 1 links to the live landlord layout' },
+          { label: 'Landlord MVP 2', description: 'Open the landlord broker overview.', href: 'landlords-brokers.html' },
+          { label: 'Landlord MVP 3', description: 'Open the landlord survey layout.', href: 'landlord-surveys.html' },
+        ]
+      : [];
 
   return (
     <>
@@ -71,13 +91,13 @@ export default function ProfileScreen({ units, onOpenTheme, onOpenReviews, notif
         <div className="profile-mode-card">
           <div className="profile-mode-copy">
             <div className="profile-mode-title">Account mode</div>
-            <div className="profile-mode-subtitle">Switch how Juan uses the demo account.</div>
+            <div className="profile-mode-subtitle">Choose which demo layout Juan should open next.</div>
           </div>
           <div className="profile-mode-toggle" role="tablist" aria-label="Account mode">
-            <button type="button" className={`profile-mode-btn ${mode === 'Tenant Mode' ? 'active' : ''}`} onClick={() => switchMode('Tenant Mode')}>
+            <button type="button" className={`profile-mode-btn ${mode === 'Tenant Mode' ? 'active' : ''}`} onClick={() => openChooser('Tenant Mode')}>
               Tenant Mode
             </button>
-            <button type="button" className={`profile-mode-btn ${mode === 'Landlord Mode' ? 'active' : ''}`} onClick={() => switchMode('Landlord Mode')}>
+            <button type="button" className={`profile-mode-btn ${mode === 'Landlord Mode' ? 'active' : ''}`} onClick={() => openChooser('Landlord Mode')}>
               Landlord Mode
             </button>
           </div>
@@ -122,6 +142,21 @@ export default function ProfileScreen({ units, onOpenTheme, onOpenReviews, notif
 
         <div style={{ height: 32 }} />
       </div>
+
+      <ModeSwitchModal
+        open={chooser !== null}
+        title={chooser === 'tenant' ? 'Move to a tenant MVP' : 'Move to a landlord MVP'}
+        subtitle={chooser === 'tenant'
+          ? 'Pick which tenant profile tab you want to open.'
+          : 'Pick which landlord layout you want to open.'}
+        options={chooserOptions}
+        onClose={() => setChooser(null)}
+        onSelect={(option) => {
+          setChooser(null);
+          navigateTo(option.href);
+          onShowToast(`Opening ${option.label}`);
+        }}
+      />
     </>
   );
 }

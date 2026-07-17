@@ -43,7 +43,11 @@ function resolveLocationCoords(location: string, seed: number) {
 }
 
 function App() {
-  const [tab, setTab] = useState<Tab>('dashboard');
+  const initialTab = (() => {
+    const tab = new URL(window.location.href).searchParams.get('tab');
+    return tab === 'dashboard' || tab === 'listings' || tab === 'inquiries' || tab === 'payments' || tab === 'profile' || tab === 'reviews' ? tab : 'dashboard';
+  })();
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [units, setUnits] = useState<Unit[]>(UNITS);
   const [inquiries, setInquiries] = useState<Inquiry[]>(INQUIRIES);
   const [payments, setPayments] = useState<Payment[]>(PAYMENTS);

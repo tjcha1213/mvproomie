@@ -43,7 +43,7 @@ const rawListings: Listing[] = [
     wifi: true,
     description:
       'Cozy and fully furnished studio unit in a quiet and safe area near Ateneo. Perfect for students and young professionals.\n\nWith fast Wi-Fi, ref, microwave, and laundry area.',
-    landlordName: 'Juan Dela Cruz',
+    landlordName: 'Paolo Reyes',
     landlordSince: 2021,
     landlordRating: 4.9,
     landlordReviews: 128,
