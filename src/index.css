@@ -250,6 +250,19 @@ img {
   mask-size: contain;
 }
 
+.app-logo-img {
+  display: block;
+  width: 118px;
+  height: 29px;
+  background: var(--primary);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: left center;
+  mask-position: left center;
+}
+
 .logo-icon {
   width: 28px;
   height: 28px;
@@ -785,7 +798,7 @@ img {
   object-fit: contain;
   border-radius: 18px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-  background: rgba(255, 255, 255, 0.04);
+  background: transparent;
 }
 
 .photo-modal-close {

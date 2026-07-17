@@ -43,6 +43,106 @@ export default function FilterSheet({ open, filters, countFor, onApply, onClose,
 
   const count = countFor(draft);
 
+  if (fromTop) {
+    return (
+      <div className="top-filter-overlay" onClick={onClose}>
+        <div className="top-filter-panel" onClick={(e) => e.stopPropagation()}>
+          <div className="top-filter-header">
+            <div className="top-filter-kicker">Filters</div>
+            <div className="top-filter-title">Refine your search</div>
+            <div className="top-filter-subtitle">Adjust rent, property type, and amenities.</div>
+            <button className="top-filter-close" onClick={onClose} aria-label="Close">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="top-filter-content">
+            <div className="top-filter-section">
+              <div className="top-filter-section-title">Monthly rent</div>
+              <div className="top-filter-range-values">
+                <span>{priceLabel(draft.priceMin, false)}</span>
+                <span>{priceLabel(draft.priceMax, true)}</span>
+              </div>
+              <div className="range-slider top-filter-range">
+                <div className="range-track" />
+                <div
+                  className="range-fill"
+                  style={{ left: `${pct(draft.priceMin)}%`, right: `${100 - pct(draft.priceMax)}%` }}
+                />
+                <input
+                  type="range"
+                  min={PRICE_MIN}
+                  max={PRICE_MAX}
+                  step={PRICE_STEP}
+                  value={draft.priceMin}
+                  onChange={(e) => setMin(Number(e.target.value))}
+                  aria-label="Minimum rent"
+                />
+                <input
+                  type="range"
+                  min={PRICE_MIN}
+                  max={PRICE_MAX}
+                  step={PRICE_STEP}
+                  value={draft.priceMax}
+                  onChange={(e) => setMax(Number(e.target.value))}
+                  aria-label="Maximum rent"
+                />
+              </div>
+            </div>
+
+            <div className="top-filter-section">
+              <div className="top-filter-section-title">Property type</div>
+              <div className="top-filter-chip-row">
+                {TYPES.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    className={`top-filter-chip ${draft.types.includes(t) ? 'active' : ''}`}
+                    onClick={() => toggleType(t)}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="top-filter-section">
+              <div className="top-filter-section-title">Facilities</div>
+              <div className="top-filter-chip-row">
+                <button
+                  type="button"
+                  className={`top-filter-chip ${draft.furnished ? 'active' : ''}`}
+                  onClick={() => setDraft((d) => ({ ...d, furnished: !d.furnished }))}
+                >
+                  Furnished
+                </button>
+                <button
+                  type="button"
+                  className={`top-filter-chip ${draft.wifi ? 'active' : ''}`}
+                  onClick={() => setDraft((d) => ({ ...d, wifi: !d.wifi }))}
+                >
+                  Wi-Fi
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="top-filter-footer">
+            <button className="top-filter-clear" onClick={() => setDraft(defaultFilters)}>
+              Clear all
+            </button>
+            <button className="top-filter-apply" onClick={() => { onApply(draft); onClose(); }}>
+              Show {count} {count === 1 ? 'result' : 'results'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`sheet-overlay ${fromTop ? 'sheet-overlay-topdown' : ''}`} onClick={onClose}>
       <div className={`filter-sheet ${fromTop ? 'sheet-topdown' : ''}`} onClick={(e) => e.stopPropagation()}>
