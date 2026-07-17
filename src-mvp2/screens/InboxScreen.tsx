@@ -71,6 +71,21 @@ export default function InboxScreen({
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
 
+  const triggerSwipeAction = (
+    event: React.PointerEvent<HTMLButtonElement>,
+    conversationId: string,
+    action: SwipeAction,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setOpenSwipe(null);
+    if (action === 'delete') {
+      onDeleteConversation(conversationId);
+      return;
+    }
+    onTogglePinConversation(conversationId);
+  };
+
   if (activeConversation) {
     return (
       <>
@@ -153,8 +168,8 @@ export default function InboxScreen({
                 onPointerDown={(event) => { if (!(event.target as HTMLElement).closest('.inbox-swipe-action')) beginSwipe(event, conversation.id); }} onPointerMove={(event) => moveSwipe(event, conversation.id)} onPointerUp={(event) => { if (!(event.target as HTMLElement).closest('.inbox-swipe-action')) endSwipe(event, conversation.id); }} onPointerCancel={(event) => endSwipe(event, conversation.id, false)}
               >
                 <div className="inbox-swipe-actions">
-                  <button className="inbox-swipe-action inbox-pin-action" type="button" aria-label={conversation.pinned ? 'Unpin conversation' : 'Pin conversation'} onClick={(event) => { event.stopPropagation(); onTogglePinConversation(conversation.id); setOpenSwipe(null); }}><span className="inbox-action-icon">{conversation.pinned ? '★' : '☆'}</span><span>{conversation.pinned ? 'Unpin' : 'Pin'}</span></button>
-                  <button className="inbox-swipe-action inbox-delete-action" type="button" aria-label="Delete conversation" onClick={(event) => { event.stopPropagation(); setOpenSwipe(null); onDeleteConversation(conversation.id); }}><span className="inbox-action-icon">×</span><span>Delete</span></button>
+                  <button className="inbox-swipe-action inbox-pin-action" type="button" aria-label={conversation.pinned ? 'Unpin conversation' : 'Pin conversation'} onPointerDown={(event) => triggerSwipeAction(event, conversation.id, 'pin')}><span className="inbox-action-icon">{conversation.pinned ? '★' : '☆'}</span><span>{conversation.pinned ? 'Unpin' : 'Pin'}</span></button>
+                  <button className="inbox-swipe-action inbox-delete-action" type="button" aria-label="Delete conversation" onPointerDown={(event) => triggerSwipeAction(event, conversation.id, 'delete')}><span className="inbox-action-icon">×</span><span>Delete</span></button>
                 </div>
                 <button className="inbox-item" type="button" style={{ transform: `translateX(${offset}px)` }} onClick={() => { if (suppressNextClick.current) { suppressNextClick.current = false; return; } if (swipeMoved.current) { swipeMoved.current = false; return; } if (isOpen) { setOpenSwipe(null); return; } onOpenConversation(conversation.id); }}>
                 <div className="inbox-avatar"><img src={conversation.participantPhoto} alt="" /></div>

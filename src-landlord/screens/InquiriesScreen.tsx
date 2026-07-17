@@ -134,6 +134,23 @@ export default function InquiriesScreen({
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
 
+  const triggerSwipeAction = (
+    event: React.PointerEvent<HTMLButtonElement>,
+    inquiry: Inquiry,
+    action: SwipeAction,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setOpenSwipe(null);
+    if (action === 'delete') {
+      if (chatOpenId === inquiry.id) setChatOpenId(null);
+      if (openId === inquiry.id) setOpenId(null);
+      onDeleteInquiry(inquiry.id);
+      return;
+    }
+    onTogglePinInquiry(inquiry.id);
+  };
+
   return (
     <>
       <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
@@ -170,11 +187,7 @@ export default function InquiriesScreen({
                     className="inquiry-swipe-action inquiry-pin-action"
                     type="button"
                     aria-label={i.pinned ? 'Unpin inquiry' : 'Pin inquiry'}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onTogglePinInquiry(i.id);
-                      setOpenSwipe(null);
-                    }}
+                    onPointerDown={(event) => triggerSwipeAction(event, i, 'pin')}
                   >
                     <span className="inbox-action-icon">{i.pinned ? '★' : '☆'}</span>
                     <span>{i.pinned ? 'Unpin' : 'Pin'}</span>
@@ -183,13 +196,7 @@ export default function InquiriesScreen({
                     className="inquiry-swipe-action inquiry-delete-action"
                     type="button"
                     aria-label="Delete inquiry"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setOpenSwipe(null);
-                      if (chatOpenId === i.id) setChatOpenId(null);
-                      if (openId === i.id) setOpenId(null);
-                      onDeleteInquiry(i.id);
-                    }}
+                    onPointerDown={(event) => triggerSwipeAction(event, i, 'delete')}
                   >
                     <span className="inbox-action-icon">×</span>
                     <span>Delete</span>

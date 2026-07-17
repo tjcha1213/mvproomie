@@ -808,8 +808,8 @@ img {
 
 .photo-modal-close {
   position: absolute;
-  top: -12px;
-  right: -12px;
+  top: 16px;
+  right: 16px;
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -819,6 +819,7 @@ img {
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-md);
+  z-index: 4;
 }
 
 .photo-modal-close svg {
@@ -879,12 +880,28 @@ img {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.35);
+  transition: width 0.18s ease, background 0.18s ease, transform 0.18s ease;
 }
 
 .photo-modal-dot.active {
+  width: 24px;
   background: #ffffff;
-  transform: scale(1.25);
+  transform: none;
+}
+
+.detail-thumb {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  transition: width 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+.detail-thumb.active {
+  width: 24px;
+  background: #ffffff;
+  transform: none;
 }
 
 .detail-type-badge {
