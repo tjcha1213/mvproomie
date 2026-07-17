@@ -16,9 +16,11 @@ interface Props {
 }
 
 const MENU_ITEMS = [
-  { key: 'payouts', label: 'Payout methods', icon: <><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></> },
+  { key: 'personal', label: 'Personal Details', icon: <><circle cx="12" cy="8" r="4"/><path d="M4 20v-1a8 8 0 0 1 16 0v1"/></> },
+  { key: 'security', label: 'Login & Security', icon: <><path d="M5 11V8a7 7 0 1 1 14 0v3"/><rect x="4" y="11" width="16" height="10" rx="2"/><circle cx="12" cy="16" r="1"/></> },
   { key: 'verification', label: 'Verification', icon: <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/> },
   { key: 'reviews', label: 'Reviews', icon: <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/> },
+  { key: 'payments', label: 'Payout & Payment Methods', icon: <><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></> },
   { key: 'support', label: 'Help & Support', icon: <><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></> },
 ];
 
@@ -103,49 +105,20 @@ export default function ProfileScreen({ units, onOpenTheme, onOpenReviews, notif
           </div>
         </div>
 
-        <div className="profile-details-card">
-          <div className="profile-details-title">Personal details</div>
-          <div className="profile-details-grid">
-            <div className="profile-details-item">
-              <span className="profile-details-label">Full name</span>
-              <span className="profile-details-value">{LANDLORD_PROFILE.name}</span>
-            </div>
-            <div className="profile-details-item">
-              <span className="profile-details-label">Email</span>
-              <span className="profile-details-value">juan@roomie.ph</span>
-            </div>
-            <div className="profile-details-item">
-              <span className="profile-details-label">Account type</span>
-              <span className="profile-details-value">Landlord mode</span>
-            </div>
-            <div className="profile-details-item">
-              <span className="profile-details-label">Member since</span>
-              <span className="profile-details-value">2021</span>
-            </div>
-          </div>
-        </div>
-
         {/* Menu */}
         <div className="profile-menu" style={{ marginTop: 12 }}>
-          <div className="profile-menu-item" onClick={onOpenTheme}>
-            <div className="profile-menu-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor" stroke="none"/>
-              </svg>
-            </div>
-            <span className="profile-menu-label">Theme color</span>
-            <span className="profile-menu-arrow">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
-            </span>
-          </div>
-          {MENU_ITEMS.map((item, i) => (
-            <div
-              key={i}
+          {MENU_ITEMS.map((item) => (
+            <button
+              key={item.key}
+              type="button"
               className="profile-menu-item"
-              onClick={() => item.key === 'reviews' ? onOpenReviews() : onShowToast(`${item.label} — coming soon`)}
+              onClick={() => {
+                if (item.key === 'reviews') {
+                  onOpenReviews();
+                  return;
+                }
+                onShowToast(`${item.label} — coming soon`);
+              }}
             >
               <div className="profile-menu-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
@@ -158,8 +131,22 @@ export default function ProfileScreen({ units, onOpenTheme, onOpenReviews, notif
                   <polyline points="9 18 15 12 9 6"/>
                 </svg>
               </span>
-            </div>
+            </button>
           ))}
+          <button type="button" className="profile-menu-item" onClick={onOpenTheme}>
+            <div className="profile-menu-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor" stroke="none"/>
+              </svg>
+            </div>
+            <span className="profile-menu-label">Theme color</span>
+            <span className="profile-menu-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </span>
+          </button>
         </div>
 
         <div style={{ height: 32 }} />
