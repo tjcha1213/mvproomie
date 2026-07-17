@@ -206,6 +206,9 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
 
         {/* CTA */}
         <div className="detail-cta">
+          <p className="detail-cta-copy">
+            Reach out directly to ask about availability, viewing schedules, or move-in timing.
+          </p>
           <button className="cta-primary" onClick={() => onSendInquiry(listing)}>
             Send Inquiry
           </button>

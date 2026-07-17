@@ -38,7 +38,7 @@ export default function BottomNav({ activeTab, onTabChange, savedCount }: Props)
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>{savedCount}</span>
         )}
-        Wishlist
+        Saved
       </button>
 
       <button className={`bottom-nav-item ${activeTab === 'inbox' ? 'active' : ''}`} onClick={() => onTabChange('inbox')}>

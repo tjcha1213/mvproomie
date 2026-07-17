@@ -951,18 +951,23 @@ img {
 
 /* CTA bottom */
 .detail-cta {
-  position: sticky;
-  bottom: 0;
-  background: var(--surface);
-  padding: 12px 16px;
-  border-top: 1px solid var(--border-light);
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
-  display: flex;
-  gap: 10px;
+  margin: 20px 0 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(246,249,255,0.98));
+  border: 1px solid var(--border-light);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 12px;
+}
+
+.detail-cta-copy {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted);
 }
 
 .cta-primary {
-  flex: 1;
   height: 48px;
   background: linear-gradient(135deg, var(--primary-light), var(--primary));
   color: white;

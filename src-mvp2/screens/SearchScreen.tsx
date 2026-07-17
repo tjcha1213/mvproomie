@@ -1,7 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useState } from 'react';
 import type { Listing } from '../data/listings';
 import ListingCard from '../components/ListingCard';
 import AppLogo from '../components/AppLogo';
+import FilterSheet from '../../src/components/FilterSheet';
+import type { Filters } from '../../src/filters';
+import { defaultFilters, applyFilters, activeFilterCount } from '../../src/filters';
 
 interface Props {
   listings: Listing[];
@@ -11,79 +14,12 @@ interface Props {
   onSendInquiry: (listing: Listing) => void;
 }
 
-type FilterType = 'All' | 'Studio' | 'Bedspace' | 'Apartment';
-
-const FILTERS: FilterType[] = ['All', 'Studio', 'Bedspace', 'Apartment'];
-
-export default function SearchScreen({ listings, onSelectListing, onToggleSave, onShowToast, onSendInquiry: _onSendInquiry }: Props) {
+export default function SearchScreen({ listings, onSelectListing, onToggleSave }: Props) {
   const [query, setQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<FilterType>('All');
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
-  const [minSqm, setMinSqm] = useState('');
-  const [maxSqm, setMaxSqm] = useState('');
-  const [listingType, setListingType] = useState<'Any' | Listing['type']>('Any');
-  const filterRef = useRef<HTMLDivElement>(null);
-
-  const filtered = useMemo(() => {
-    const parsedMinPrice = minPrice ? Number(minPrice) : null;
-    const parsedMaxPrice = maxPrice ? Number(maxPrice) : null;
-    const parsedMinSqm = minSqm ? Number(minSqm) : null;
-    const parsedMaxSqm = maxSqm ? Number(maxSqm) : null;
-    const q = query.toLowerCase();
-
-    return listings.filter((l) => {
-      const matchChipType = activeFilter === 'All' || l.type === activeFilter;
-      const matchDropdownType = listingType === 'Any' || l.type === listingType;
-      const matchQuery =
-        !q ||
-        l.title.toLowerCase().includes(q) ||
-        l.location.toLowerCase().includes(q) ||
-        l.district.toLowerCase().includes(q);
-      const matchMinPrice = parsedMinPrice === null || l.price >= parsedMinPrice;
-      const matchMaxPrice = parsedMaxPrice === null || l.price <= parsedMaxPrice;
-      const matchMinSqm = parsedMinSqm === null || l.sqm >= parsedMinSqm;
-      const matchMaxSqm = parsedMaxSqm === null || l.sqm <= parsedMaxSqm;
-
-      return (
-        matchChipType &&
-        matchDropdownType &&
-        matchQuery &&
-        matchMinPrice &&
-        matchMaxPrice &&
-        matchMinSqm &&
-        matchMaxSqm
-      );
-    });
-  }, [activeFilter, listingType, listings, maxPrice, maxSqm, minPrice, minSqm, query]);
-
-  const activeFilterCount = [
-    minPrice,
-    maxPrice,
-    minSqm,
-    maxSqm,
-    listingType !== 'Any' ? listingType : '',
-  ].filter(Boolean).length;
-
-  useEffect(() => {
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!filtersOpen) return;
-      if (filterRef.current?.contains(event.target as Node)) return;
-      setFiltersOpen(false);
-    };
-
-    window.addEventListener('pointerdown', handlePointerDown);
-    return () => window.removeEventListener('pointerdown', handlePointerDown);
-  }, [filtersOpen]);
-
-  const resetFilters = () => {
-    setMinPrice('');
-    setMaxPrice('');
-    setMinSqm('');
-    setMaxSqm('');
-    setListingType('Any');
-  };
+  const [filters, setFilters] = useState<Filters>(defaultFilters);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const filtered = applyFilters(listings, query, filters);
+  const filterCount = activeFilterCount(filters);
 
   return (
     <>
@@ -93,7 +29,7 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
       </div>
 
       {/* Search */}
-      <div className="search-container mvp2-search-page-shell" ref={filterRef}>
+      <div className="search-container mvp2-search-page-shell">
         <div className="search-input-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8"/>
@@ -116,95 +52,17 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
           )}
         </div>
         <button
-          className={`filter-btn mvp2-page-filter-pill ${filtersOpen ? 'active' : ''}`}
-          onClick={() => setFiltersOpen((prev) => !prev)}
+          className="filter-btn mvp2-page-filter-pill"
+          onClick={() => setSheetOpen(true)}
           aria-label="Filters"
-          aria-expanded={filtersOpen}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <line x1="4" y1="6" x2="20" y2="6"/>
             <line x1="8" y1="12" x2="16" y2="12"/>
             <line x1="11" y1="18" x2="13" y2="18"/>
           </svg>
-          {activeFilterCount > 0 && <span className="mvp2-filter-count">{activeFilterCount}</span>}
+          {filterCount > 0 && <span className="mvp2-filter-count">{filterCount}</span>}
         </button>
-        {filtersOpen && (
-          <div className="mvp2-filter-menu mvp2-filter-menu-page" onClick={(event) => event.stopPropagation()}>
-            <div className="mvp2-filter-menu-head">
-              <div>
-                <div className="mvp2-filter-menu-title">Filters</div>
-                <div className="mvp2-filter-menu-copy">Refine search results by price, size, and type.</div>
-              </div>
-              <button type="button" className="mvp2-filter-reset" onClick={resetFilters}>
-                Reset
-              </button>
-            </div>
-            <div className="mvp2-filter-grid">
-              <label className="mvp2-filter-field">
-                <span>Min price</span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="2500"
-                  value={minPrice}
-                  onChange={(event) => setMinPrice(event.target.value)}
-                />
-              </label>
-              <label className="mvp2-filter-field">
-                <span>Max price</span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="18000"
-                  value={maxPrice}
-                  onChange={(event) => setMaxPrice(event.target.value)}
-                />
-              </label>
-              <label className="mvp2-filter-field">
-                <span>Min room size</span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="10 sqm"
-                  value={minSqm}
-                  onChange={(event) => setMinSqm(event.target.value)}
-                />
-              </label>
-              <label className="mvp2-filter-field">
-                <span>Max room size</span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="40 sqm"
-                  value={maxSqm}
-                  onChange={(event) => setMaxSqm(event.target.value)}
-                />
-              </label>
-              <label className="mvp2-filter-field mvp2-filter-field-wide">
-                <span>Listing type</span>
-                <select value={listingType} onChange={(event) => setListingType(event.target.value as 'Any' | Listing['type'])}>
-                  <option value="Any">Any</option>
-                  <option value="Studio">Studio</option>
-                  <option value="Bedspace">Bedspace</option>
-                  <option value="Apartment">Apartment</option>
-                </select>
-              </label>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Filter chips */}
-      <div className="search-filter-chips">
-        {FILTERS.map(f => (
-          <button
-            key={f}
-            className={`filter-chip ${activeFilter === f ? 'active' : ''}`}
-            onClick={() => setActiveFilter(f)}
-          >
-            {f}
-          </button>
-        ))}
       </div>
 
       <div className="scroll-area">
@@ -236,6 +94,13 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
           </div>
         )}
       </div>
+      <FilterSheet
+        open={sheetOpen}
+        filters={filters}
+        countFor={(nextFilters) => applyFilters(listings, query, nextFilters).length}
+        onApply={setFilters}
+        onClose={() => setSheetOpen(false)}
+      />
     </>
   );
 }

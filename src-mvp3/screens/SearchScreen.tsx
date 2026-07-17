@@ -108,6 +108,8 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
   const [minSqm, setMinSqm] = useState('');
   const [maxSqm, setMaxSqm] = useState('');
   const [listingType, setListingType] = useState<'Any' | Listing['type']>('Any');
+  const [furnished, setFurnished] = useState(false);
+  const [wifi, setWifi] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(listings[0]?.id ?? null);
   const [sheetHeight, setSheetHeight] = useState(320);
   const [stageHeight, setStageHeight] = useState(0);
@@ -144,10 +146,12 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
       const matchesMinSqm = parsedMinSqm === null || listing.sqm >= parsedMinSqm;
       const matchesMaxSqm = parsedMaxSqm === null || listing.sqm <= parsedMaxSqm;
       const matchesType = listingType === 'Any' || listing.type === listingType;
+      const matchesFurnished = !furnished || listing.furnished;
+      const matchesWifi = !wifi || listing.wifi;
 
-      return matchesQuery && matchesMinPrice && matchesMaxPrice && matchesMinSqm && matchesMaxSqm && matchesType;
+      return matchesQuery && matchesMinPrice && matchesMaxPrice && matchesMinSqm && matchesMaxSqm && matchesType && matchesFurnished && matchesWifi;
     });
-  }, [listings, query, minPrice, maxPrice, minSqm, maxSqm, listingType]);
+  }, [listings, query, minPrice, maxPrice, minSqm, maxSqm, listingType, furnished, wifi]);
 
   const activeFilterCount = [
     minPrice,
@@ -155,6 +159,8 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
     minSqm,
     maxSqm,
     listingType !== 'Any' ? listingType : '',
+    furnished ? 'furnished' : '',
+    wifi ? 'wifi' : '',
   ].filter(Boolean).length;
 
   const getSnapPoints = useCallback(() => {
@@ -333,6 +339,8 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
     setMinSqm('');
     setMaxSqm('');
     setListingType('Any');
+    setFurnished(false);
+    setWifi(false);
   }, []);
 
   return (
@@ -447,6 +455,13 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
                     <option value="Bedspace">Bedspace</option>
                     <option value="Apartment">Apartment</option>
                   </select>
+                </label>
+                <label className="mvp2-filter-field mvp2-filter-field-wide">
+                  <span>Facilities</span>
+                  <div className="filter-chip-group">
+                    <button type="button" className={`filter-chip ${furnished ? 'active' : ''}`} onClick={() => setFurnished((value) => !value)}>Furnished</button>
+                    <button type="button" className={`filter-chip ${wifi ? 'active' : ''}`} onClick={() => setWifi((value) => !value)}>Wi-Fi</button>
+                  </div>
                 </label>
               </div>
             </div>
