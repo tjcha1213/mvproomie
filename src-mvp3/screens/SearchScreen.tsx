@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useCallback, useMemo, type PointerEvent as
 import { formatListingId, type Listing } from '../data/listings';
 import ListingMap, { MiniListingMap } from '../components/ListingMap';
 import AppLogo from '../components/AppLogo';
+import FilterSheet from '../../src/components/FilterSheet';
+import { PRICE_MIN, PRICE_MAX, applyFilters, type Filters } from '../../src/filters';
 
 interface Props {
   listings: Listing[];
@@ -102,7 +104,7 @@ function ListingPhotoCarousel({
 
 export default function SearchScreen({ listings, onSelectListing, onToggleSave, onShowToast, onSendInquiry }: Props) {
   const [query, setQuery] = useState('');
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [minSqm, setMinSqm] = useState('');
@@ -117,7 +119,6 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
   const [topInset, setTopInset] = useState(0);
   const stageRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const filterRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sheetHeightRef = useRef(244);
@@ -163,6 +164,24 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
     furnished ? 'furnished' : '',
     wifi ? 'wifi' : '',
   ].filter(Boolean).length;
+
+  const sharedFilters: Filters = {
+    priceMin: minPrice ? Number(minPrice) : PRICE_MIN,
+    priceMax: maxPrice ? Number(maxPrice) : PRICE_MAX,
+    types: listingType === 'Any' ? [] : [listingType],
+    furnished,
+    wifi,
+  };
+
+  const applySharedFilters = (next: Filters) => {
+    setMinPrice(next.priceMin === PRICE_MIN ? '' : String(next.priceMin));
+    setMaxPrice(next.priceMax === PRICE_MAX ? '' : String(next.priceMax));
+    setMinSqm('');
+    setMaxSqm('');
+    setListingType(next.types[0] ?? 'Any');
+    setFurnished(next.furnished);
+    setWifi(next.wifi);
+  };
 
   const getSnapPoints = useCallback(() => {
     const collapsed = 44;
@@ -253,17 +272,6 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
     sheetHeightRef.current = sheetHeight;
   }, [sheetHeight]);
 
-  useEffect(() => {
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!filtersOpen) return;
-      if (filterRef.current?.contains(event.target as Node)) return;
-      setFiltersOpen(false);
-    };
-
-    window.addEventListener('pointerdown', handlePointerDown);
-    return () => window.removeEventListener('pointerdown', handlePointerDown);
-  }, [filtersOpen]);
-
   const expandSheet = useCallback(() => {
     const snapPoints = getSnapPoints();
     setSheetHeight((prev) => {
@@ -322,7 +330,7 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
     }
   }, [sheetHeight]);
 
-  const [collapsedHeight, splitHeight, fullHeight] = getSnapPoints();
+  const [collapsedHeight, , fullHeight] = getSnapPoints();
   const sheetMode =
     sheetHeight <= collapsedHeight + 18
       ? 'peek'
@@ -338,16 +346,6 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
     setSheetHeight(collapsedHeight);
   }, [collapsedHeight]);
 
-  const resetFilters = useCallback(() => {
-    setMinPrice('');
-    setMaxPrice('');
-    setMinSqm('');
-    setMaxSqm('');
-    setListingType('Any');
-    setFurnished(false);
-    setWifi(false);
-  }, []);
-
   return (
     <>
       <div className={`home-stage sheet-${sheetMode} ${isDragging ? 'is-dragging' : ''}`} ref={stageRef}>
@@ -361,7 +359,7 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
           <AppLogo className="mvp2-logo-img" />
         </button>
 
-        <div className="search-container mvp2-search-shell" ref={filterRef}>
+        <div className="search-container mvp2-search-shell">
           <div className="search-input-wrap mvp2-search-pill" style={{ textAlign: 'left' }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="8"/>
@@ -388,10 +386,10 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
             )}
           </div>
           <button
-            className={`filter-btn mvp2-filter-pill ${filtersOpen ? 'active' : ''}`}
-            onClick={() => setFiltersOpen((prev) => !prev)}
+            className={`filter-btn mvp2-filter-pill ${sheetOpen ? 'active' : ''}`}
+            onClick={() => setSheetOpen(true)}
             aria-label="Filters"
-            aria-expanded={filtersOpen}
+            aria-expanded={sheetOpen}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="4" y1="6" x2="20" y2="6"/>
@@ -400,77 +398,6 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
             </svg>
             {activeFilterCount > 0 && <span className="mvp2-filter-count">{activeFilterCount}</span>}
           </button>
-          {filtersOpen && (
-            <div className="mvp2-filter-menu" onClick={(event) => event.stopPropagation()}>
-              <div className="mvp2-filter-menu-head">
-                <div>
-                  <div className="mvp2-filter-menu-title">Filters</div>
-                  <div className="mvp2-filter-menu-copy">Refine listings shown on the map and in the sheet.</div>
-                </div>
-                <button type="button" className="mvp2-filter-reset" onClick={resetFilters}>
-                  Reset
-                </button>
-              </div>
-              <div className="mvp2-filter-grid">
-                <label className="mvp2-filter-field">
-                  <span>Min price</span>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="2500"
-                    value={minPrice}
-                    onChange={(event) => setMinPrice(event.target.value)}
-                  />
-                </label>
-                <label className="mvp2-filter-field">
-                  <span>Max price</span>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="18000"
-                    value={maxPrice}
-                    onChange={(event) => setMaxPrice(event.target.value)}
-                  />
-                </label>
-                <label className="mvp2-filter-field">
-                  <span>Min room size</span>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="10 sqm"
-                    value={minSqm}
-                    onChange={(event) => setMinSqm(event.target.value)}
-                  />
-                </label>
-                <label className="mvp2-filter-field">
-                  <span>Max room size</span>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="40 sqm"
-                    value={maxSqm}
-                    onChange={(event) => setMaxSqm(event.target.value)}
-                  />
-                </label>
-                <label className="mvp2-filter-field mvp2-filter-field-wide">
-                  <span>Listing type</span>
-                  <select value={listingType} onChange={(event) => setListingType(event.target.value as 'Any' | Listing['type'])}>
-                    <option value="Any">Any</option>
-                    <option value="Studio">Studio</option>
-                    <option value="Bedspace">Bedspace</option>
-                    <option value="Apartment">Apartment</option>
-                  </select>
-                </label>
-                <label className="mvp2-filter-field mvp2-filter-field-wide">
-                  <span>Facilities</span>
-                  <div className="filter-chip-group">
-                    <button type="button" className={`filter-chip ${furnished ? 'active' : ''}`} onClick={() => setFurnished((value) => !value)}>Furnished</button>
-                    <button type="button" className={`filter-chip ${wifi ? 'active' : ''}`} onClick={() => setWifi((value) => !value)}>Wi-Fi</button>
-                  </div>
-                </label>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -589,6 +516,13 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
         )}
       </div>
       </div>
+      <FilterSheet
+        open={sheetOpen}
+        filters={sharedFilters}
+        countFor={(nextFilters) => applyFilters(listings, query, nextFilters).length}
+        onApply={applySharedFilters}
+        onClose={() => setSheetOpen(false)}
+      />
     </>
   );
 }
