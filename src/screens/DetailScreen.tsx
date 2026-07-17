@@ -19,7 +19,7 @@ function TypeBadge({ type }: { type: string }) {
 
 export default function DetailScreen({ listing, onBack, onToggleSave, onShowToast, onOpenChat, onSendInquiry }: Props) {
   const [activeImg, setActiveImg] = useState(0);
-  const [photoModalSrc, setPhotoModalSrc] = useState<string | null>(null);
+  const [photoModalIndex, setPhotoModalIndex] = useState<number | null>(null);
   const screenRef = useRef<HTMLDivElement>(null);
   const imageStripRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +29,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
     screenRef.current?.scrollTo(0, 0);
     imageStripRef.current?.scrollTo({ left: 0 });
     setActiveImg(0);
-    setPhotoModalSrc(null);
+    setPhotoModalIndex(null);
   }, [listing.id]);
 
   const imgs = listing.images.length > 0 ? listing.images : [listing.image];
@@ -60,7 +60,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
               type="button"
               className="detail-image-slide"
               key={`${listing.id}-${index}`}
-              onClick={() => setPhotoModalSrc(img)}
+              onClick={() => setPhotoModalIndex(index)}
               aria-label={`Open photo ${index + 1}`}
             >
               <img src={img} alt={`${listing.title} photo ${index + 1}`} />
@@ -235,10 +235,10 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
         </div>
       </div>
       <PhotoModal
-        open={photoModalSrc !== null}
-        src={photoModalSrc ?? ''}
-        alt={photoModalSrc ? `${listing.title} full photo` : ''}
-        onClose={() => setPhotoModalSrc(null)}
+        open={photoModalIndex !== null}
+        images={imgs}
+        initialIndex={photoModalIndex ?? 0}
+        onClose={() => setPhotoModalIndex(null)}
       />
     </div>
   );

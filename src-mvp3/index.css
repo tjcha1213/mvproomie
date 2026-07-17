@@ -983,8 +983,35 @@ img {
 
 .photo-modal-shell {
   position: relative;
-  width: min(100%, 720px);
-  max-height: calc(100vh - 40px);
+  width: min(100%, 760px);
+  height: min(calc(100vh - 40px), 760px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.photo-modal-strip {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.photo-modal-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.photo-modal-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -993,7 +1020,7 @@ img {
 .photo-modal-image {
   display: block;
   max-width: 100%;
-  max-height: calc(100vh - 40px);
+  max-height: 100%;
   object-fit: contain;
   border-radius: 18px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
@@ -1022,6 +1049,33 @@ img {
 
 .photo-modal-close:active {
   transform: scale(0.94);
+}
+
+.photo-modal-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.22);
+  backdrop-filter: blur(8px);
+}
+
+.photo-modal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.photo-modal-dot.active {
+  background: #ffffff;
+  transform: scale(1.25);
 }
 
 .detail-type-badge {
@@ -1555,7 +1609,7 @@ img {
   width: 100%;
   padding: 14px 16px;
   background: var(--surface);
-  border-bottom: none;
+  border-bottom: 1px solid var(--border-light);
   cursor: pointer;
   text-align: left;
   transition: background 0.15s;

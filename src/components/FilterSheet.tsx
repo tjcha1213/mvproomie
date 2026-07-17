@@ -46,8 +46,8 @@ export default function FilterSheet({ open, filters, countFor, onApply, onClose,
   return (
     <div className={`sheet-overlay ${fromTop ? 'sheet-overlay-topdown' : ''}`} onClick={onClose}>
       <div className={`filter-sheet ${fromTop ? 'sheet-topdown' : ''}`} onClick={(e) => e.stopPropagation()}>
-        <div className="sheet-handle" />
-        <div className="sheet-header" style={{ padding: '0 16px 12px' }}>
+        <div className={`sheet-handle ${fromTop ? 'sheet-handle-hidden' : ''}`} />
+        <div className="sheet-header filter-sheet-header" style={fromTop ? { padding: '0 16px 12px', marginBottom: 0 } : {}}>
           <div>
             <div className="sheet-title">Filters</div>
             <div className="sheet-sub">Narrow down your search</div>
@@ -60,7 +60,7 @@ export default function FilterSheet({ open, filters, countFor, onApply, onClose,
           </button>
         </div>
 
-        <div className="filter-body">
+        <div className="filter-body filter-sheet-body">
           {/* Monthly rent */}
           <div className="filter-section">
             <div className="filter-section-title">Monthly rent</div>
@@ -132,7 +132,7 @@ export default function FilterSheet({ open, filters, countFor, onApply, onClose,
           </div>
         </div>
 
-        <div className="filter-actions">
+        <div className="filter-actions filter-sheet-actions">
           <button className="filter-clear" onClick={() => setDraft(defaultFilters)}>
             Clear all
           </button>

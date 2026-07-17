@@ -165,7 +165,6 @@ export default function InboxScreen({
           })}
         </div>
 
-        <div style={{ height: 32 }} />
       </div>
     </>
   );
