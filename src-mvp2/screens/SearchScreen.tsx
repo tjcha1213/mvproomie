@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import type { Listing } from '../data/listings';
+import type { Listing, ListingType } from '../data/listings';
 import ListingCard from '../components/ListingCard';
 import AppLogo from '../components/AppLogo';
 import FilterSheet from '../../src/components/FilterSheet';
 import type { Filters } from '../../src/filters';
 import { defaultFilters, applyFilters, activeFilterCount } from '../../src/filters';
+
+const QUICK_TYPES: ListingType[] = ['Studio', 'Bedspace', 'Apartment'];
 
 interface Props {
   listings: Listing[];
@@ -20,6 +22,11 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave }
   const [sheetOpen, setSheetOpen] = useState(false);
   const filtered = applyFilters(listings, query, filters);
   const filterCount = activeFilterCount(filters);
+  const setQuickType = (type: ListingType | null) => {
+    setFilters((current) => ({ ...current, types: type ? [type] : [] }));
+  };
+  const quickTypeActive = (type: ListingType | null) =>
+    type === null ? filters.types.length === 0 : filters.types.length === 1 && filters.types[0] === type;
 
   return (
     <>
@@ -65,9 +72,25 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave }
         </button>
       </div>
 
+      <div className="search-filter-chips">
+        <button className={`filter-chip ${quickTypeActive(null) ? 'active' : ''}`} onClick={() => setQuickType(null)}>
+          All
+        </button>
+        {QUICK_TYPES.map((type) => (
+          <button key={type} className={`filter-chip ${quickTypeActive(type) ? 'active' : ''}`} onClick={() => setQuickType(type)}>
+            {type}
+          </button>
+        ))}
+      </div>
+
       <div className="scroll-area">
         <div className="section-header">
           <span className="section-title">{filtered.length} listings found</span>
+          {filterCount > 0 && (
+            <button className="see-all-btn" onClick={() => setFilters(defaultFilters)}>
+              Clear filters
+            </button>
+          )}
         </div>
 
         {filtered.length === 0 ? (
