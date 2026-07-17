@@ -972,7 +972,7 @@ img {
   position: fixed;
   inset: 0;
   z-index: 5000;
-  background: transparent;
+  background: rgba(2, 6, 23, 0.88);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -987,9 +987,10 @@ img {
   flex-direction: column;
   align-items: stretch;
   justify-content: center;
-  background: rgba(15, 23, 42, 0.78);
-  border-radius: 24px;
+  background: #020617;
+  border-radius: 28px;
   overflow: hidden;
+  box-shadow: 0 24px 80px rgba(2, 6, 23, 0.5);
 }
 
 .photo-modal-strip {
@@ -1016,6 +1017,7 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 24px;
 }
 
 .photo-modal-image {
@@ -1023,7 +1025,7 @@ img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  border-radius: 0;
+  border-radius: 18px;
   box-shadow: none;
   background: transparent;
 }
@@ -1052,6 +1054,36 @@ img {
   transform: scale(0.94);
 }
 
+.photo-modal-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  backdrop-filter: blur(12px);
+}
+
+.photo-modal-nav.is-prev {
+  left: 16px;
+}
+
+.photo-modal-nav.is-next {
+  right: 16px;
+}
+
+.photo-modal-nav:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 .photo-modal-dots {
   position: absolute;
   left: 50%;
@@ -1064,6 +1096,7 @@ img {
   padding: 0;
   background: transparent;
   backdrop-filter: none;
+  z-index: 3;
 }
 
 .photo-modal-dot {

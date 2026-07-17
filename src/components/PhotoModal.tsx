@@ -44,6 +44,15 @@ export default function PhotoModal({ open, images, initialIndex, onClose }: Prop
     setActiveIndex(Math.max(0, Math.min(images.length - 1, nextIndex)));
   }, [images.length]);
 
+  const scrollToIndex = useCallback((index: number, behavior: ScrollBehavior) => {
+    const nextIndex = Math.max(0, Math.min(images.length - 1, index));
+    setActiveIndex(nextIndex);
+    stripRef.current?.scrollTo({
+      left: stripRef.current.clientWidth * nextIndex,
+      behavior,
+    });
+  }, [images.length]);
+
   if (!open) return null;
 
   return (
@@ -63,19 +72,39 @@ export default function PhotoModal({ open, images, initialIndex, onClose }: Prop
           ))}
         </div>
         {images.length > 1 && (
+          <>
+            <button
+              type="button"
+              className="photo-modal-nav is-prev"
+              onClick={() => scrollToIndex(activeIndex - 1, 'smooth')}
+              disabled={activeIndex === 0}
+              aria-label="Previous photo"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className="photo-modal-nav is-next"
+              onClick={() => scrollToIndex(activeIndex + 1, 'smooth')}
+              disabled={activeIndex === images.length - 1}
+              aria-label="Next photo"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </>
+        )}
+        {images.length > 1 && (
           <div className="photo-modal-dots" aria-hidden="true">
             {images.map((_, index) => (
               <button
                 key={index}
                 type="button"
                 className={`photo-modal-dot ${index === activeIndex ? 'active' : ''}`}
-                onClick={() => {
-                  setActiveIndex(index);
-                  stripRef.current?.scrollTo({
-                    left: stripRef.current.clientWidth * index,
-                    behavior: 'smooth',
-                  });
-                }}
+                onClick={() => scrollToIndex(index, 'smooth')}
                 aria-label={`Show photo ${index + 1}`}
               />
             ))}
