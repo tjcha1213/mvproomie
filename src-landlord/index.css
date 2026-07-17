@@ -4451,6 +4451,17 @@ img {
   flex-shrink: 0;
 }
 
+.payment-modal-identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.payment-modal-avatar {
+  flex: 0 0 auto;
+}
+
 .payment-modal .listing-modal-head h3 {
   margin-top: 8px;
   font-size: 24px;

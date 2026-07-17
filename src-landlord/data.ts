@@ -6,7 +6,7 @@ const withBase = (p: string) => `${import.meta.env.BASE_URL}${p}`;
 export const LANDLORD_PROFILE = {
   name: 'Juan Dela Cruz',
   userId: 'LL-0001',
-  avatar: withBase('assets/avatars/avatar-male-04.svg'),
+  avatar: withBase('assets/avatars/avatar-default.svg'),
   roomieScore: 91,
   roomieTemperature: 'Cool' as RoomieTemperature,
 };
@@ -377,6 +377,7 @@ export interface Payment {
   id: number;
   tenant: string;
   tenantId: string;
+  avatar?: string;
   trust: RoomieTrust;
   unitId: number;
   amount: number;
@@ -398,6 +399,7 @@ export const PAYMENTS: Payment[] = [
     id: 1,
     tenant: 'Maria Reyes',
     tenantId: 'TEN-2001',
+    avatar: withBase('assets/avatars/avatar-female-03.svg'),
     trust: { roomieScore: 93, roomieTemperature: 'Cool' },
     unitId: 1,
     amount: 6000,
@@ -416,6 +418,7 @@ export const PAYMENTS: Payment[] = [
     id: 2,
     tenant: 'Ken Villanueva',
     tenantId: 'TEN-2002',
+    avatar: withBase('assets/avatars/avatar-male-01.svg'),
     trust: { roomieScore: 89, roomieTemperature: 'Cool' },
     unitId: 4,
     amount: 7000,
@@ -434,6 +437,7 @@ export const PAYMENTS: Payment[] = [
     id: 3,
     tenant: 'Alyssa Cruz',
     tenantId: 'TEN-2003',
+    avatar: withBase('assets/avatars/avatar-female-02.svg'),
     trust: { roomieScore: 85, roomieTemperature: 'Warm' },
     unitId: 5,
     amount: 2500,
@@ -452,6 +456,7 @@ export const PAYMENTS: Payment[] = [
     id: 4,
     tenant: 'Janine Lopez',
     tenantId: 'TEN-2004',
+    avatar: withBase('assets/avatars/avatar-female-04.svg'),
     trust: { roomieScore: 72, roomieTemperature: 'Warm' },
     unitId: 5,
     amount: 2500,
@@ -470,6 +475,7 @@ export const PAYMENTS: Payment[] = [
     id: 5,
     tenant: 'Rhea Mendoza',
     tenantId: 'TEN-2005',
+    avatar: withBase('assets/avatars/avatar-female-01.svg'),
     trust: { roomieScore: 58, roomieTemperature: 'Hot' },
     unitId: 5,
     amount: 2500,

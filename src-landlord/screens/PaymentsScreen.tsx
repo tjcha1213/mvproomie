@@ -444,7 +444,9 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
                 }
               }}
             >
-              <div className="inbox-avatar">{p.tenant[0]}</div>
+              <div className="inbox-avatar">
+                {p.avatar ? <img src={p.avatar} alt={p.tenant} /> : p.tenant[0]}
+              </div>
               <div className="payment-info">
                 <div className="payment-name">{p.tenant}</div>
                 <div className="listing-id-row">
@@ -493,7 +495,11 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
         <div className="listing-modal-overlay" onClick={() => setSelectedPaymentId(null)}>
           <div className="listing-modal payment-modal" onClick={event => event.stopPropagation()}>
             <div className="listing-modal-head">
-              <div>
+              <div className="payment-modal-identity">
+                <div className="inbox-avatar payment-modal-avatar">
+                  {selectedPayment.avatar ? <img src={selectedPayment.avatar} alt={selectedPayment.tenant} /> : selectedPayment.tenant[0]}
+                </div>
+                <div>
                 <div className="listing-modal-topline">Payment log</div>
                 <h3>{selectedPayment.tenant}</h3>
                 <div className="listing-id-row listing-id-row-modal">
@@ -501,6 +507,7 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
                   <span className={`roomie-score-chip is-${selectedPayment.trust.roomieTemperature.toLowerCase()}`}>{selectedPayment.trust.roomieTemperature === 'Cool' ? '❄️' : selectedPayment.trust.roomieTemperature === 'Warm' ? '🌤️' : '🔥'} Roomie {selectedPayment.trust.roomieScore}</span>
                 </div>
                 <p>{unitTitle(selectedPayment.unitId)}</p>
+                </div>
               </div>
               <button className="listing-modal-close" onClick={() => setSelectedPaymentId(null)} aria-label="Close payment log">
                 ×
