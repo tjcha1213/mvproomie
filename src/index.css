@@ -2106,7 +2106,7 @@ img {
 /* Toast notification */
 .toast {
   position: absolute;
-  bottom: calc(var(--bottom-nav-height) + 12px);
+  bottom: calc(var(--bottom-nav-height) + 34px);
   left: 50%;
   transform: translateX(-50%);
   background: var(--text);
