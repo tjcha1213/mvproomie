@@ -1834,6 +1834,8 @@ img {
   width: 100%;
   border-radius: 18px;
   touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .inbox-message-actions {

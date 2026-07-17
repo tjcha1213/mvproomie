@@ -35,7 +35,8 @@ type OpenAction = {
 } | null;
 
 const ACTION_WIDTH = 92;
-const SWIPE_THRESHOLD = 56;
+const REVEAL_THRESHOLD = 12;
+const COMMIT_THRESHOLD = 56;
 const MAX_SWIPE = 116;
 
 function formatConversationTime(timestamp: number): string {
@@ -82,8 +83,8 @@ function actionOffset(side: SwipeSide | null) {
 }
 
 function swipeSideFromOffset(offset: number) {
-  if (offset >= SWIPE_THRESHOLD) return 'pin' as const;
-  if (offset <= -SWIPE_THRESHOLD) return 'delete' as const;
+  if (offset >= 0) return 'pin' as const;
+  if (offset < 0) return 'delete' as const;
   return null;
 }
 
@@ -326,20 +327,21 @@ export default function InboxScreen({
 
     if (!swipe.locked) {
       if (absX < 6 && absY < 6) return;
-      if (absY > absX * 1.15) {
+      if (absY > 18 && absY > absX * 1.2) {
         setSwipe(null);
         return;
       }
+      if (absX < 10 || absX < absY + 4) return;
       setSwipe((current) => (current ? { ...current, locked: true } : current));
     }
 
     event.preventDefault();
     const nextOffset = clamp(swipe.startOffset + dx, -MAX_SWIPE, MAX_SWIPE);
     setSwipe((current) => (current && current.messageId === messageId ? { ...current, locked: true, offset: nextOffset } : current));
-    const side = swipeSideFromOffset(nextOffset);
+    const side = Math.abs(nextOffset) >= REVEAL_THRESHOLD ? swipeSideFromOffset(nextOffset) : null;
     if (side) {
       setOpenAction({ messageId, side });
-    } else if (Math.abs(nextOffset) < 12 && openAction?.messageId !== messageId) {
+    } else if (Math.abs(nextOffset) < REVEAL_THRESHOLD && openAction?.messageId !== messageId) {
       setOpenAction(null);
     }
   }, [openAction, swipe]);
@@ -357,9 +359,13 @@ export default function InboxScreen({
     }
 
     const offset = clamp(swipe.offset, -MAX_SWIPE, MAX_SWIPE);
-    const nextSide = swipeSideFromOffset(offset);
-    const restingSide = swipe.startOffset > 0 ? 'pin' : swipe.startOffset < 0 ? 'delete' : null;
-    const resolvedSide = nextSide ?? restingSide;
+    const resolvedSide = Math.abs(offset) >= COMMIT_THRESHOLD
+      ? swipeSideFromOffset(offset)
+      : swipe.startOffset > 0
+        ? 'pin'
+        : swipe.startOffset < 0
+          ? 'delete'
+          : null;
 
     setSwipe(null);
     restoreOpenAction(messageId, resolvedSide);
@@ -369,7 +375,7 @@ export default function InboxScreen({
   const handleRowPointerCancel = useCallback((messageId: string) => {
     if (!swipe || swipe.messageId !== messageId) return;
     setSwipe(null);
-    restoreOpenAction(messageId, swipe.startOffset > 0 ? 'pin' : swipe.startOffset < 0 ? 'delete' : null);
+    restoreOpenAction(messageId, Math.abs(swipe.offset) >= COMMIT_THRESHOLD ? swipeSideFromOffset(swipe.offset) : (swipe.startOffset > 0 ? 'pin' : swipe.startOffset < 0 ? 'delete' : null));
   }, [restoreOpenAction, swipe]);
 
   const handleActionClick = useCallback((messageId: string, action: SwipeSide) => {
