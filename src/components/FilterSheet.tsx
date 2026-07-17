@@ -9,6 +9,7 @@ interface Props {
   countFor: (f: Filters) => number;
   onApply: (f: Filters) => void;
   onClose: () => void;
+  fromTop?: boolean;
 }
 
 const TYPES: ListingType[] = ['Studio', 'Bedspace', 'Apartment'];
@@ -21,7 +22,7 @@ function priceLabel(v: number, isMax: boolean): string {
   return `₱${v.toLocaleString()}${isMax && v >= PRICE_MAX ? '+' : ''}`;
 }
 
-export default function FilterSheet({ open, filters, countFor, onApply, onClose }: Props) {
+export default function FilterSheet({ open, filters, countFor, onApply, onClose, fromTop = false }: Props) {
   const [draft, setDraft] = useState<Filters>(filters);
 
   useEffect(() => {
@@ -43,8 +44,8 @@ export default function FilterSheet({ open, filters, countFor, onApply, onClose 
   const count = countFor(draft);
 
   return (
-    <div className="sheet-overlay" onClick={onClose}>
-      <div className="filter-sheet" onClick={(e) => e.stopPropagation()}>
+    <div className={`sheet-overlay ${fromTop ? 'sheet-overlay-topdown' : ''}`} onClick={onClose}>
+      <div className={`filter-sheet ${fromTop ? 'sheet-topdown' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="sheet-handle" />
         <div className="sheet-header" style={{ padding: '0 16px 12px' }}>
           <div>

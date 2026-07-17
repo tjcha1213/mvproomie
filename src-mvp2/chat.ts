@@ -51,24 +51,17 @@ function message(id: string, author: ChatMessage['author'], text: string, timest
   return { id, author, text, timestamp };
 }
 
-function orderConversations(conversations: Conversation[]): Conversation[] {
-  return [
-    ...conversations.filter((conversation) => conversation.pinned),
-    ...conversations.filter((conversation) => !conversation.pinned),
-  ];
+function latestMessageTimestamp(conversation: Conversation): number {
+  return conversation.messages[conversation.messages.length - 1]?.timestamp ?? 0;
 }
 
-function focusConversation(conversations: Conversation[], conversationId: string): Conversation[] {
-  const selected = conversations.find((conversation) => conversation.id === conversationId);
-  if (!selected) return orderConversations(conversations);
-
-  const rest = conversations.filter((conversation) => conversation.id !== conversationId);
-  const pinned = rest.filter((conversation) => conversation.pinned);
-  const unpinned = rest.filter((conversation) => !conversation.pinned);
-
-  return selected.pinned
-    ? [selected, ...pinned, ...unpinned]
-    : [...pinned, selected, ...unpinned];
+function orderConversations(conversations: Conversation[]): Conversation[] {
+  return [...conversations].sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    const timeDiff = latestMessageTimestamp(b) - latestMessageTimestamp(a);
+    if (timeDiff !== 0) return timeDiff;
+    return a.id.localeCompare(b.id);
+  });
 }
 
 export function conversationIdForListing(listingId: number): string {
@@ -134,18 +127,17 @@ export function openConversation(
   if (existing) {
     return {
       conversationId: id,
-      conversations: focusConversation(
+      conversations: orderConversations(
         conversations.map((conversation) =>
           conversation.id === id ? { ...conversation, unreadCount: 0 } : conversation
-        ),
-        id
+        )
       ),
     };
   }
 
   return {
     conversationId: id,
-    conversations: [createConversation(listing, Date.now()), ...conversations],
+    conversations: orderConversations([createConversation(listing, Date.now()), ...conversations]),
   };
 }
 
@@ -168,7 +160,7 @@ export function openConversationWithPrompt(
 
   return {
     conversationId: id,
-    conversations: focusConversation(
+    conversations: orderConversations(
       opened.conversations.map((conversation) => {
         if (conversation.id !== id) return conversation;
         const nextMessages = [
@@ -177,8 +169,7 @@ export function openConversationWithPrompt(
           message(`${id}-other-${now}`, 'other', replyText, now + 1000),
         ];
         return { ...conversation, unreadCount: 0, messages: nextMessages };
-      }),
-      id
+      })
     ),
   };
 }
@@ -210,7 +201,7 @@ export function sendConversationReply(
     };
   });
 
-  return focusConversation(updated, conversationId);
+  return orderConversations(updated);
 }
 
 export function toggleConversationPin(
@@ -221,7 +212,7 @@ export function toggleConversationPin(
     conversation.id === conversationId ? { ...conversation, pinned: !conversation.pinned } : conversation
   );
 
-  return focusConversation(updated, conversationId);
+  return orderConversations(updated);
 }
 
 export function deleteConversation(

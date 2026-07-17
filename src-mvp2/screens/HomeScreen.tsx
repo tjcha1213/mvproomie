@@ -466,6 +466,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
         countFor={(nextFilters) => applyFilters(listings, query, nextFilters).length}
         onApply={setFilters}
         onClose={() => setSheetOpen(false)}
+        fromTop
       />
     </>
   );

@@ -1878,8 +1878,36 @@ img {
   animation: overlayIn 0.2s ease-out;
 }
 
+.sheet-overlay.sheet-overlay-topdown {
+  justify-content: flex-start;
+}
+
+.filter-sheet {
+  background: var(--surface);
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.2);
+  animation: sheetUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  flex-direction: column;
+  max-height: 84%;
+  padding-top: 10px;
+}
+
+.filter-sheet.sheet-topdown {
+  border-radius: 0 0 24px 24px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+  animation: sheetDown 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  padding-top: 0;
+  padding-bottom: 10px;
+}
+
 .theme-picker-overlay {
   z-index: 1100;
+}
+
+@keyframes sheetDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
 }
 
 @keyframes overlayIn {

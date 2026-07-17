@@ -522,6 +522,7 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
         countFor={(nextFilters) => applyFilters(listings, query, nextFilters).length}
         onApply={applySharedFilters}
         onClose={() => setSheetOpen(false)}
+        fromTop
       />
     </>
   );
