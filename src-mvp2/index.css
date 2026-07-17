@@ -987,6 +987,9 @@ img {
   flex-direction: column;
   align-items: stretch;
   justify-content: center;
+  background: rgba(15, 23, 42, 0.78);
+  border-radius: 24px;
+  overflow: hidden;
 }
 
 .photo-modal-strip {
@@ -1020,8 +1023,8 @@ img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  border-radius: 18px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  border-radius: 0;
+  box-shadow: none;
   background: transparent;
 }
 
@@ -1594,7 +1597,8 @@ img {
 
 .inbox-swipe-row { position: relative; overflow: hidden; background: var(--surface); touch-action: pan-y; }
 .inbox-swipe-actions { position: absolute; inset: 0; display: flex; justify-content: space-between; }
-.inbox-swipe-action { width: 88px; border: 0; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 700; cursor: pointer; }
+.inbox-swipe-actions { z-index: 2; }
+.inbox-swipe-action { width: 88px; border: 0; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 700; cursor: pointer; position: relative; z-index: 3; pointer-events: auto; }
 .inbox-pin-action { background: #eab308; }
 .inbox-delete-action { background: #dc2626; }
 .inbox-action-icon { font-size: 24px; line-height: 1; }
@@ -1618,6 +1622,10 @@ img {
 
 .inbox-item:active {
   background: var(--surface-2);
+}
+
+.inbox-swipe-row.is-open .inbox-item {
+  pointer-events: none;
 }
 
 .inbox-avatar {

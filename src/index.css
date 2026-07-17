@@ -763,6 +763,9 @@ img {
   flex-direction: column;
   align-items: stretch;
   justify-content: center;
+  background: rgba(15, 23, 42, 0.78);
+  border-radius: 24px;
+  overflow: hidden;
 }
 
 .photo-modal-strip {
@@ -796,8 +799,8 @@ img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  border-radius: 18px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  border-radius: 0;
+  box-shadow: none;
   background: transparent;
 }
 
@@ -1385,6 +1388,7 @@ img {
   inset: 0;
   display: flex;
   justify-content: space-between;
+  z-index: 2;
 }
 
 .inbox-swipe-action {
@@ -1399,6 +1403,9 @@ img {
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
 }
 
 .inbox-pin-action { background: #eab308; }
@@ -1420,6 +1427,10 @@ img {
   z-index: 1;
   transition: transform 0.2s ease, background 0.15s;
   will-change: transform;
+}
+
+.inbox-swipe-row.is-open .inbox-item {
+  pointer-events: none;
 }
 
 .inbox-item:active {
