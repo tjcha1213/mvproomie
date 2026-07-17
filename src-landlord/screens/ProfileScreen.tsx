@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { LANDLORD_PROFILE } from '../data';
 import type { Unit } from '../data';
 import Header from '../components/Header';
@@ -21,6 +22,12 @@ const MENU_ITEMS = [
 
 export default function ProfileScreen({ units, onOpenTheme, onOpenReviews, notifications, onOpenNotification, onShowToast }: Props) {
   const occupied = units.filter(u => u.status === 'Occupied').length;
+  const [mode, setMode] = useState<'Tenant Mode' | 'Landlord Mode'>('Landlord Mode');
+
+  const switchMode = (nextMode: 'Tenant Mode' | 'Landlord Mode') => {
+    setMode(nextMode);
+    onShowToast(`${nextMode} selected`);
+  };
 
   return (
     <>
@@ -58,6 +65,21 @@ export default function ProfileScreen({ units, onOpenTheme, onOpenReviews, notif
               <div className="profile-stat-value">2021</div>
               <div className="profile-stat-label">Member since</div>
             </div>
+          </div>
+        </div>
+
+        <div className="profile-mode-card">
+          <div className="profile-mode-copy">
+            <div className="profile-mode-title">Account mode</div>
+            <div className="profile-mode-subtitle">Switch how Juan uses the demo account.</div>
+          </div>
+          <div className="profile-mode-toggle" role="tablist" aria-label="Account mode">
+            <button type="button" className={`profile-mode-btn ${mode === 'Tenant Mode' ? 'active' : ''}`} onClick={() => switchMode('Tenant Mode')}>
+              Tenant Mode
+            </button>
+            <button type="button" className={`profile-mode-btn ${mode === 'Landlord Mode' ? 'active' : ''}`} onClick={() => switchMode('Landlord Mode')}>
+              Landlord Mode
+            </button>
           </div>
         </div>
 

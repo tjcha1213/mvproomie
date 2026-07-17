@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import Logo from '../components/Logo';
+const withBase = (path: string) => `${import.meta.env.BASE_URL}${path}`;
 
 const MENU_ITEMS = [
   { label: 'Personal Details', icon: <><circle cx="12" cy="8" r="4"/><path d="M4 20v-1a8 8 0 0 1 16 0v1"/></> },
@@ -14,6 +16,13 @@ interface Props {
 }
 
 export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
+  const [mode, setMode] = useState<'Tenant Mode' | 'Landlord Mode'>('Tenant Mode');
+
+  const switchMode = (nextMode: 'Tenant Mode' | 'Landlord Mode') => {
+    setMode(nextMode);
+    onShowToast(`${nextMode} selected`);
+  };
+
   return (
     <>
       <div className="app-header">
@@ -23,9 +32,26 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
       <div className="scroll-area">
         {/* Profile header */}
         <div className="profile-header">
-          <div className="profile-avatar">J</div>
-          <div className="profile-name">Juan D.</div>
+          <div className="profile-avatar">
+            <img src={withBase('assets/avatars/avatar-default.svg')} alt="Juan Dela Cruz" />
+          </div>
+          <div className="profile-name">Juan Dela Cruz</div>
           <div className="profile-email">juan@roomie.ph</div>
+        </div>
+
+        <div className="profile-mode-card">
+          <div className="profile-mode-copy">
+            <div className="profile-mode-title">Account mode</div>
+            <div className="profile-mode-subtitle">Switch how Juan uses the demo account.</div>
+          </div>
+          <div className="profile-mode-toggle" role="tablist" aria-label="Account mode">
+            <button type="button" className={`profile-mode-btn ${mode === 'Tenant Mode' ? 'active' : ''}`} onClick={() => switchMode('Tenant Mode')}>
+              Tenant Mode
+            </button>
+            <button type="button" className={`profile-mode-btn ${mode === 'Landlord Mode' ? 'active' : ''}`} onClick={() => switchMode('Landlord Mode')}>
+              Landlord Mode
+            </button>
+          </div>
         </div>
 
         <div className="section-header">
