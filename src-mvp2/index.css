@@ -1816,6 +1816,7 @@ img {
 .inbox-chat-thread {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 16px;
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--primary) 4%, #ffffff), #ffffff 30%),
@@ -1825,8 +1826,81 @@ img {
   gap: 10px;
 }
 
+.inbox-message-swipe-row {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  border-radius: 18px;
+  touch-action: pan-y;
+}
+
+.inbox-message-actions {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.inbox-message-actions-left {
+  padding-right: 12px;
+}
+
+.inbox-message-actions-right {
+  padding-left: 12px;
+}
+
+.inbox-message-actions-left,
+.inbox-message-actions-right {
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+.inbox-message-actions-left.show,
+.inbox-message-actions-right.show {
+  opacity: 1;
+}
+
+.inbox-message-actions-right {
+  justify-content: flex-end;
+}
+
+.inbox-message-action {
+  width: 92px;
+  border: 0;
+  border-radius: 16px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.inbox-message-action svg {
+  width: 20px;
+  height: 20px;
+}
+
+.inbox-pin-action {
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+}
+
+.inbox-delete-action {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+}
+
 .inbox-bubble-row {
   display: flex;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+  will-change: transform, opacity;
 }
 
 .inbox-bubble-row.self {
@@ -1857,6 +1931,41 @@ img {
   color: var(--text);
   border: 1px solid var(--border-light);
   border-bottom-left-radius: 6px;
+}
+
+.inbox-bubble-row.is-pinned .inbox-bubble.other,
+.inbox-bubble-row.is-pinned .inbox-bubble.self {
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.inbox-bubble-top {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+.inbox-message-pin-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: color-mix(in srgb, var(--primary) 14%, #ffffff);
+  color: var(--primary-dark);
+}
+
+.inbox-message-swipe-row.is-deleting .inbox-bubble-row {
+  opacity: 0;
+}
+
+.inbox-message-swipe-row.is-deleting.delete .inbox-bubble-row {
+  transform: translate3d(-120%, 0, 0);
+}
+
+.inbox-message-swipe-row.is-deleting.pin .inbox-bubble-row {
+  transform: translate3d(120%, 0, 0);
 }
 
 .inbox-bubble-time {
