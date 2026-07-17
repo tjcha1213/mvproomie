@@ -4048,9 +4048,77 @@ img {
 /* Inquiries */
 .inquiry-item {
   position: relative;
-  overflow: hidden;
   background: var(--surface);
   border-bottom: 1px solid var(--border-light);
+}
+
+.inquiry-swipe-row {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.inquiry-swipe-actions {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.inquiry-swipe-actions-left {
+  padding-right: 12px;
+}
+
+.inquiry-swipe-actions-right {
+  padding-left: 12px;
+  justify-content: flex-end;
+}
+
+.inquiry-swipe-actions-left,
+.inquiry-swipe-actions-right {
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+.inquiry-swipe-actions-left.show,
+.inquiry-swipe-actions-right.show {
+  opacity: 1;
+}
+
+.inquiry-swipe-action {
+  width: 92px;
+  border: 0;
+  border-radius: 16px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.inquiry-swipe-action svg {
+  width: 20px;
+  height: 20px;
+}
+
+.inquiry-pin-action {
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+}
+
+.inquiry-delete-action {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
 }
 
 .inquiry-main {
@@ -4064,11 +4132,23 @@ img {
   transition: background 0.15s;
   position: relative;
   z-index: 1;
-  transition: transform 0.2s ease, background 0.15s;
+  transition: transform 0.18s ease, background 0.15s;
   will-change: transform;
 }
 
 .inquiry-main:active { background: var(--surface-2); }
+
+.inquiry-swipe-row.is-deleting .inquiry-main {
+  opacity: 0;
+}
+
+.inquiry-swipe-row.is-deleting.delete .inquiry-main {
+  transform: translate3d(-120%, 0, 0);
+}
+
+.inquiry-swipe-row.is-deleting.pin .inquiry-main {
+  transform: translate3d(120%, 0, 0);
+}
 
 .inquiry-name-row {
   display: flex;

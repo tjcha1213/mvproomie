@@ -386,6 +386,16 @@ export default function InboxScreen({
     }
   }, [commitDelete, commitPinToggle]);
 
+  const handleActionPointerUp = useCallback((
+    event: ReactPointerEvent<HTMLButtonElement>,
+    messageId: string,
+    action: SwipeSide,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    handleActionClick(messageId, action);
+  }, [handleActionClick]);
+
   const getMessageOffset = useCallback((message: ThreadMessage) => {
     if (swipe?.messageId === message.id) {
       return clamp(swipe.offset, -MAX_SWIPE, MAX_SWIPE);
@@ -450,7 +460,7 @@ export default function InboxScreen({
                     type="button"
                     className="inbox-message-action inbox-pin-action"
                     onPointerDown={(event) => event.stopPropagation()}
-                    onClick={() => handleActionClick(message.id, 'pin')}
+                    onPointerUp={(event) => handleActionPointerUp(event, message.id, 'pin')}
                   >
                     <PinIcon />
                     <span>{message.isPinned ? 'Unpin' : 'Pin'}</span>
@@ -461,7 +471,7 @@ export default function InboxScreen({
                     type="button"
                     className="inbox-message-action inbox-delete-action"
                     onPointerDown={(event) => event.stopPropagation()}
-                    onClick={() => handleActionClick(message.id, 'delete')}
+                    onPointerUp={(event) => handleActionPointerUp(event, message.id, 'delete')}
                   >
                     <DeleteIcon />
                     <span>Delete</span>
