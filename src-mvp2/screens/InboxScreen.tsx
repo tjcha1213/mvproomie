@@ -42,6 +42,7 @@ export default function InboxScreen({
   const [draft, setDraft] = useState('');
   const [openSwipe, setOpenSwipe] = useState<{ id: string; action: SwipeAction } | null>(null);
   const [swipe, setSwipe] = useState<SwipeState | null>(null);
+  const swipeRef = useRef<SwipeState | null>(null);
   const swipeMoved = useRef(false);
   const suppressNextClick = useRef(false);
   const activeConversation = useMemo(
@@ -54,12 +55,14 @@ export default function InboxScreen({
     onSendMessage(activeConversation.id, draft);
     setDraft('');
   };
-  const beginSwipe = (event: React.PointerEvent<HTMLDivElement>, id: string) => { if (event.pointerType === 'mouse' && event.button !== 0) return; event.currentTarget.setPointerCapture(event.pointerId); swipeMoved.current = false; setSwipe({ id, startX: event.clientX, offset: 0, action: null }); };
-  const moveSwipe = (event: React.PointerEvent<HTMLDivElement>, id: string) => { if (!swipe || swipe.id !== id) return; const delta = event.clientX - swipe.startX; if (Math.abs(delta) < 4) return; event.preventDefault(); swipeMoved.current = true; setSwipe({ ...swipe, offset: Math.max(-88, Math.min(88, delta)), action: delta < 0 ? 'delete' : 'pin' }); };
+  const beginSwipe = (event: React.PointerEvent<HTMLDivElement>, id: string) => { if (event.pointerType === 'mouse' && event.button !== 0) return; event.currentTarget.setPointerCapture(event.pointerId); swipeMoved.current = false; const next = { id, startX: event.clientX, offset: 0, action: null as SwipeAction | null }; swipeRef.current = next; setSwipe(next); };
+  const moveSwipe = (event: React.PointerEvent<HTMLDivElement>, id: string) => { const activeSwipe = swipeRef.current; if (!activeSwipe || activeSwipe.id !== id) return; const delta = event.clientX - activeSwipe.startX; if (Math.abs(delta) < 4) return; event.preventDefault(); swipeMoved.current = true; const next = { ...activeSwipe, offset: Math.max(-88, Math.min(88, delta)), action: delta < 0 ? 'delete' as const : 'pin' as const }; swipeRef.current = next; setSwipe(next); };
   const endSwipe = (event: React.PointerEvent<HTMLDivElement>, id: string, openTap = true) => {
-    if (!swipe || swipe.id !== id) return;
-    const action = Math.abs(swipe.offset) >= 52 ? swipe.action : null;
+    const activeSwipe = swipeRef.current;
+    if (!activeSwipe || activeSwipe.id !== id) return;
+    const action = Math.abs(activeSwipe.offset) >= 52 ? activeSwipe.action : null;
     setOpenSwipe(action ? { id, action } : null);
+    swipeRef.current = null;
     setSwipe(null);
     if (!action && openTap && !swipeMoved.current) {
       suppressNextClick.current = true;
