@@ -9,6 +9,8 @@ import { PROFILE_MENU_ICONS } from '../../src/components/ProfileMenuIcons';
 
 interface Props {
   units: Unit[];
+  onOpenListings: () => void;
+  onOpenTenants: () => void;
   onOpenTheme: () => void;
   onOpenReviews: () => void;
   notifications: HeaderNotification[];
@@ -25,7 +27,7 @@ const MENU_ITEMS = [
   { key: 'support', label: 'Help & Support', icon: PROFILE_MENU_ICONS.support },
 ];
 
-export default function ProfileScreen({ units, onOpenTheme, onOpenReviews, notifications, onOpenNotification, onShowToast }: Props) {
+export default function ProfileScreen({ units, onOpenListings, onOpenTenants, onOpenTheme, onOpenReviews, notifications, onOpenNotification, onShowToast }: Props) {
   const occupied = units.filter(u => u.status === 'Occupied').length;
   const [mode, setMode] = useState<'Tenant Mode' | 'Landlord Mode'>('Landlord Mode');
   const [chooser, setChooser] = useState<'tenant' | 'landlord' | null>(null);
@@ -77,14 +79,14 @@ export default function ProfileScreen({ units, onOpenTheme, onOpenReviews, notif
           <div className="profile-email">Verified Landlord · ★ 4.9 (128 reviews)</div>
 
           <div className="profile-stats">
-            <div className="profile-stat">
+            <button type="button" className="profile-stat profile-stat-btn" onClick={onOpenListings}>
               <div className="profile-stat-value">{units.length}</div>
               <div className="profile-stat-label">Listings</div>
-            </div>
-            <div className="profile-stat">
+            </button>
+            <button type="button" className="profile-stat profile-stat-btn" onClick={onOpenTenants}>
               <div className="profile-stat-value">{occupied}</div>
               <div className="profile-stat-label">Tenants</div>
-            </div>
+            </button>
             <div className="profile-stat">
               <div className="profile-stat-value">2021</div>
               <div className="profile-stat-label">Member since</div>

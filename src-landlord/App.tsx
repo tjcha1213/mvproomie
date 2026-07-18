@@ -10,6 +10,7 @@ import NewListingModal from './components/NewListingModal';
 import type { NewListingDraft } from './components/NewListingModal';
 import DashboardScreen from './screens/DashboardScreen';
 import ListingsScreen from './screens/ListingsScreen';
+import TenantsScreen from './screens/TenantsScreen';
 import InquiriesScreen from './screens/InquiriesScreen';
 import PaymentsScreen from './screens/PaymentsScreen';
 import ProfileScreen from './screens/ProfileScreen';
@@ -45,7 +46,7 @@ function resolveLocationCoords(location: string, seed: number) {
 function App() {
   const initialTab = (() => {
     const tab = new URL(window.location.href).searchParams.get('tab');
-    return tab === 'dashboard' || tab === 'listings' || tab === 'inquiries' || tab === 'payments' || tab === 'profile' || tab === 'reviews' ? tab : 'dashboard';
+    return tab === 'dashboard' || tab === 'listings' || tab === 'tenants' || tab === 'inquiries' || tab === 'payments' || tab === 'profile' || tab === 'reviews' ? tab : 'dashboard';
   })();
   const [tab, setTab] = useState<Tab>(initialTab);
   const [units, setUnits] = useState<Unit[]>(UNITS);
@@ -242,6 +243,15 @@ function App() {
               onShowToast={showToast}
             />
           )}
+          {tab === 'tenants' && (
+            <TenantsScreen
+              units={units}
+              payments={payments}
+              onOpenProfile={() => setTab('profile')}
+              notifications={notifications}
+              onOpenNotification={openNotification}
+            />
+          )}
           {tab === 'inquiries' && (
             <InquiriesScreen
               inquiries={inquiries}
@@ -269,6 +279,8 @@ function App() {
           {tab === 'profile' && (
             <ProfileScreen
               units={units}
+              onOpenListings={() => setTab('listings')}
+              onOpenTenants={() => setTab('tenants')}
               onOpenTheme={() => setThemeOpen(true)}
               onOpenReviews={() => setTab('reviews')}
               notifications={notifications}

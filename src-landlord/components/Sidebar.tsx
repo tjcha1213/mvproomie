@@ -18,6 +18,10 @@ const ITEMS: { tab: Tab; label: string; icon: React.ReactNode }[] = [
     icon: <><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8"/><path d="M8 13h8"/><path d="M8 17h5"/></>,
   },
   {
+    tab: 'tenants', label: 'Tenants',
+    icon: <><path d="M8 11a4 4 0 1 0-0.001-8.001A4 4 0 0 0 8 11Z"/><path d="M16.5 12.5a3.5 3.5 0 1 0-.001-7.001A3.5 3.5 0 0 0 16.5 12.5Z"/><path d="M3.5 20v-1.1a5.9 5.9 0 0 1 9.2-4.9"/><path d="M12.5 20v-1a4.8 4.8 0 0 1 7-4.2"/></>,
+  },
+  {
     tab: 'inquiries', label: 'Inquiries',
     icon: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>,
   },

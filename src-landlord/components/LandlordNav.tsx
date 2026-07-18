@@ -1,4 +1,4 @@
-export type Tab = 'dashboard' | 'listings' | 'inquiries' | 'payments' | 'profile' | 'reviews';
+export type Tab = 'dashboard' | 'listings' | 'tenants' | 'inquiries' | 'payments' | 'profile' | 'reviews';
 
 interface Props {
   activeTab: Tab;
@@ -27,6 +27,16 @@ export default function LandlordNav({ activeTab, onTabChange, inquiryBadge, onAd
           <path d="M8 17h5"/>
         </svg>
         Listings
+      </button>
+
+      <button className={`bottom-nav-item ${activeTab === 'tenants' ? 'active' : ''}`} onClick={() => onTabChange('tenants')}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M8 11a4 4 0 1 0-0.001-8.001A4 4 0 0 0 8 11Z"/>
+          <path d="M16.5 12.5a3.5 3.5 0 1 0-.001-7.001A3.5 3.5 0 0 0 16.5 12.5Z"/>
+          <path d="M3.5 20v-1.1a5.9 5.9 0 0 1 9.2-4.9"/>
+          <path d="M12.5 20v-1a4.8 4.8 0 0 1 7-4.2"/>
+        </svg>
+        Tenants
       </button>
 
       <button className="nav-add-btn" onClick={onAdd} aria-label="Add listing">
