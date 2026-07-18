@@ -144,6 +144,8 @@ export default function InboxScreen({
   const conversationRowRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const prevRectsRef = useRef<Map<string, DOMRect>>(new Map());
   const prevConversationRectsRef = useRef<Map<string, DOMRect>>(new Map());
+  const swipeRef = useRef<SwipeState | null>(null);
+  const conversationSwipeRef = useRef<ConversationSwipeState | null>(null);
   const deleteTimersRef = useRef<Record<string, number>>({});
   const conversationDeleteTimersRef = useRef<Record<string, number>>({});
   const hiddenIdsRef = useRef<Record<string, Set<string>>>({});
@@ -151,6 +153,16 @@ export default function InboxScreen({
 
   const conversationSwipe = listSwipe;
   const conversationOpenAction = listOpenAction;
+
+  const setSwipeState = useCallback((next: SwipeState | null) => {
+    swipeRef.current = next;
+    setSwipe(next);
+  }, []);
+
+  const setConversationSwipeState = useCallback((next: ConversationSwipeState | null) => {
+    conversationSwipeRef.current = next;
+    setListSwipe(next);
+  }, []);
 
   const captureRects = useCallback(() => {
     if (!activeConversation) return;
@@ -184,8 +196,8 @@ export default function InboxScreen({
     if (!activeConversation) return;
 
     setOpenAction(null);
-    setSwipe(null);
-    setListSwipe(null);
+    setSwipeState(null);
+    setConversationSwipeState(null);
     setListOpenAction(null);
     setProfilePeekConversationId(null);
 
@@ -215,7 +227,7 @@ export default function InboxScreen({
         [activeConversation.id]: next,
       };
     });
-  }, [activeConversation]);
+  }, [activeConversation, setConversationSwipeState, setSwipeState]);
 
   const visibleConversations = useMemo(() => {
     return conversations
@@ -333,7 +345,7 @@ export default function InboxScreen({
   const commitPinToggle = useCallback((messageId: string) => {
     if (!activeConversation) return;
     captureRects();
-    setSwipe(null);
+    setSwipeState(null);
     setOpenAction(null);
     setConversationMessages((messages) =>
       orderThreadMessages(
@@ -344,11 +356,11 @@ export default function InboxScreen({
         )
       )
     );
-  }, [activeConversation, captureRects, setConversationMessages]);
+  }, [activeConversation, captureRects, setConversationMessages, setSwipeState]);
 
   const commitDelete = useCallback((messageId: string, direction: SwipeSide) => {
     if (!activeConversation) return;
-    setSwipe(null);
+    setSwipeState(null);
     setOpenAction(null);
 
     setConversationMessages((messages) =>
@@ -376,7 +388,7 @@ export default function InboxScreen({
       });
       delete deleteTimersRef.current[timerKey];
     }, 220);
-  }, [activeConversation, captureRects, setConversationMessages]);
+  }, [activeConversation, captureRects, setConversationMessages, setSwipeState]);
 
   const captureConversationRects = useCallback(() => {
     const rects = new Map<string, DOMRect>();
@@ -389,7 +401,7 @@ export default function InboxScreen({
 
   const commitConversationPinToggle = useCallback((conversationId: string) => {
     captureConversationRects();
-    setListSwipe(null);
+    setConversationSwipeState(null);
     setListOpenAction(null);
     suppressConversationClickRef.current = conversationId;
     setConversationMetaById((prev) => {
@@ -410,11 +422,11 @@ export default function InboxScreen({
         },
       };
     });
-  }, [captureConversationRects]);
+  }, [captureConversationRects, setConversationSwipeState]);
 
   const commitConversationDelete = useCallback((conversationId: string) => {
     captureConversationRects();
-    setListSwipe(null);
+    setConversationSwipeState(null);
     setListOpenAction(null);
     suppressConversationClickRef.current = conversationId;
     setConversationMetaById((prev) => {
@@ -458,7 +470,7 @@ export default function InboxScreen({
       }
       delete conversationDeleteTimersRef.current[conversationId];
     }, 220);
-  }, [activeConversationId, captureConversationRects, onBackToList]);
+  }, [activeConversationId, captureConversationRects, onBackToList, setConversationSwipeState]);
 
   const handleConversationPointerDown = useCallback((
     event: ReactPointerEvent<HTMLDivElement>,
@@ -471,7 +483,7 @@ export default function InboxScreen({
     }
 
     const existing = conversationOpenAction?.conversationId === conversationId ? actionOffset(conversationOpenAction.side) : 0;
-    setListSwipe({
+    setConversationSwipeState({
       conversationId,
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -482,32 +494,33 @@ export default function InboxScreen({
     });
 
     event.currentTarget.setPointerCapture(event.pointerId);
-  }, [conversationOpenAction]);
+  }, [conversationOpenAction, setConversationSwipeState]);
 
   const handleConversationPointerMove = useCallback((
     event: ReactPointerEvent<HTMLDivElement>,
     conversationId: string,
   ) => {
-    if (!conversationSwipe || conversationSwipe.conversationId !== conversationId) return;
+    const currentSwipe = conversationSwipeRef.current;
+    if (!currentSwipe || currentSwipe.conversationId !== conversationId) return;
 
-    const dx = event.clientX - conversationSwipe.startX;
-    const dy = event.clientY - conversationSwipe.startY;
+    const dx = event.clientX - currentSwipe.startX;
+    const dy = event.clientY - currentSwipe.startY;
     const absX = Math.abs(dx);
     const absY = Math.abs(dy);
 
-    if (!conversationSwipe.locked) {
+    if (!currentSwipe.locked) {
       if (absX < 6 && absY < 6) return;
       if (absY > 18 && absY > absX * 1.2) {
-        setListSwipe(null);
+        setConversationSwipeState(null);
         return;
       }
       if (absX < 10 || absX < absY + 4) return;
-      setListSwipe((current) => (current ? { ...current, locked: true } : current));
+      setConversationSwipeState({ ...currentSwipe, locked: true });
     }
 
     event.preventDefault();
-    const nextOffset = clamp(conversationSwipe.startOffset + dx, -MAX_SWIPE, MAX_SWIPE);
-    setListSwipe((current) => (current && current.conversationId === conversationId ? { ...current, locked: true, offset: nextOffset } : current));
+    const nextOffset = clamp(currentSwipe.startOffset + dx, -MAX_SWIPE, MAX_SWIPE);
+    setConversationSwipeState({ ...currentSwipe, locked: true, offset: nextOffset });
     const side = Math.abs(nextOffset) >= REVEAL_THRESHOLD ? swipeSideFromOffset(nextOffset) : null;
     if (side) {
       setListOpenAction({ conversationId, side });
@@ -515,13 +528,14 @@ export default function InboxScreen({
     } else if (Math.abs(nextOffset) < REVEAL_THRESHOLD && conversationOpenAction?.conversationId !== conversationId) {
       setListOpenAction(null);
     }
-  }, [conversationOpenAction, conversationSwipe]);
+  }, [conversationOpenAction, setConversationSwipeState]);
 
   const handleConversationPointerUp = useCallback((
     event: ReactPointerEvent<HTMLDivElement>,
     conversationId: string,
   ) => {
-    if (!conversationSwipe || conversationSwipe.conversationId !== conversationId) return;
+    const currentSwipe = conversationSwipeRef.current;
+    if (!currentSwipe || currentSwipe.conversationId !== conversationId) return;
 
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
@@ -529,45 +543,46 @@ export default function InboxScreen({
       // ignore capture release issues on browsers that already released it
     }
 
-    const offset = clamp(conversationSwipe.offset, -MAX_SWIPE, MAX_SWIPE);
+    const offset = clamp(currentSwipe.offset, -MAX_SWIPE, MAX_SWIPE);
     const resolvedSide = Math.abs(offset) >= COMMIT_THRESHOLD
       ? swipeSideFromOffset(offset)
-      : conversationSwipe.startOffset > 0
+      : currentSwipe.startOffset > 0
         ? 'pin'
-        : conversationSwipe.startOffset < 0
+        : currentSwipe.startOffset < 0
           ? 'delete'
           : null;
 
-    setListSwipe(null);
+    setConversationSwipeState(null);
     if (resolvedSide) {
       setListOpenAction({ conversationId, side: resolvedSide });
       suppressConversationClickRef.current = conversationId;
     } else {
       setListOpenAction((current) => (current?.conversationId === conversationId ? null : current));
     }
-  }, [conversationSwipe]);
+  }, [setConversationSwipeState]);
 
   const handleConversationPointerCancel = useCallback((conversationId: string) => {
-    if (!conversationSwipe || conversationSwipe.conversationId !== conversationId) return;
-    setListSwipe(null);
+    const currentSwipe = conversationSwipeRef.current;
+    if (!currentSwipe || currentSwipe.conversationId !== conversationId) return;
+    setConversationSwipeState(null);
     setListOpenAction((current) => {
-      const resolvedSide = Math.abs(conversationSwipe.offset) >= COMMIT_THRESHOLD
-        ? swipeSideFromOffset(conversationSwipe.offset)
-        : conversationSwipe.startOffset > 0
+      const resolvedSide = Math.abs(currentSwipe.offset) >= COMMIT_THRESHOLD
+        ? swipeSideFromOffset(currentSwipe.offset)
+        : currentSwipe.startOffset > 0
           ? 'pin'
-          : conversationSwipe.startOffset < 0
+          : currentSwipe.startOffset < 0
             ? 'delete'
             : null;
       return resolvedSide ? { conversationId, side: resolvedSide } : (current?.conversationId === conversationId ? null : current);
     });
-  }, [conversationSwipe]);
+  }, [setConversationSwipeState]);
 
   const handleThreadPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
       setOpenAction(null);
-      setSwipe(null);
+      setSwipeState(null);
     }
-  }, []);
+  }, [setSwipeState]);
 
   const handleRowPointerDown = useCallback((
     event: ReactPointerEvent<HTMLDivElement>,
@@ -581,7 +596,7 @@ export default function InboxScreen({
     }
 
     const existing = openAction?.messageId === messageId ? actionOffset(openAction.side) : 0;
-    setSwipe({
+    setSwipeState({
       messageId,
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -592,45 +607,47 @@ export default function InboxScreen({
     });
 
     event.currentTarget.setPointerCapture(event.pointerId);
-  }, [activeConversation, openAction]);
+  }, [activeConversation, openAction, setSwipeState]);
 
   const handleRowPointerMove = useCallback((
     event: ReactPointerEvent<HTMLDivElement>,
     messageId: string,
   ) => {
-    if (!swipe || swipe.messageId !== messageId) return;
+    const currentSwipe = swipeRef.current;
+    if (!currentSwipe || currentSwipe.messageId !== messageId) return;
 
-    const dx = event.clientX - swipe.startX;
-    const dy = event.clientY - swipe.startY;
+    const dx = event.clientX - currentSwipe.startX;
+    const dy = event.clientY - currentSwipe.startY;
     const absX = Math.abs(dx);
     const absY = Math.abs(dy);
 
-    if (!swipe.locked) {
+    if (!currentSwipe.locked) {
       if (absX < 6 && absY < 6) return;
       if (absY > 18 && absY > absX * 1.2) {
-        setSwipe(null);
+        setSwipeState(null);
         return;
       }
       if (absX < 10 || absX < absY + 4) return;
-      setSwipe((current) => (current ? { ...current, locked: true } : current));
+      setSwipeState({ ...currentSwipe, locked: true });
     }
 
     event.preventDefault();
-    const nextOffset = clamp(swipe.startOffset + dx, -MAX_SWIPE, MAX_SWIPE);
-    setSwipe((current) => (current && current.messageId === messageId ? { ...current, locked: true, offset: nextOffset } : current));
+    const nextOffset = clamp(currentSwipe.startOffset + dx, -MAX_SWIPE, MAX_SWIPE);
+    setSwipeState({ ...currentSwipe, locked: true, offset: nextOffset });
     const side = Math.abs(nextOffset) >= REVEAL_THRESHOLD ? swipeSideFromOffset(nextOffset) : null;
     if (side) {
       setOpenAction({ messageId, side });
     } else if (Math.abs(nextOffset) < REVEAL_THRESHOLD && openAction?.messageId !== messageId) {
       setOpenAction(null);
     }
-  }, [openAction, swipe]);
+  }, [openAction, setSwipeState]);
 
   const handleRowPointerUp = useCallback((
     event: ReactPointerEvent<HTMLDivElement>,
     messageId: string,
   ) => {
-    if (!swipe || swipe.messageId !== messageId) return;
+    const currentSwipe = swipeRef.current;
+    if (!currentSwipe || currentSwipe.messageId !== messageId) return;
 
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
@@ -638,25 +655,26 @@ export default function InboxScreen({
       // ignore capture release issues on browsers that already released it
     }
 
-    const offset = clamp(swipe.offset, -MAX_SWIPE, MAX_SWIPE);
+    const offset = clamp(currentSwipe.offset, -MAX_SWIPE, MAX_SWIPE);
     const resolvedSide = Math.abs(offset) >= COMMIT_THRESHOLD
       ? swipeSideFromOffset(offset)
-      : swipe.startOffset > 0
+      : currentSwipe.startOffset > 0
         ? 'pin'
-        : swipe.startOffset < 0
+        : currentSwipe.startOffset < 0
           ? 'delete'
           : null;
 
-    setSwipe(null);
+    setSwipeState(null);
     restoreOpenAction(messageId, resolvedSide);
 
-  }, [restoreOpenAction, swipe]);
+  }, [restoreOpenAction, setSwipeState]);
 
   const handleRowPointerCancel = useCallback((messageId: string) => {
-    if (!swipe || swipe.messageId !== messageId) return;
-    setSwipe(null);
-    restoreOpenAction(messageId, Math.abs(swipe.offset) >= COMMIT_THRESHOLD ? swipeSideFromOffset(swipe.offset) : (swipe.startOffset > 0 ? 'pin' : swipe.startOffset < 0 ? 'delete' : null));
-  }, [restoreOpenAction, swipe]);
+    const currentSwipe = swipeRef.current;
+    if (!currentSwipe || currentSwipe.messageId !== messageId) return;
+    setSwipeState(null);
+    restoreOpenAction(messageId, Math.abs(currentSwipe.offset) >= COMMIT_THRESHOLD ? swipeSideFromOffset(currentSwipe.offset) : (currentSwipe.startOffset > 0 ? 'pin' : currentSwipe.startOffset < 0 ? 'delete' : null));
+  }, [restoreOpenAction, setSwipeState]);
 
   const handleActionClick = useCallback((messageId: string, action: SwipeSide) => {
     if (action === 'pin') {
@@ -688,12 +706,12 @@ export default function InboxScreen({
       return;
     }
     if (conversationSwipe || conversationOpenAction) {
-      setListSwipe(null);
+      setConversationSwipeState(null);
       setListOpenAction(null);
       return;
     }
     onOpenConversation(conversationId);
-  }, [conversationOpenAction, conversationSwipe, onOpenConversation]);
+  }, [conversationOpenAction, conversationSwipe, onOpenConversation, setConversationSwipeState]);
 
   const profilePeekConversation = profilePeekConversationId
     ? conversations.find((conversation) => conversation.id === profilePeekConversationId) ?? null
@@ -847,7 +865,7 @@ export default function InboxScreen({
       <div className="scroll-area" onPointerDown={(event) => {
         if (event.target === event.currentTarget) {
           setListOpenAction(null);
-          setListSwipe(null);
+          setConversationSwipeState(null);
         }
       }}>
         <div className="inbox-list">
