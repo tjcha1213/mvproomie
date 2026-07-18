@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { avatarAt } from '../avatarPool';
 
@@ -24,6 +24,7 @@ export default function ProfilePeekModal({
   onClose,
 }: Props) {
   const fallbackAvatar = useMemo(() => avatarAt(28), []);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const [avatarSrc, setAvatarSrc] = useState(avatar || fallbackAvatar);
 
   useEffect(() => {
@@ -32,6 +33,15 @@ export default function ProfilePeekModal({
 
   useEffect(() => {
     if (!open) return;
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) {
+      try {
+        dialog.showModal();
+      } catch {
+        dialog.setAttribute('open', '');
+      }
+    }
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
@@ -41,13 +51,27 @@ export default function ProfilePeekModal({
     return () => {
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
+      if (dialog?.open) {
+        dialog.close();
+      }
     };
   }, [open, onClose]);
 
   if (!open) return null;
 
   return createPortal(
-    <div className="profile-peek-overlay" role="dialog" aria-modal="true" aria-label={`${name} profile preview`} onClick={onClose}>
+    <dialog
+      ref={dialogRef}
+      className="profile-peek-overlay"
+      aria-label={`${name} profile preview`}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
       <div className="profile-peek-shell" onClick={(event) => event.stopPropagation()}>
         <button type="button" className="profile-peek-close" onClick={onClose} aria-label="Close profile preview">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
@@ -82,7 +106,7 @@ export default function ProfilePeekModal({
           </div>
         )}
       </div>
-    </div>,
+    </dialog>,
     document.body
   );
 }
