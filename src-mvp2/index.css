@@ -1657,6 +1657,24 @@ img {
   gap: 0;
 }
 
+.inbox-item-swipe-row {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.inbox-item-swipe-row .inbox-message-actions {
+  inset: 0;
+}
+
+.inbox-conversation-actions-left {
+  padding-right: 10px;
+}
+
+.inbox-conversation-actions-right {
+  padding-left: 10px;
+}
+
 .inbox-item {
   display: flex;
   align-items: center;
@@ -1672,6 +1690,7 @@ img {
   z-index: 1;
   transition: transform 0.2s ease, background 0.15s;
   will-change: transform;
+  border-radius: 0;
 }
 
 .inbox-item:active {

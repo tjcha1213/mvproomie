@@ -35,6 +35,21 @@ type OpenAction = {
   side: SwipeSide;
 } | null;
 
+type ConversationSwipeState = {
+  conversationId: string;
+  pointerId: number;
+  startX: number;
+  startY: number;
+  startOffset: number;
+  offset: number;
+  locked: boolean;
+};
+
+type ConversationOpenAction = {
+  conversationId: string;
+  side: SwipeSide;
+} | null;
+
 const ACTION_WIDTH = 92;
 const REVEAL_THRESHOLD = 12;
 const COMMIT_THRESHOLD = 56;
@@ -69,6 +84,15 @@ function orderThreadMessages(messages: ThreadMessage[]): ThreadMessage[] {
   return [...messages].sort((a, b) => {
     if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
     if (a.createdAt !== b.createdAt) return a.createdAt - b.createdAt;
+    return a.id.localeCompare(b.id);
+  });
+}
+
+function orderConversationsLocal(conversations: Conversation[]): Conversation[] {
+  return [...conversations].sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    const timeDiff = (b.messages[b.messages.length - 1]?.timestamp ?? 0) - (a.messages[a.messages.length - 1]?.timestamp ?? 0);
+    if (timeDiff !== 0) return timeDiff;
     return a.id.localeCompare(b.id);
   });
 }
@@ -114,18 +138,25 @@ export default function InboxScreen({
   onSendMessage,
 }: Props) {
   const [draft, setDraft] = useState('');
+  const [conversationRows, setConversationRows] = useState<Conversation[]>(() => orderConversationsLocal(conversations));
   const [threadMessagesByConversation, setThreadMessagesByConversation] = useState<Record<string, ThreadMessage[]>>({});
   const [openAction, setOpenAction] = useState<OpenAction>(null);
   const [swipe, setSwipe] = useState<SwipeState | null>(null);
+  const [conversationOpenAction, setConversationOpenAction] = useState<ConversationOpenAction>(null);
+  const [conversationSwipe, setConversationSwipe] = useState<ConversationSwipeState | null>(null);
   const [profilePeekConversationId, setProfilePeekConversationId] = useState<string | null>(null);
   const activeConversation = useMemo(
-    () => conversations.find((conversation) => conversation.id === activeConversationId) ?? null,
-    [activeConversationId, conversations]
+    () => conversationRows.find((conversation) => conversation.id === activeConversationId) ?? null,
+    [activeConversationId, conversationRows]
   );
   const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const conversationRowRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const prevRectsRef = useRef<Map<string, DOMRect>>(new Map());
+  const prevConversationRectsRef = useRef<Map<string, DOMRect>>(new Map());
   const deleteTimersRef = useRef<Record<string, number>>({});
   const hiddenIdsRef = useRef<Record<string, Set<string>>>({});
+  const hiddenConversationIdsRef = useRef<Set<string>>(new Set());
+  const suppressConversationClickRef = useRef<string | null>(null);
 
   const captureRects = useCallback(() => {
     if (!activeConversation) return;
@@ -139,10 +170,27 @@ export default function InboxScreen({
   }, [activeConversation, threadMessagesByConversation]);
 
   useEffect(() => {
+    setConversationRows((current) => {
+      const currentById = new Map(current.map((conversation) => [conversation.id, conversation]));
+      const hidden = hiddenConversationIdsRef.current;
+      return orderConversationsLocal(
+        conversations
+          .map((conversation) => {
+            const existing = currentById.get(conversation.id);
+            return existing ? { ...conversation, pinned: existing.pinned } : conversation;
+          })
+          .filter((conversation) => !hidden.has(conversation.id))
+      );
+    });
+  }, [conversations]);
+
+  useEffect(() => {
     if (!activeConversation) return;
 
     setOpenAction(null);
     setSwipe(null);
+    setConversationSwipe(null);
+    setConversationOpenAction(null);
     setProfilePeekConversationId(null);
 
     setThreadMessagesByConversation((prev) => {
@@ -199,6 +247,32 @@ export default function InboxScreen({
 
     prevRectsRef.current = new Map();
   }, [activeConversation, threadMessagesByConversation]);
+
+  useLayoutEffect(() => {
+    if (activeConversation) return;
+    const prevRects = prevConversationRectsRef.current;
+    if (prevRects.size === 0) return;
+
+    conversationRows.forEach((conversation) => {
+      const node = conversationRowRefs.current[conversation.id];
+      const prevRect = prevRects.get(conversation.id);
+      if (!node || !prevRect) return;
+      const nextRect = node.getBoundingClientRect();
+      const dx = prevRect.left - nextRect.left;
+      const dy = prevRect.top - nextRect.top;
+      if (dx || dy) {
+        node.animate(
+          [
+            { transform: `translate(${dx}px, ${dy}px)` },
+            { transform: 'translate(0, 0)' },
+          ],
+          { duration: 240, easing: 'cubic-bezier(0.2, 0, 0, 1)' }
+        );
+      }
+    });
+
+    prevConversationRectsRef.current = new Map();
+  }, [activeConversation, conversationRows]);
 
   useEffect(() => {
     return () => {
@@ -284,6 +358,145 @@ export default function InboxScreen({
       delete deleteTimersRef.current[timerKey];
     }, 220);
   }, [activeConversation, captureRects, setConversationMessages]);
+
+  const captureConversationRects = useCallback(() => {
+    const rects = new Map<string, DOMRect>();
+    conversationRows.forEach((conversation) => {
+      const node = conversationRowRefs.current[conversation.id];
+      if (node) rects.set(conversation.id, node.getBoundingClientRect());
+    });
+    prevConversationRectsRef.current = rects;
+  }, [conversationRows]);
+
+  const commitConversationPinToggle = useCallback((conversationId: string) => {
+    captureConversationRects();
+    setConversationSwipe(null);
+    setConversationOpenAction(null);
+    suppressConversationClickRef.current = conversationId;
+    setConversationRows((current) =>
+      orderConversationsLocal(
+        current.map((conversation) =>
+          conversation.id === conversationId
+            ? { ...conversation, pinned: !conversation.pinned }
+            : conversation
+        )
+      )
+    );
+  }, [captureConversationRects]);
+
+  const commitConversationDelete = useCallback((conversationId: string) => {
+    captureConversationRects();
+    setConversationSwipe(null);
+    setConversationOpenAction(null);
+    suppressConversationClickRef.current = conversationId;
+    hiddenConversationIdsRef.current.add(conversationId);
+    setConversationRows((current) => current.filter((conversation) => conversation.id !== conversationId));
+    if (activeConversationId === conversationId) {
+      onBackToList();
+    }
+  }, [activeConversationId, captureConversationRects, onBackToList]);
+
+  const handleConversationPointerDown = useCallback((
+    event: ReactPointerEvent<HTMLDivElement>,
+    conversationId: string,
+  ) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+    if (conversationOpenAction && conversationOpenAction.conversationId !== conversationId) {
+      setConversationOpenAction(null);
+    }
+
+    const existing = conversationOpenAction?.conversationId === conversationId ? actionOffset(conversationOpenAction.side) : 0;
+    setConversationSwipe({
+      conversationId,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startOffset: existing,
+      offset: existing,
+      locked: false,
+    });
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }, [conversationOpenAction]);
+
+  const handleConversationPointerMove = useCallback((
+    event: ReactPointerEvent<HTMLDivElement>,
+    conversationId: string,
+  ) => {
+    if (!conversationSwipe || conversationSwipe.conversationId !== conversationId) return;
+
+    const dx = event.clientX - conversationSwipe.startX;
+    const dy = event.clientY - conversationSwipe.startY;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+
+    if (!conversationSwipe.locked) {
+      if (absX < 6 && absY < 6) return;
+      if (absY > 18 && absY > absX * 1.2) {
+        setConversationSwipe(null);
+        return;
+      }
+      if (absX < 10 || absX < absY + 4) return;
+      setConversationSwipe((current) => (current ? { ...current, locked: true } : current));
+    }
+
+    event.preventDefault();
+    const nextOffset = clamp(conversationSwipe.startOffset + dx, -MAX_SWIPE, MAX_SWIPE);
+    setConversationSwipe((current) => (current && current.conversationId === conversationId ? { ...current, locked: true, offset: nextOffset } : current));
+    const side = Math.abs(nextOffset) >= REVEAL_THRESHOLD ? swipeSideFromOffset(nextOffset) : null;
+    if (side) {
+      setConversationOpenAction({ conversationId, side });
+      suppressConversationClickRef.current = conversationId;
+    } else if (Math.abs(nextOffset) < REVEAL_THRESHOLD && conversationOpenAction?.conversationId !== conversationId) {
+      setConversationOpenAction(null);
+    }
+  }, [conversationOpenAction, conversationSwipe]);
+
+  const handleConversationPointerUp = useCallback((
+    event: ReactPointerEvent<HTMLDivElement>,
+    conversationId: string,
+  ) => {
+    if (!conversationSwipe || conversationSwipe.conversationId !== conversationId) return;
+
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {
+      // ignore capture release issues on browsers that already released it
+    }
+
+    const offset = clamp(conversationSwipe.offset, -MAX_SWIPE, MAX_SWIPE);
+    const resolvedSide = Math.abs(offset) >= COMMIT_THRESHOLD
+      ? swipeSideFromOffset(offset)
+      : conversationSwipe.startOffset > 0
+        ? 'pin'
+        : conversationSwipe.startOffset < 0
+          ? 'delete'
+          : null;
+
+    setConversationSwipe(null);
+    if (resolvedSide) {
+      setConversationOpenAction({ conversationId, side: resolvedSide });
+      suppressConversationClickRef.current = conversationId;
+    } else {
+      setConversationOpenAction((current) => (current?.conversationId === conversationId ? null : current));
+    }
+  }, [conversationSwipe]);
+
+  const handleConversationPointerCancel = useCallback((conversationId: string) => {
+    if (!conversationSwipe || conversationSwipe.conversationId !== conversationId) return;
+    setConversationSwipe(null);
+    setConversationOpenAction((current) => {
+      const resolvedSide = Math.abs(conversationSwipe.offset) >= COMMIT_THRESHOLD
+        ? swipeSideFromOffset(conversationSwipe.offset)
+        : conversationSwipe.startOffset > 0
+          ? 'pin'
+          : conversationSwipe.startOffset < 0
+            ? 'delete'
+            : null;
+      return resolvedSide ? { conversationId, side: resolvedSide } : (current?.conversationId === conversationId ? null : current);
+    });
+  }, [conversationSwipe]);
 
   const handleThreadPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
@@ -396,6 +609,22 @@ export default function InboxScreen({
     if (openAction?.messageId === message.id) return actionOffset(openAction.side);
     return 0;
   }, [openAction, swipe]);
+
+  const getConversationOffset = useCallback((conversation: Conversation) => {
+    if (conversationSwipe?.conversationId === conversation.id) {
+      return clamp(conversationSwipe.offset, -MAX_SWIPE, MAX_SWIPE);
+    }
+    if (conversationOpenAction?.conversationId === conversation.id) return actionOffset(conversationOpenAction.side);
+    return 0;
+  }, [conversationOpenAction, conversationSwipe]);
+
+  const handleConversationCardClick = useCallback((conversationId: string) => {
+    if (suppressConversationClickRef.current === conversationId) {
+      suppressConversationClickRef.current = null;
+      return;
+    }
+    onOpenConversation(conversationId);
+  }, [onOpenConversation]);
 
   const profilePeekConversation = profilePeekConversationId
     ? conversations.find((conversation) => conversation.id === profilePeekConversationId) ?? null
@@ -546,43 +775,98 @@ export default function InboxScreen({
         <span className="section-title">Chat</span>
       </div>
 
-      <div className="scroll-area">
-                <div className="inbox-list">
-          {conversations.map((conversation) => {
+      <div className="scroll-area" onPointerDown={(event) => {
+        if (event.target === event.currentTarget) {
+          setConversationOpenAction(null);
+          setConversationSwipe(null);
+        }
+      }}>
+        <div className="inbox-list">
+          {conversationRows.map((conversation) => {
             const lastMessage = conversation.messages[conversation.messages.length - 1];
+            const offset = getConversationOffset(conversation);
+            const revealSide =
+              conversationSwipe?.conversationId === conversation.id
+                ? (offset > 0 ? 'pin' : offset < 0 ? 'delete' : null)
+                : conversationOpenAction?.conversationId === conversation.id
+                  ? conversationOpenAction.side
+                  : null;
+
             return (
               <div
                 key={conversation.id}
-                className="inbox-item"
-                role="button"
-                tabIndex={0}
-                onClick={() => onOpenConversation(conversation.id)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    onOpenConversation(conversation.id);
-                  }
+                className="inbox-item-swipe-row"
+                ref={(node) => {
+                  conversationRowRefs.current[conversation.id] = node;
                 }}
+                onPointerDown={(event) => handleConversationPointerDown(event, conversation.id)}
+                onPointerMove={(event) => handleConversationPointerMove(event, conversation.id)}
+                onPointerUp={(event) => handleConversationPointerUp(event, conversation.id)}
+                onPointerCancel={() => handleConversationPointerCancel(conversation.id)}
               >
-                <button
-                  className="inbox-avatar"
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setProfilePeekConversationId(conversation.id);
-                  }}
-                  aria-label={`View ${conversation.participantName} profile`}
-                >
-                  <img src={conversation.participantPhoto} alt={conversation.participantName} />
-                </button>
-                <div className="inbox-info">
-                  <div className="inbox-name">{conversation.participantName}</div>
-                  <div className="inbox-preview">{lastMessage?.text}</div>
-                  <div className="inbox-listing-meta">{conversation.listingTitle}</div>
+                <div className={`inbox-message-actions inbox-message-actions-left inbox-conversation-actions-left ${revealSide === 'pin' ? 'show' : ''}`}>
+                  <button
+                    type="button"
+                    className="inbox-message-action inbox-pin-action"
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      commitConversationPinToggle(conversation.id);
+                    }}
+                  >
+                    <PinIcon />
+                    <span>{conversation.pinned ? 'Unpin' : 'Pin'}</span>
+                  </button>
                 </div>
-                <div className="inbox-meta">
-                  <div className="inbox-time">{lastMessage ? formatConversationTime(lastMessage.timestamp) : ''}</div>
-                  {conversation.unreadCount > 0 && <div className="inbox-unread">{conversation.unreadCount}</div>}
+                <div className={`inbox-message-actions inbox-message-actions-right inbox-conversation-actions-right ${revealSide === 'delete' ? 'show' : ''}`}>
+                  <button
+                    type="button"
+                    className="inbox-message-action inbox-delete-action"
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      commitConversationDelete(conversation.id);
+                    }}
+                  >
+                    <DeleteIcon />
+                    <span>Delete</span>
+                  </button>
+                </div>
+                <div
+                  className="inbox-item"
+                  role="button"
+                  tabIndex={0}
+                  style={{ transform: `translate3d(${offset}px, 0, 0)` } as CSSProperties}
+                  onClick={() => handleConversationCardClick(conversation.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      handleConversationCardClick(conversation.id);
+                    }
+                  }}
+                >
+                  <button
+                    className="inbox-avatar"
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setProfilePeekConversationId(conversation.id);
+                    }}
+                    aria-label={`View ${conversation.participantName} profile`}
+                  >
+                    <img src={conversation.participantPhoto} alt={conversation.participantName} />
+                  </button>
+                  <div className="inbox-info">
+                    <div className="inbox-name">{conversation.participantName}</div>
+                    <div className="inbox-preview">{lastMessage?.text}</div>
+                    <div className="inbox-listing-meta">{conversation.listingTitle}</div>
+                  </div>
+                  <div className="inbox-meta">
+                    <div className="inbox-time">{lastMessage ? formatConversationTime(lastMessage.timestamp) : ''}</div>
+                    {conversation.unreadCount > 0 && <div className="inbox-unread">{conversation.unreadCount}</div>}
+                  </div>
                 </div>
               </div>
             );
