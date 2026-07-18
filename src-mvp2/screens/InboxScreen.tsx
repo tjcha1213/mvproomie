@@ -623,8 +623,13 @@ export default function InboxScreen({
       suppressConversationClickRef.current = null;
       return;
     }
+    if (conversationSwipe || conversationOpenAction) {
+      setConversationSwipe(null);
+      setConversationOpenAction(null);
+      return;
+    }
     onOpenConversation(conversationId);
-  }, [onOpenConversation]);
+  }, [conversationOpenAction, conversationSwipe, onOpenConversation]);
 
   const profilePeekConversation = profilePeekConversationId
     ? conversations.find((conversation) => conversation.id === profilePeekConversationId) ?? null
