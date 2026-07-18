@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import AppLogo from '../components/AppLogo';
 import type { Conversation } from '../chat';
+import ProfilePeekModal from '../../src/components/ProfilePeekModal';
 
 interface Props {
   conversations: Conversation[];
@@ -116,6 +117,7 @@ export default function InboxScreen({
   const [threadMessagesByConversation, setThreadMessagesByConversation] = useState<Record<string, ThreadMessage[]>>({});
   const [openAction, setOpenAction] = useState<OpenAction>(null);
   const [swipe, setSwipe] = useState<SwipeState | null>(null);
+  const [profilePeekConversationId, setProfilePeekConversationId] = useState<string | null>(null);
   const activeConversation = useMemo(
     () => conversations.find((conversation) => conversation.id === activeConversationId) ?? null,
     [activeConversationId, conversations]
@@ -141,6 +143,7 @@ export default function InboxScreen({
 
     setOpenAction(null);
     setSwipe(null);
+    setProfilePeekConversationId(null);
 
     setThreadMessagesByConversation((prev) => {
       const hidden = hiddenIdsRef.current[activeConversation.id] ?? new Set<string>();
@@ -386,16 +389,6 @@ export default function InboxScreen({
     }
   }, [commitDelete, commitPinToggle]);
 
-  const handleActionPointerUp = useCallback((
-    event: ReactPointerEvent<HTMLButtonElement>,
-    messageId: string,
-    action: SwipeSide,
-  ) => {
-    event.preventDefault();
-    event.stopPropagation();
-    handleActionClick(messageId, action);
-  }, [handleActionClick]);
-
   const getMessageOffset = useCallback((message: ThreadMessage) => {
     if (swipe?.messageId === message.id) {
       return clamp(swipe.offset, -MAX_SWIPE, MAX_SWIPE);
@@ -403,6 +396,10 @@ export default function InboxScreen({
     if (openAction?.messageId === message.id) return actionOffset(openAction.side);
     return 0;
   }, [openAction, swipe]);
+
+  const profilePeekConversation = profilePeekConversationId
+    ? conversations.find((conversation) => conversation.id === profilePeekConversationId) ?? null
+    : null;
 
   if (activeConversation) {
     return (
@@ -418,9 +415,14 @@ export default function InboxScreen({
             </svg>
           </button>
           <div className="inbox-chat-header-main">
-            <div className="inbox-chat-header-avatar">
+            <button
+              type="button"
+              className="inbox-chat-header-avatar inbox-chat-header-avatar-button"
+              onClick={() => setProfilePeekConversationId(activeConversation.id)}
+              aria-label={`View ${activeConversation.participantName} profile`}
+            >
               <img src={activeConversation.participantPhoto} alt={activeConversation.participantName} />
-            </div>
+            </button>
             <div className="inbox-chat-title-block">
               <div className="inbox-chat-name-row">
                 <div className="inbox-chat-title">{activeConversation.participantName}</div>
@@ -460,7 +462,11 @@ export default function InboxScreen({
                     type="button"
                     className="inbox-message-action inbox-pin-action"
                     onPointerDown={(event) => event.stopPropagation()}
-                    onPointerUp={(event) => handleActionPointerUp(event, message.id, 'pin')}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      handleActionClick(message.id, 'pin');
+                    }}
                   >
                     <PinIcon />
                     <span>{message.isPinned ? 'Unpin' : 'Pin'}</span>
@@ -471,7 +477,11 @@ export default function InboxScreen({
                     type="button"
                     className="inbox-message-action inbox-delete-action"
                     onPointerDown={(event) => event.stopPropagation()}
-                    onPointerUp={(event) => handleActionPointerUp(event, message.id, 'delete')}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      handleActionClick(message.id, 'delete');
+                    }}
                   >
                     <DeleteIcon />
                     <span>Delete</span>
@@ -494,7 +504,7 @@ export default function InboxScreen({
           })}
         </div>
 
-        <div className="inbox-composer">
+      <div className="inbox-composer">
           <textarea
             className="inbox-composer-input"
             value={draft}
@@ -521,17 +531,34 @@ export default function InboxScreen({
       </div>
 
       <div className="scroll-area">
-        <div className="inbox-list">
+                <div className="inbox-list">
           {conversations.map((conversation) => {
             const lastMessage = conversation.messages[conversation.messages.length - 1];
             return (
-              <button
+              <div
                 key={conversation.id}
                 className="inbox-item"
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => onOpenConversation(conversation.id)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onOpenConversation(conversation.id);
+                  }
+                }}
               >
-                <div className="inbox-avatar"><img src={conversation.participantPhoto} alt="" /></div>
+                <button
+                  className="inbox-avatar"
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setProfilePeekConversationId(conversation.id);
+                  }}
+                  aria-label={`View ${conversation.participantName} profile`}
+                >
+                  <img src={conversation.participantPhoto} alt={conversation.participantName} />
+                </button>
                 <div className="inbox-info">
                   <div className="inbox-name">{conversation.participantName}</div>
                   <div className="inbox-preview">{lastMessage?.text}</div>
@@ -541,11 +568,24 @@ export default function InboxScreen({
                   <div className="inbox-time">{lastMessage ? formatConversationTime(lastMessage.timestamp) : ''}</div>
                   {conversation.unreadCount > 0 && <div className="inbox-unread">{conversation.unreadCount}</div>}
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
       </div>
+
+      <ProfilePeekModal
+        open={profilePeekConversation !== null}
+        avatar={profilePeekConversation?.participantPhoto ?? ''}
+        name={profilePeekConversation?.participantName ?? ''}
+        role={profilePeekConversation?.participantRole ?? 'Landlord'}
+        subtitle={profilePeekConversation ? `${profilePeekConversation.listingTitle} · ${profilePeekConversation.listingLocation}` : undefined}
+        details={profilePeekConversation ? [
+          `${profilePeekConversation.messages.length} messages`,
+          profilePeekConversation.pinned ? 'Pinned conversation' : 'Regular conversation',
+        ] : []}
+        onClose={() => setProfilePeekConversationId(null)}
+      />
     </>
   );
 }

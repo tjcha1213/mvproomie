@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointer
 import type { Inquiry, InquiryStatus, Unit } from '../data';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
+import ProfilePeekModal from '../../src/components/ProfilePeekModal';
 
 interface Props {
   inquiries: Inquiry[];
@@ -103,6 +104,7 @@ export default function InquiriesScreen({
   const [metaById, setMetaById] = useState<Record<number, InquiryMeta>>({});
   const [openAction, setOpenAction] = useState<{ inquiryId: number; side: SwipeSide } | null>(null);
   const [swipe, setSwipe] = useState<SwipeState | null>(null);
+  const [profilePeekInquiryId, setProfilePeekInquiryId] = useState<number | null>(null);
   const deleteTimersRef = useRef<Record<number, number>>({});
 
   useEffect(() => {
@@ -262,20 +264,11 @@ export default function InquiriesScreen({
     }
   };
 
-  const handleActionPointerUp = (
-    event: ReactPointerEvent<HTMLButtonElement>,
-    id: number,
-    action: SwipeSide,
-  ) => {
-    event.preventDefault();
-    event.stopPropagation();
-    handleAction(id, action);
-  };
-
   const handleListPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
       setOpenAction(null);
       setSwipe(null);
+      setProfilePeekInquiryId(null);
     }
   };
 
@@ -389,6 +382,10 @@ export default function InquiriesScreen({
     return 0;
   };
 
+  const profilePeekInquiry = profilePeekInquiryId === null
+    ? null
+    : inquiries.find((inquiry) => inquiry.id === profilePeekInquiryId) ?? null;
+
   return (
     <>
       <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
@@ -444,7 +441,11 @@ export default function InquiriesScreen({
                           event.stopPropagation();
                           event.preventDefault();
                         }}
-                        onPointerUp={(event) => handleActionPointerUp(event, i.id, 'pin')}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          handleAction(i.id, 'pin');
+                        }}
                       >
                         <PinIcon />
                         <span>{meta.pinned ? 'Unpin' : 'Pin'}</span>
@@ -458,22 +459,41 @@ export default function InquiriesScreen({
                           event.stopPropagation();
                           event.preventDefault();
                         }}
-                        onPointerUp={(event) => handleActionPointerUp(event, i.id, 'delete')}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          handleAction(i.id, 'delete');
+                        }}
                       >
                         <DeleteIcon />
                         <span>Delete</span>
                       </button>
                     </div>
 
-                    <button
-                      type="button"
+                    <div
+                      role="button"
+                      tabIndex={0}
                       className="inquiry-main"
                       style={{ transform: `translate3d(${offset}px, 0, 0)` }}
                       onClick={() => setOpenId(openId === i.id ? null : i.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setOpenId(openId === i.id ? null : i.id);
+                        }
+                      }}
                     >
-                      <div className="inbox-avatar">
-                        {i.avatar ? <img src={i.avatar} alt={i.name} /> : i.name[0]}
-                      </div>
+                      <button
+                        type="button"
+                        className="inbox-avatar inbox-avatar-button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setProfilePeekInquiryId(i.id);
+                        }}
+                        aria-label={`View ${i.name} profile`}
+                      >
+                        <img src={i.avatar ?? ''} alt={i.name} />
+                      </button>
                       <div className="inbox-info">
                         <div className="inquiry-name-row">
                           <span className="inbox-name">{i.name}</span>
@@ -491,7 +511,7 @@ export default function InquiriesScreen({
                       <div className="inbox-meta">
                         <div className="inbox-time">{i.time}</div>
                       </div>
-                    </button>
+                    </div>
                   </div>
 
                   {openId === i.id && (
@@ -537,7 +557,13 @@ export default function InquiriesScreen({
       </div>
 
       {activeChat && (
-        <div className="listing-modal-overlay" onClick={() => setChatOpenId(null)}>
+        <div
+          className="listing-modal-overlay"
+          onClick={() => {
+            setChatOpenId(null);
+            setProfilePeekInquiryId(null);
+          }}
+        >
           <div
             className="listing-modal inquiry-chat-modal"
             role="dialog"
@@ -557,10 +583,22 @@ export default function InquiriesScreen({
                   <div className="listing-modal-location">{unitTitle(activeChat.unitId)}</div>
                 </div>
                 <div className="inquiry-chat-header-side">
-                  <div className="inbox-avatar inquiry-chat-avatar">
-                    {activeChat.avatar ? <img src={activeChat.avatar} alt={activeChat.name} /> : activeChat.name[0]}
-                  </div>
-                  <button className="listing-modal-close inquiry-chat-close" onClick={() => setChatOpenId(null)} aria-label="Close chat">
+                  <button
+                    type="button"
+                    className="inbox-avatar inquiry-chat-avatar inquiry-chat-avatar-button"
+                    onClick={() => setProfilePeekInquiryId(activeChat.id)}
+                    aria-label={`View ${activeChat.name} profile`}
+                  >
+                    <img src={activeChat.avatar ?? ''} alt={activeChat.name} />
+                  </button>
+                  <button
+                    className="listing-modal-close inquiry-chat-close"
+                    onClick={() => {
+                      setChatOpenId(null);
+                      setProfilePeekInquiryId(null);
+                    }}
+                    aria-label="Close chat"
+                  >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
@@ -601,6 +639,20 @@ export default function InquiriesScreen({
           </div>
         </div>
       )}
+
+      <ProfilePeekModal
+        open={profilePeekInquiry !== null}
+        avatar={profilePeekInquiry?.avatar ?? ''}
+        name={profilePeekInquiry?.name ?? ''}
+        role="Tenant"
+        userId={profilePeekInquiry?.userId}
+        subtitle={profilePeekInquiry ? `${unitTitle(profilePeekInquiry.unitId)} · ${profilePeekInquiry.status}` : undefined}
+        details={profilePeekInquiry ? [
+          `${profilePeekInquiry.trust.roomieTemperature} Roomie ${profilePeekInquiry.trust.roomieScore}`,
+          `${profilePeekInquiry.thread.length} chat messages`,
+        ] : []}
+        onClose={() => setProfilePeekInquiryId(null)}
+      />
     </>
   );
 }

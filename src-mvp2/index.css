@@ -1240,6 +1240,12 @@ img {
   background: transparent;
   cursor: pointer;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  touch-action: manipulation;
 }
 
 .landlord-avatar-button img {
@@ -1689,6 +1695,14 @@ img {
   object-fit: cover;
 }
 
+.inbox-avatar-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+}
+
 .inbox-info {
   flex: 1;
   min-width: 0;
@@ -2014,7 +2028,7 @@ img {
 .profile-peek-overlay {
   position: fixed;
   inset: 0;
-  z-index: 220;
+  z-index: 7000;
   background: rgba(15, 23, 42, 0.52);
   backdrop-filter: blur(8px);
   display: flex;
@@ -2162,11 +2176,14 @@ img {
 .profile-header {
   background: var(--surface);
   padding: 24px 16px 20px;
+  margin: 0 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid var(--border-light);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .profile-avatar {
@@ -2192,10 +2209,11 @@ img {
 
 .profile-mode-card {
   background: var(--surface);
-  margin-top: 12px;
+  margin: 12px 16px 0;
   padding: 14px 16px 16px;
-  border-top: 1px solid var(--border-light);
-  border-bottom: 1px solid var(--border-light);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .profile-mode-copy {
@@ -2368,9 +2386,11 @@ img {
 
 .profile-menu {
   background: var(--surface);
-  margin-top: 12px;
-  border-top: 1px solid var(--border-light);
-  border-bottom: 1px solid var(--border-light);
+  margin: 12px 16px 0;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
 
 .profile-menu-item {
@@ -2477,6 +2497,54 @@ img {
   font-size: 13px;
   font-weight: 600;
   color: var(--text);
+}
+
+.reviews-trust-grid {
+  display: grid;
+  gap: 12px;
+  margin: 12px 16px 0;
+}
+
+.reviews-item {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+}
+
+.reviews-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reviews-item-head strong {
+  display: block;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.reviews-item-head span {
+  font-size: 12px;
+  font-weight: 800;
+  color: #f59e0b;
+}
+
+.reviews-item p {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.reviews-item small {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-light);
 }
 
 /* Search screen */

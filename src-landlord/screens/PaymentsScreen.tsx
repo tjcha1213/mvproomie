@@ -3,6 +3,7 @@ import type { Payment, PaymentStatus, Unit } from '../data';
 import { formatPeso } from '../data';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
+import ProfilePeekModal from '../../src/components/ProfilePeekModal';
 
 interface Props {
   payments: Payment[];
@@ -102,12 +103,14 @@ function buildCollectionSummarySeries(monthlySeries: ReturnType<typeof buildMont
 export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
+  const [profilePeekPaymentId, setProfilePeekPaymentId] = useState<number | null>(null);
   const [collectionMonthIndex, setCollectionMonthIndex] = useState(0);
   const [paymentTrendWindowStart, setPaymentTrendWindowStart] = useState(0);
 
   const filtered = filter === 'All' ? payments : payments.filter(p => p.status === filter);
   const unitTitle = (id: number) => units.find(u => u.id === id)?.title ?? '';
   const selectedPayment = payments.find(payment => payment.id === selectedPaymentId) ?? null;
+  const profilePeekPayment = payments.find(payment => payment.id === profilePeekPaymentId) ?? null;
 
   const collected = payments.filter(p => p.status === 'Paid').reduce((s, p) => s + p.amount, 0);
   const expected = payments.reduce((s, p) => s + p.amount, 0);
@@ -444,9 +447,17 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
                 }
               }}
             >
-              <div className="inbox-avatar">
-                {p.avatar ? <img src={p.avatar} alt={p.tenant} /> : p.tenant[0]}
-              </div>
+              <button
+                type="button"
+                className="inbox-avatar inbox-avatar-button"
+                onClick={event => {
+                  event.stopPropagation();
+                  setProfilePeekPaymentId(p.id);
+                }}
+                aria-label={`View ${p.tenant} profile`}
+              >
+                <img src={p.avatar ?? ''} alt={p.tenant} />
+              </button>
               <div className="payment-info">
                 <div className="payment-name">{p.tenant}</div>
                 <div className="listing-id-row">
@@ -497,7 +508,7 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
             <div className="listing-modal-head">
               <div className="payment-modal-identity">
                 <div className="inbox-avatar payment-modal-avatar">
-                  {selectedPayment.avatar ? <img src={selectedPayment.avatar} alt={selectedPayment.tenant} /> : selectedPayment.tenant[0]}
+                  <img src={selectedPayment.avatar ?? ''} alt={selectedPayment.tenant} />
                 </div>
                 <div>
                 <div className="listing-modal-topline">Payment log</div>
@@ -656,6 +667,20 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
           </div>
         </div>
       )}
+
+      <ProfilePeekModal
+        open={profilePeekPayment !== null}
+        avatar={profilePeekPayment?.avatar ?? ''}
+        name={profilePeekPayment?.tenant ?? ''}
+        role="Tenant"
+        userId={profilePeekPayment?.tenantId}
+        subtitle={profilePeekPayment ? `${unitTitle(profilePeekPayment.unitId)} · ${profilePeekPayment.status}` : undefined}
+        details={profilePeekPayment ? [
+          `${formatPeso(profilePeekPayment.amount)} ${profilePeekPayment.dueLabel.toLowerCase()}`,
+          `${profilePeekPayment.method} · ${profilePeekPayment.reference}`,
+        ] : []}
+        onClose={() => setProfilePeekPaymentId(null)}
+      />
     </>
   );
 }

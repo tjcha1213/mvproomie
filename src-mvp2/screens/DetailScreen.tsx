@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useCallback, type UIEvent } from 'react';
 import { formatListingId, type Listing } from '../data/listings';
 import { MiniListingMap } from '../components/ListingMap';
 import PhotoModal from '../../src/components/PhotoModal';
+import ProfilePeekModal from '../../src/components/ProfilePeekModal';
+import { listingAvatarFor } from '../../src/avatarPool';
 
 interface Props {
   listing: Listing;
@@ -20,6 +22,7 @@ function TypeBadge({ type }: { type: string }) {
 export default function DetailScreen({ listing, onBack, onToggleSave, onShowToast, onOpenChat, onSendInquiry }: Props) {
   const [activeImg, setActiveImg] = useState(0);
   const [photoModalIndex, setPhotoModalIndex] = useState<number | null>(null);
+  const [profilePeekOpen, setProfilePeekOpen] = useState(false);
   const screenRef = useRef<HTMLDivElement>(null);
   const imageStripRef = useRef<HTMLDivElement>(null);
 
@@ -29,6 +32,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
     screenRef.current?.scrollTo(0, 0);
     setActiveImg(0);
     setPhotoModalIndex(null);
+    setProfilePeekOpen(false);
   }, [listing.id]);
 
   const imgs = listing.images.length > 0 ? listing.images : [listing.image];
@@ -173,7 +177,14 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
         {/* Landlord */}
         <div className="landlord-card">
           <div className="landlord-left">
-            <div className="landlord-avatar">{listing.landlordName[0]}</div>
+            <button
+              type="button"
+              className="landlord-avatar landlord-avatar-button"
+              onClick={() => setProfilePeekOpen(true)}
+              aria-label={`View ${listing.landlordName} profile`}
+            >
+              <img src={listingAvatarFor(listing.id)} alt={listing.landlordName} />
+            </button>
             <div className="landlord-info">
               <div className="landlord-name-row">
                 {listing.verified && (
@@ -238,6 +249,20 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
         images={imgs}
         initialIndex={photoModalIndex ?? 0}
         onClose={() => setPhotoModalIndex(null)}
+      />
+      <ProfilePeekModal
+        open={profilePeekOpen}
+        avatar={listingAvatarFor(listing.id)}
+        name={listing.landlordName}
+        role={listing.verified ? 'Verified landlord' : 'Landlord'}
+        userId={listing.verified ? 'VERIFIED' : 'LANDLORD'}
+        subtitle={`${listing.landlordSince} · ★ ${listing.landlordRating} (${listing.landlordReviews} reviews)`}
+        details={[
+          listing.location,
+          `${listing.beds} bed • ${listing.baths} bath • ${listing.sqm} sqm`,
+          listing.furnished ? 'Furnished listing' : 'Unfurnished listing',
+        ]}
+        onClose={() => setProfilePeekOpen(false)}
       />
     </div>
   );

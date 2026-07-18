@@ -10,3 +10,7 @@ export function avatarAt(index: number) {
   const safeIndex = ((index % AVATARS.length) + AVATARS.length) % AVATARS.length;
   return AVATARS[safeIndex];
 }
+
+export function listingAvatarFor(listingId: number) {
+  return avatarAt(15 + ((listingId - 1) % 15));
+}
