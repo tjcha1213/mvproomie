@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { avatarAt } from '../avatarPool';
 
 interface Props {
@@ -45,7 +46,7 @@ export default function ProfilePeekModal({
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div className="profile-peek-overlay" role="dialog" aria-modal="true" aria-label={`${name} profile preview`} onClick={onClose}>
       <div className="profile-peek-shell" onClick={(event) => event.stopPropagation()}>
         <button type="button" className="profile-peek-close" onClick={onClose} aria-label="Close profile preview">
@@ -81,6 +82,7 @@ export default function ProfilePeekModal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

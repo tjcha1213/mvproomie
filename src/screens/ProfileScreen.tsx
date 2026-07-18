@@ -8,14 +8,8 @@ const MENU_ITEMS = [
   { label: 'Personal Details', icon: PROFILE_MENU_ICONS.personal },
   { label: 'Login & Security', icon: PROFILE_MENU_ICONS.security },
   { label: 'Verification', icon: PROFILE_MENU_ICONS.verification },
-  { label: 'Reviews', icon: PROFILE_MENU_ICONS.reviews },
   { label: 'Payment Methods', icon: PROFILE_MENU_ICONS.payment },
   { label: 'Help & Support', icon: PROFILE_MENU_ICONS.support },
-];
-
-const REVIEWS = [
-  { author: 'Mika dela Cruz', authorId: 'TN-2048', quote: 'Great communication and very easy to coordinate with.', rating: 5, date: 'June 18, 2026' },
-  { author: 'Jessa Santos', authorId: 'TN-3184', quote: 'Clean place, responsive host, and the process felt smooth.', rating: 5, date: 'May 29, 2026' },
 ];
 
 interface Props {
@@ -104,53 +98,14 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
           <button type="button" className="profile-menu-item" onClick={onOpenTheme}>
             <div className="profile-menu-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M8 15h.01M9 8h.01M15 8h.01M17 14h.01M12 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                {PROFILE_MENU_ICONS.themeBlock}
               </svg>
             </div>
             <span className="profile-menu-label">Theme color</span>
             <span className="profile-menu-arrow">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{PROFILE_MENU_ICONS.theme}</svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{PROFILE_MENU_ICONS.chevron}</svg>
             </span>
           </button>
-        </div>
-
-        <div className="profile-details-card">
-          <div className="profile-details-title">Personal Details</div>
-          <div className="profile-details-grid">
-            <div className="profile-details-item">
-              <span className="profile-details-label">Name</span>
-              <span className="profile-details-value">Juan Dela Cruz</span>
-            </div>
-            <div className="profile-details-item">
-              <span className="profile-details-label">Email</span>
-              <span className="profile-details-value">juan@roomie.ph</span>
-            </div>
-            <div className="profile-details-item">
-              <span className="profile-details-label">Account mode</span>
-              <span className="profile-details-value">{mode}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="section-header">
-          <span className="section-title">Reviews</span>
-        </div>
-
-        <div className="reviews-trust-grid">
-          {REVIEWS.map((review) => (
-            <div key={review.authorId} className="reviews-item">
-              <div className="reviews-item-head">
-                <strong>{review.author}</strong>
-                <span>{'★'.repeat(review.rating)}</span>
-              </div>
-              <div className="listing-id-row">
-                <span className="entity-id-tag">{review.authorId}</span>
-              </div>
-              <p>{review.quote}</p>
-              <small>{review.date}</small>
-            </div>
-          ))}
         </div>
 
         <div style={{ height: 32 }} />

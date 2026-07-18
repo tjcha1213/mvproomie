@@ -137,13 +137,12 @@ export default function ProfileScreen({ units, onOpenTheme, onOpenReviews, notif
           <button type="button" className="profile-menu-item" onClick={onOpenTheme}>
             <div className="profile-menu-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor" stroke="none"/>
+                {PROFILE_MENU_ICONS.themeBlock}
               </svg>
             </div>
             <span className="profile-menu-label">Theme color</span>
             <span className="profile-menu-arrow">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{PROFILE_MENU_ICONS.theme}</svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{PROFILE_MENU_ICONS.chevron}</svg>
             </span>
           </button>
         </div>
