@@ -23,14 +23,14 @@ export const PROFILE_MENU_ICONS = {
   support: (
     <>
       <circle cx="12" cy="12" r="10" />
-      <path d="M9.4 9.2a3.2 3.2 0 0 1 6.2 1.1c0 2.4-2.7 2.7-3.6 4.2-.3.5-.4 1-.4 1.6" />
-      <circle cx="12" cy="17.3" r="0.9" />
+      <path d="M9.7 9.3a2.7 2.7 0 0 1 5.3.8c0 2.1-2.5 2.4-3.3 3.9-.3.5-.4 1-.4 1.6" />
+      <circle cx="12" cy="17.4" r="0.7" />
     </>
   ),
   themeBlock: (
     <>
       <circle cx="12" cy="12" r="10" />
-      <path d="M12 2a10 10 0 0 1 0 20z" />
+      <path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor" stroke="none" />
     </>
   ),
   chevron: (
