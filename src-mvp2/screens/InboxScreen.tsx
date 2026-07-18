@@ -45,11 +45,6 @@ type ConversationSwipeState = {
   locked: boolean;
 };
 
-type ConversationOpenAction = {
-  conversationId: string;
-  side: SwipeSide;
-} | null;
-
 const ACTION_WIDTH = 92;
 const REVEAL_THRESHOLD = 12;
 const COMMIT_THRESHOLD = 56;
@@ -84,15 +79,6 @@ function orderThreadMessages(messages: ThreadMessage[]): ThreadMessage[] {
   return [...messages].sort((a, b) => {
     if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
     if (a.createdAt !== b.createdAt) return a.createdAt - b.createdAt;
-    return a.id.localeCompare(b.id);
-  });
-}
-
-function orderConversationsLocal(conversations: Conversation[]): Conversation[] {
-  return [...conversations].sort((a, b) => {
-    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-    const timeDiff = (b.messages[b.messages.length - 1]?.timestamp ?? 0) - (a.messages[a.messages.length - 1]?.timestamp ?? 0);
-    if (timeDiff !== 0) return timeDiff;
     return a.id.localeCompare(b.id);
   });
 }
@@ -138,25 +124,33 @@ export default function InboxScreen({
   onSendMessage,
 }: Props) {
   const [draft, setDraft] = useState('');
-  const [conversationRows, setConversationRows] = useState<Conversation[]>(() => orderConversationsLocal(conversations));
   const [threadMessagesByConversation, setThreadMessagesByConversation] = useState<Record<string, ThreadMessage[]>>({});
   const [openAction, setOpenAction] = useState<OpenAction>(null);
   const [swipe, setSwipe] = useState<SwipeState | null>(null);
-  const [conversationOpenAction, setConversationOpenAction] = useState<ConversationOpenAction>(null);
-  const [conversationSwipe, setConversationSwipe] = useState<ConversationSwipeState | null>(null);
+  const [listOpenAction, setListOpenAction] = useState<{ conversationId: string; side: SwipeSide } | null>(null);
+  const [listSwipe, setListSwipe] = useState<ConversationSwipeState | null>(null);
+  const [conversationMetaById, setConversationMetaById] = useState<Record<string, {
+    pinned: boolean;
+    hidden: boolean;
+    deleting: boolean;
+    deleteDirection: SwipeSide | null;
+  }>>({});
   const [profilePeekConversationId, setProfilePeekConversationId] = useState<string | null>(null);
   const activeConversation = useMemo(
-    () => conversationRows.find((conversation) => conversation.id === activeConversationId) ?? null,
-    [activeConversationId, conversationRows]
+    () => conversations.find((conversation) => conversation.id === activeConversationId) ?? null,
+    [activeConversationId, conversations]
   );
   const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const conversationRowRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const prevRectsRef = useRef<Map<string, DOMRect>>(new Map());
   const prevConversationRectsRef = useRef<Map<string, DOMRect>>(new Map());
   const deleteTimersRef = useRef<Record<string, number>>({});
+  const conversationDeleteTimersRef = useRef<Record<string, number>>({});
   const hiddenIdsRef = useRef<Record<string, Set<string>>>({});
-  const hiddenConversationIdsRef = useRef<Set<string>>(new Set());
   const suppressConversationClickRef = useRef<string | null>(null);
+
+  const conversationSwipe = listSwipe;
+  const conversationOpenAction = listOpenAction;
 
   const captureRects = useCallback(() => {
     if (!activeConversation) return;
@@ -170,17 +164,19 @@ export default function InboxScreen({
   }, [activeConversation, threadMessagesByConversation]);
 
   useEffect(() => {
-    setConversationRows((current) => {
-      const currentById = new Map(current.map((conversation) => [conversation.id, conversation]));
-      const hidden = hiddenConversationIdsRef.current;
-      return orderConversationsLocal(
-        conversations
-          .map((conversation) => {
-            const existing = currentById.get(conversation.id);
-            return existing ? { ...conversation, pinned: existing.pinned } : conversation;
-          })
-          .filter((conversation) => !hidden.has(conversation.id))
-      );
+    setConversationMetaById((prev) => {
+      const next = { ...prev };
+      for (const conversation of conversations) {
+        if (!next[conversation.id]) {
+          next[conversation.id] = {
+            pinned: false,
+            hidden: false,
+            deleting: false,
+            deleteDirection: null,
+          };
+        }
+      }
+      return next;
     });
   }, [conversations]);
 
@@ -189,8 +185,8 @@ export default function InboxScreen({
 
     setOpenAction(null);
     setSwipe(null);
-    setConversationSwipe(null);
-    setConversationOpenAction(null);
+    setListSwipe(null);
+    setListOpenAction(null);
     setProfilePeekConversationId(null);
 
     setThreadMessagesByConversation((prev) => {
@@ -220,6 +216,26 @@ export default function InboxScreen({
       };
     });
   }, [activeConversation]);
+
+  const visibleConversations = useMemo(() => {
+    return conversations
+      .map((conversation, index) => ({
+        conversation,
+        index,
+        meta: conversationMetaById[conversation.id] ?? {
+          pinned: false,
+          hidden: false,
+          deleting: false,
+          deleteDirection: null,
+        },
+      }))
+      .filter((entry) => !entry.meta.hidden)
+      .sort((a, b) => {
+        if (a.meta.pinned !== b.meta.pinned) return a.meta.pinned ? -1 : 1;
+        return a.index - b.index;
+      })
+      .map((entry) => entry.conversation);
+  }, [conversationMetaById, conversations]);
 
   useLayoutEffect(() => {
     if (!activeConversation) return;
@@ -253,7 +269,7 @@ export default function InboxScreen({
     const prevRects = prevConversationRectsRef.current;
     if (prevRects.size === 0) return;
 
-    conversationRows.forEach((conversation) => {
+    visibleConversations.forEach((conversation) => {
       const node = conversationRowRefs.current[conversation.id];
       const prevRect = prevRects.get(conversation.id);
       if (!node || !prevRect) return;
@@ -272,11 +288,12 @@ export default function InboxScreen({
     });
 
     prevConversationRectsRef.current = new Map();
-  }, [activeConversation, conversationRows]);
+  }, [activeConversation, visibleConversations]);
 
   useEffect(() => {
     return () => {
       Object.values(deleteTimersRef.current).forEach((timer) => window.clearTimeout(timer));
+      Object.values(conversationDeleteTimersRef.current).forEach((timer) => window.clearTimeout(timer));
     };
   }, []);
 
@@ -284,6 +301,8 @@ export default function InboxScreen({
     if (!activeConversation) return [];
     return threadMessagesByConversation[activeConversation.id] ?? activeConversation.messages.map(toThreadMessage);
   }, [activeConversation, threadMessagesByConversation]);
+
+  const conversationRows = visibleConversations;
 
   const submit = () => {
     if (!activeConversation || !draft.trim()) return;
@@ -361,39 +380,84 @@ export default function InboxScreen({
 
   const captureConversationRects = useCallback(() => {
     const rects = new Map<string, DOMRect>();
-    conversationRows.forEach((conversation) => {
+    visibleConversations.forEach((conversation) => {
       const node = conversationRowRefs.current[conversation.id];
       if (node) rects.set(conversation.id, node.getBoundingClientRect());
     });
     prevConversationRectsRef.current = rects;
-  }, [conversationRows]);
+  }, [visibleConversations]);
 
   const commitConversationPinToggle = useCallback((conversationId: string) => {
     captureConversationRects();
-    setConversationSwipe(null);
-    setConversationOpenAction(null);
+    setListSwipe(null);
+    setListOpenAction(null);
     suppressConversationClickRef.current = conversationId;
-    setConversationRows((current) =>
-      orderConversationsLocal(
-        current.map((conversation) =>
-          conversation.id === conversationId
-            ? { ...conversation, pinned: !conversation.pinned }
-            : conversation
-        )
-      )
-    );
+    setConversationMetaById((prev) => {
+      const current = prev[conversationId] ?? {
+        pinned: false,
+        hidden: false,
+        deleting: false,
+        deleteDirection: null,
+      };
+      return {
+        ...prev,
+        [conversationId]: {
+          ...current,
+          pinned: !current.pinned,
+          hidden: false,
+          deleting: false,
+          deleteDirection: null,
+        },
+      };
+    });
   }, [captureConversationRects]);
 
   const commitConversationDelete = useCallback((conversationId: string) => {
     captureConversationRects();
-    setConversationSwipe(null);
-    setConversationOpenAction(null);
+    setListSwipe(null);
+    setListOpenAction(null);
     suppressConversationClickRef.current = conversationId;
-    hiddenConversationIdsRef.current.add(conversationId);
-    setConversationRows((current) => current.filter((conversation) => conversation.id !== conversationId));
-    if (activeConversationId === conversationId) {
-      onBackToList();
-    }
+    setConversationMetaById((prev) => {
+      const current = prev[conversationId] ?? {
+        pinned: false,
+        hidden: false,
+        deleting: false,
+        deleteDirection: null,
+      };
+      return {
+        ...prev,
+        [conversationId]: {
+          ...current,
+          deleting: true,
+          deleteDirection: 'delete',
+        },
+      };
+    });
+
+    const existingTimer = conversationDeleteTimersRef.current[conversationId];
+    if (existingTimer) window.clearTimeout(existingTimer);
+
+    conversationDeleteTimersRef.current[conversationId] = window.setTimeout(() => {
+      conversationDeleteTimersRef.current[conversationId] = 0;
+      captureConversationRects();
+      setConversationMetaById((prev) => {
+        const current = prev[conversationId];
+        if (!current) return prev;
+        return {
+          ...prev,
+          [conversationId]: {
+            ...current,
+            hidden: true,
+            deleting: false,
+            deleteDirection: null,
+          },
+        };
+      });
+      if (activeConversationId === conversationId) {
+        onBackToList();
+      }
+      delete conversationDeleteTimersRef.current[conversationId];
+    }, 220);
   }, [activeConversationId, captureConversationRects, onBackToList]);
 
   const handleConversationPointerDown = useCallback((
@@ -403,11 +467,11 @@ export default function InboxScreen({
     if (event.pointerType === 'mouse' && event.button !== 0) return;
 
     if (conversationOpenAction && conversationOpenAction.conversationId !== conversationId) {
-      setConversationOpenAction(null);
+      setListOpenAction(null);
     }
 
     const existing = conversationOpenAction?.conversationId === conversationId ? actionOffset(conversationOpenAction.side) : 0;
-    setConversationSwipe({
+    setListSwipe({
       conversationId,
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -434,22 +498,22 @@ export default function InboxScreen({
     if (!conversationSwipe.locked) {
       if (absX < 6 && absY < 6) return;
       if (absY > 18 && absY > absX * 1.2) {
-        setConversationSwipe(null);
+        setListSwipe(null);
         return;
       }
       if (absX < 10 || absX < absY + 4) return;
-      setConversationSwipe((current) => (current ? { ...current, locked: true } : current));
+      setListSwipe((current) => (current ? { ...current, locked: true } : current));
     }
 
     event.preventDefault();
     const nextOffset = clamp(conversationSwipe.startOffset + dx, -MAX_SWIPE, MAX_SWIPE);
-    setConversationSwipe((current) => (current && current.conversationId === conversationId ? { ...current, locked: true, offset: nextOffset } : current));
+    setListSwipe((current) => (current && current.conversationId === conversationId ? { ...current, locked: true, offset: nextOffset } : current));
     const side = Math.abs(nextOffset) >= REVEAL_THRESHOLD ? swipeSideFromOffset(nextOffset) : null;
     if (side) {
-      setConversationOpenAction({ conversationId, side });
+      setListOpenAction({ conversationId, side });
       suppressConversationClickRef.current = conversationId;
     } else if (Math.abs(nextOffset) < REVEAL_THRESHOLD && conversationOpenAction?.conversationId !== conversationId) {
-      setConversationOpenAction(null);
+      setListOpenAction(null);
     }
   }, [conversationOpenAction, conversationSwipe]);
 
@@ -474,19 +538,19 @@ export default function InboxScreen({
           ? 'delete'
           : null;
 
-    setConversationSwipe(null);
+    setListSwipe(null);
     if (resolvedSide) {
-      setConversationOpenAction({ conversationId, side: resolvedSide });
+      setListOpenAction({ conversationId, side: resolvedSide });
       suppressConversationClickRef.current = conversationId;
     } else {
-      setConversationOpenAction((current) => (current?.conversationId === conversationId ? null : current));
+      setListOpenAction((current) => (current?.conversationId === conversationId ? null : current));
     }
   }, [conversationSwipe]);
 
   const handleConversationPointerCancel = useCallback((conversationId: string) => {
     if (!conversationSwipe || conversationSwipe.conversationId !== conversationId) return;
-    setConversationSwipe(null);
-    setConversationOpenAction((current) => {
+    setListSwipe(null);
+    setListOpenAction((current) => {
       const resolvedSide = Math.abs(conversationSwipe.offset) >= COMMIT_THRESHOLD
         ? swipeSideFromOffset(conversationSwipe.offset)
         : conversationSwipe.startOffset > 0
@@ -624,8 +688,8 @@ export default function InboxScreen({
       return;
     }
     if (conversationSwipe || conversationOpenAction) {
-      setConversationSwipe(null);
-      setConversationOpenAction(null);
+      setListSwipe(null);
+      setListOpenAction(null);
       return;
     }
     onOpenConversation(conversationId);
@@ -782,8 +846,8 @@ export default function InboxScreen({
 
       <div className="scroll-area" onPointerDown={(event) => {
         if (event.target === event.currentTarget) {
-          setConversationOpenAction(null);
-          setConversationSwipe(null);
+          setListOpenAction(null);
+          setListSwipe(null);
         }
       }}>
         <div className="inbox-list">
