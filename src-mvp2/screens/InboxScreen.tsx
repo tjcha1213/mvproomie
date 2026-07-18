@@ -401,6 +401,21 @@ export default function InboxScreen({
     ? conversations.find((conversation) => conversation.id === profilePeekConversationId) ?? null
     : null;
 
+  const profilePeekModal = (
+    <ProfilePeekModal
+      open={profilePeekConversation !== null}
+      avatar={profilePeekConversation?.participantPhoto ?? ''}
+      name={profilePeekConversation?.participantName ?? ''}
+      role={profilePeekConversation?.participantRole ?? 'Landlord'}
+      subtitle={profilePeekConversation ? `${profilePeekConversation.listingTitle} · ${profilePeekConversation.listingLocation}` : undefined}
+      details={profilePeekConversation ? [
+        `${profilePeekConversation.messages.length} messages`,
+        profilePeekConversation.pinned ? 'Pinned conversation' : 'Regular conversation',
+      ] : []}
+      onClose={() => setProfilePeekConversationId(null)}
+    />
+  );
+
   if (activeConversation) {
     return (
       <>
@@ -504,7 +519,7 @@ export default function InboxScreen({
           })}
         </div>
 
-      <div className="inbox-composer">
+        <div className="inbox-composer">
           <textarea
             className="inbox-composer-input"
             value={draft}
@@ -516,6 +531,7 @@ export default function InboxScreen({
             Send
           </button>
         </div>
+        {profilePeekModal}
       </>
     );
   }
@@ -573,19 +589,7 @@ export default function InboxScreen({
           })}
         </div>
       </div>
-
-      <ProfilePeekModal
-        open={profilePeekConversation !== null}
-        avatar={profilePeekConversation?.participantPhoto ?? ''}
-        name={profilePeekConversation?.participantName ?? ''}
-        role={profilePeekConversation?.participantRole ?? 'Landlord'}
-        subtitle={profilePeekConversation ? `${profilePeekConversation.listingTitle} · ${profilePeekConversation.listingLocation}` : undefined}
-        details={profilePeekConversation ? [
-          `${profilePeekConversation.messages.length} messages`,
-          profilePeekConversation.pinned ? 'Pinned conversation' : 'Regular conversation',
-        ] : []}
-        onClose={() => setProfilePeekConversationId(null)}
-      />
+      {profilePeekModal}
     </>
   );
 }
