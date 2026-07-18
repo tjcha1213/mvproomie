@@ -75,6 +75,43 @@ function timeStampLabel() {
   return 'Just now';
 }
 
+function formatLongDateTime(date: Date) {
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+function buildCalendarMonth(baseMonth: Date) {
+  const month = baseMonth.getMonth();
+  const year = baseMonth.getFullYear();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const leadingBlanks = new Date(year, month, 1).getDay();
+  const monthLabel = baseMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  return {
+    monthLabel,
+    cells: [
+      ...Array.from({ length: leadingBlanks }, (_, index) => ({ kind: 'blank' as const, id: `blank-${month}-${index}` })),
+      ...Array.from({ length: daysInMonth }, (_, index) => {
+        const day = index + 1;
+        const date = new Date(year, month, day);
+        const isoDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        return {
+          kind: 'day' as const,
+          id: isoDate,
+          day,
+          date: isoDate,
+          weekday: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        };
+      }),
+    ],
+  };
+}
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
@@ -138,6 +175,10 @@ export default function InquiriesScreen({
   const [messageOpenAction, setMessageOpenAction] = useState<{ inquiryId: number; messageId: number; side: SwipeSide } | null>(null);
   const [messageSwipe, setMessageSwipe] = useState<MessageSwipeState | null>(null);
   const [profilePeekInquiryId, setProfilePeekInquiryId] = useState<number | null>(null);
+  const [scheduleInquiryId, setScheduleInquiryId] = useState<number | null>(null);
+  const [scheduleMonth, setScheduleMonth] = useState(() => new Date());
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('10:00');
   const deleteTimersRef = useRef<Record<string, number>>({});
   const messageSwipeRef = useRef<MessageSwipeState | null>(null);
   const suppressNextInquiryClickRef = useRef<number | null>(null);
@@ -215,6 +256,9 @@ export default function InquiriesScreen({
 
   const unitTitle = (id: number) => units.find((u) => u.id === id)?.title ?? '';
   const activeChat = chatOpenId === null ? null : inquiries.find((inquiry) => inquiry.id === chatOpenId) ?? null;
+  const scheduleInquiry = scheduleInquiryId === null ? null : inquiries.find((inquiry) => inquiry.id === scheduleInquiryId) ?? null;
+  const scheduleCalendar = buildCalendarMonth(scheduleMonth);
+  const selectedScheduleDate = scheduleDate ? new Date(`${scheduleDate}T12:00:00`) : null;
   const activeChatMessages = useMemo(() => {
     if (!activeChat) return [];
 
@@ -259,17 +303,34 @@ export default function InquiriesScreen({
   }
 
   function scheduleViewing(inquiry: Inquiry) {
-    onSetStatus(inquiry.id, 'Viewing');
+    const today = new Date();
+    const nextMorning = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    const initialMonth = new Date(nextMorning.getFullYear(), nextMorning.getMonth(), 1);
+    const initialDate = `${nextMorning.getFullYear()}-${String(nextMorning.getMonth() + 1).padStart(2, '0')}-${String(nextMorning.getDate()).padStart(2, '0')}`;
+    setScheduleInquiryId(inquiry.id);
+    setScheduleMonth(initialMonth);
+    setScheduleDate(initialDate);
+    setScheduleTime('10:00');
+  }
+
+  function confirmScheduleViewing() {
+    if (!scheduleInquiry || !scheduleDate || !scheduleTime) return;
+    const [hours, minutes] = scheduleTime.split(':').map((part) => Number(part));
+    const scheduledDate = new Date(`${scheduleDate}T00:00:00`);
+    scheduledDate.setHours(hours, minutes, 0, 0);
+
+    onSetStatus(scheduleInquiry.id, 'Viewing');
     onAddThreadMessage(
-      inquiry.id,
+      scheduleInquiry.id,
       {
         sender: 'system',
-        text: 'Viewing scheduled. Follow up with the applicant for exact time and property access notes.',
+        text: `Viewing scheduled for ${formatLongDateTime(scheduledDate)}. Follow up with the applicant for access notes.`,
         time: timeStampLabel(),
       },
       'Viewing',
     );
-    onShowToast(`📅 Viewing scheduled with ${inquiry.name}`);
+    onShowToast(`📅 Viewing scheduled with ${scheduleInquiry.name}`);
+    setScheduleInquiryId(null);
   }
 
   const commitPinToggle = (id: number) => {
@@ -922,6 +983,111 @@ export default function InquiriesScreen({
 
         <div style={{ height: 16 }} />
       </div>
+
+      {scheduleInquiry && (
+        <div
+          className="listing-modal-overlay"
+          onClick={() => setScheduleInquiryId(null)}
+        >
+          <div
+            className="listing-modal inquiry-calendar-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="schedule-viewing-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="listing-modal-head">
+              <div className="listing-modal-title-block">
+                <h2 id="schedule-viewing-title" className="listing-modal-title">Schedule viewing</h2>
+                <div className="listing-modal-subtitle">{scheduleInquiry.name} · {unitTitle(scheduleInquiry.unitId)}</div>
+              </div>
+              <button
+                type="button"
+                className="listing-modal-close"
+                onClick={() => setScheduleInquiryId(null)}
+                aria-label="Close schedule viewing modal"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="inquiry-calendar-shell">
+              <div className="listing-history-calendar-head">
+                <strong>{scheduleCalendar.monthLabel}</strong>
+                <div className="calendar-nav-group">
+                  <button
+                    type="button"
+                    className="calendar-arrow-btn"
+                    onClick={() => setScheduleMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
+                    aria-label="Previous month"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    className="calendar-arrow-btn"
+                    onClick={() => setScheduleMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
+                    aria-label="Next month"
+                  >
+                    ›
+                  </button>
+                </div>
+              </div>
+
+              <div className="listing-history-calendar-weekdays">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <span key={day}>{day}</span>
+                ))}
+              </div>
+
+              <div className="listing-history-calendar-grid">
+                {scheduleCalendar.cells.map((cell) => {
+                  if (cell.kind === 'blank') {
+                    return <div key={cell.id} className="listing-history-calendar-cell is-empty" aria-hidden="true" />;
+                  }
+
+                  const isSelected = cell.date === scheduleDate;
+                  return (
+                    <button
+                      key={cell.id}
+                      type="button"
+                      className={`listing-history-calendar-cell inquiry-calendar-day ${isSelected ? 'is-selected' : ''}`}
+                      onClick={() => setScheduleDate(cell.date)}
+                    >
+                      <span>{cell.day}</span>
+                      <small>{cell.weekday}</small>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="inquiry-calendar-time-row">
+              <label className="inquiry-reply-label" htmlFor="schedule-time">Select time</label>
+              <input
+                id="schedule-time"
+                type="time"
+                className="inquiry-reply-input inquiry-time-input"
+                value={scheduleTime}
+                onChange={(event) => setScheduleTime(event.target.value)}
+              />
+            </div>
+
+            <div className="inquiry-calendar-summary">
+              {selectedScheduleDate ? `Selected: ${selectedScheduleDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${scheduleTime}` : 'Select a date and time to continue.'}
+            </div>
+
+            <div className="inquiry-calendar-actions">
+              <button type="button" className="unit-btn" onClick={() => setScheduleInquiryId(null)}>
+                Cancel
+              </button>
+              <button type="button" className="unit-btn unit-btn-primary" onClick={confirmScheduleViewing}>
+                Confirm viewing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {activeChat && (
         <div
