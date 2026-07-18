@@ -36,9 +36,11 @@ export default function ProfilePeekModal({
       if (event.key === 'Escape') onClose();
     };
 
+    document.body.classList.add('profile-peek-open');
     document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', handleKeyDown);
     return () => {
+      document.body.classList.remove('profile-peek-open');
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };

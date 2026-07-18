@@ -51,6 +51,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+body.profile-peek-open #root {
+  visibility: hidden;
+}
+
 button {
   font-family: inherit;
   cursor: pointer;
