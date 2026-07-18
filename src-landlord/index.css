@@ -4306,6 +4306,11 @@ img {
   transition: opacity 0.16s ease;
 }
 
+.inquiry-swipe-actions-left:not(.show) .inquiry-swipe-action,
+.inquiry-swipe-actions-right:not(.show) .inquiry-swipe-action {
+  pointer-events: none;
+}
+
 .inquiry-swipe-actions-left.show,
 .inquiry-swipe-actions-right.show {
   opacity: 1;
@@ -4519,11 +4524,131 @@ img {
     linear-gradient(180deg, color-mix(in srgb, var(--primary) 4%, #ffffff) 0%, #ffffff 28%);
 }
 
+.inquiry-chat-message-swipe-row {
+  position: relative;
+  width: 100%;
+  max-width: 88%;
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.inquiry-chat-message-swipe-row.tenant {
+  align-self: flex-start;
+}
+
+.inquiry-chat-message-swipe-row.landlord,
+.inquiry-chat-message-swipe-row.system {
+  align-self: flex-end;
+}
+
+.inquiry-chat-message-actions {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.inquiry-chat-message-actions-left {
+  padding-right: 12px;
+}
+
+.inquiry-chat-message-actions-right {
+  padding-left: 12px;
+  justify-content: flex-end;
+}
+
+.inquiry-chat-message-actions-left,
+.inquiry-chat-message-actions-right {
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+.inquiry-chat-message-actions-left:not(.show) .inquiry-chat-message-action,
+.inquiry-chat-message-actions-right:not(.show) .inquiry-chat-message-action {
+  pointer-events: none;
+}
+
+.inquiry-chat-message-actions-left.show,
+.inquiry-chat-message-actions-right.show {
+  opacity: 1;
+}
+
+.inquiry-chat-message-action {
+  width: 92px;
+  border: 0;
+  border-radius: 16px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.inquiry-chat-message-action svg {
+  width: 20px;
+  height: 20px;
+}
+
+.inquiry-chat-pin-action {
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+  color: #fff;
+  border: 0;
+}
+
+.inquiry-chat-message-action.inquiry-chat-pin-action.is-pin {
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+  color: #fff;
+  border: 0;
+}
+
+.inquiry-chat-message-action.inquiry-chat-pin-action.is-unpin {
+  background: linear-gradient(135deg, #e5e7eb, #cbd5e1);
+  color: var(--text);
+  border: 0;
+}
+
+.inquiry-chat-delete-action {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+}
+
 .inquiry-chat-message {
   display: flex;
   flex-direction: column;
   gap: 4px;
   max-width: 88%;
+}
+
+.inquiry-chat-message-main {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: none;
+  will-change: transform;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.inquiry-chat-message-swipe-row.is-deleting .inquiry-chat-message-main {
+  opacity: 0;
+}
+
+.inquiry-chat-message-swipe-row.is-deleting.delete .inquiry-chat-message-main {
+  transform: translate3d(-120%, 0, 0);
+}
+
+.inquiry-chat-message-swipe-row.is-deleting.pin .inquiry-chat-message-main {
+  transform: translate3d(120%, 0, 0);
 }
 
 .inquiry-chat-tenant {
@@ -4557,6 +4682,18 @@ img {
 .inquiry-chat-time {
   font-size: 11px;
   color: var(--text-light);
+}
+
+.inquiry-chat-pin-badge {
+  display: inline-flex;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.24);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
 }
 
 .inquiry-chat-composer {

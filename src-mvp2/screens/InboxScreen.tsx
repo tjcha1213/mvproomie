@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import AppLogo from '../components/AppLogo';
 import type { Conversation } from '../chat';
 import ProfilePeekModal from '../../src/components/ProfilePeekModal';
@@ -12,6 +12,7 @@ interface Props {
 }
 
 type SwipeSide = 'delete' | 'pin';
+type SwipeKind = 'message' | 'conversation';
 
 type ThreadMessage = Conversation['messages'][number] & {
   createdAt: number;
@@ -20,8 +21,9 @@ type ThreadMessage = Conversation['messages'][number] & {
   deleteDirection: SwipeSide | null;
 };
 
-type SwipeState = {
-  messageId: string;
+type SwipeSession = {
+  kind: SwipeKind;
+  id: string;
   pointerId: number;
   startX: number;
   startY: number;
@@ -30,25 +32,20 @@ type SwipeState = {
   locked: boolean;
 };
 
-type OpenAction = {
-  messageId: string;
-  side: SwipeSide;
-} | null;
-
-type ConversationSwipeState = {
-  conversationId: string;
-  pointerId: number;
-  startX: number;
-  startY: number;
-  startOffset: number;
-  offset: number;
-  locked: boolean;
+type ConversationMeta = {
+  pinned: boolean;
+  hidden: boolean;
+  deleting: boolean;
+  deleteDirection: SwipeSide | null;
 };
 
 const ACTION_WIDTH = 92;
-const REVEAL_THRESHOLD = 12;
-const COMMIT_THRESHOLD = 56;
+const REVEAL_THRESHOLD = 10;
+const COMMIT_THRESHOLD = 48;
 const MAX_SWIPE = 116;
+const VERTICAL_CANCEL_DISTANCE = 22;
+const VERTICAL_CANCEL_RATIO = 1.15;
+const SWIPE_LOCK_THRESHOLD = 8;
 
 function formatConversationTime(timestamp: number): string {
   const deltaMinutes = Math.round((Date.now() - timestamp) / (1000 * 60));
@@ -94,7 +91,7 @@ function actionOffset(side: SwipeSide | null) {
 }
 
 function swipeSideFromOffset(offset: number) {
-  if (offset >= 0) return 'pin' as const;
+  if (offset > 0) return 'pin' as const;
   if (offset < 0) return 'delete' as const;
   return null;
 }
@@ -116,6 +113,15 @@ function PinIcon() {
   );
 }
 
+function UnpinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6.75 5.25 18.75 17.25" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M14.75 3.75 20.25 9.25l-2.25 2.25-2.75-.75-2.5 2.5.75 2.75-2.25 2.25-3-3-4.25 4.25-.75-.75 4.25-4.25-3-3 2.25-2.25 2.75.75 2.5-2.5-.75-2.75 2.25-2.25Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function InboxScreen({
   conversations,
   activeConversationId,
@@ -125,55 +131,29 @@ export default function InboxScreen({
 }: Props) {
   const [draft, setDraft] = useState('');
   const [threadMessagesByConversation, setThreadMessagesByConversation] = useState<Record<string, ThreadMessage[]>>({});
-  const [openAction, setOpenAction] = useState<OpenAction>(null);
-  const [swipe, setSwipe] = useState<SwipeState | null>(null);
+  const [openAction, setOpenAction] = useState<{ messageId: string; side: SwipeSide } | null>(null);
   const [listOpenAction, setListOpenAction] = useState<{ conversationId: string; side: SwipeSide } | null>(null);
-  const [listSwipe, setListSwipe] = useState<ConversationSwipeState | null>(null);
-  const [conversationMetaById, setConversationMetaById] = useState<Record<string, {
-    pinned: boolean;
-    hidden: boolean;
-    deleting: boolean;
-    deleteDirection: SwipeSide | null;
-  }>>({});
+  const [swipe, setSwipe] = useState<SwipeSession | null>(null);
+  const [conversationMetaById, setConversationMetaById] = useState<Record<string, ConversationMeta>>({});
+  const [messagePinStateByConversation, setMessagePinStateByConversation] = useState<Record<string, Record<string, boolean>>>({});
   const [profilePeekConversationId, setProfilePeekConversationId] = useState<string | null>(null);
   const activeConversation = useMemo(
     () => conversations.find((conversation) => conversation.id === activeConversationId) ?? null,
     [activeConversationId, conversations]
   );
-  const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const conversationRowRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const prevRectsRef = useRef<Map<string, DOMRect>>(new Map());
-  const prevConversationRectsRef = useRef<Map<string, DOMRect>>(new Map());
-  const swipeRef = useRef<SwipeState | null>(null);
-  const conversationSwipeRef = useRef<ConversationSwipeState | null>(null);
   const deleteTimersRef = useRef<Record<string, number>>({});
-  const conversationDeleteTimersRef = useRef<Record<string, number>>({});
   const hiddenIdsRef = useRef<Record<string, Set<string>>>({});
-  const suppressConversationClickRef = useRef<string | null>(null);
+  const swipeRef = useRef<SwipeSession | null>(null);
+  const activeConversationIdRef = useRef<string | null>(activeConversationId);
 
-  const conversationSwipe = listSwipe;
-  const conversationOpenAction = listOpenAction;
+  useEffect(() => {
+    activeConversationIdRef.current = activeConversationId;
+  }, [activeConversationId]);
 
-  const setSwipeState = useCallback((next: SwipeState | null) => {
+  const setSwipeState = useCallback((next: SwipeSession | null) => {
     swipeRef.current = next;
     setSwipe(next);
   }, []);
-
-  const setConversationSwipeState = useCallback((next: ConversationSwipeState | null) => {
-    conversationSwipeRef.current = next;
-    setListSwipe(next);
-  }, []);
-
-  const captureRects = useCallback(() => {
-    if (!activeConversation) return;
-    const rects = new Map<string, DOMRect>();
-    const messages = threadMessagesByConversation[activeConversation.id] ?? activeConversation.messages.map(toThreadMessage);
-    messages.forEach((message) => {
-      const node = rowRefs.current[message.id];
-      if (node) rects.set(message.id, node.getBoundingClientRect());
-    });
-    prevRectsRef.current = rects;
-  }, [activeConversation, threadMessagesByConversation]);
 
   useEffect(() => {
     setConversationMetaById((prev) => {
@@ -195,11 +175,17 @@ export default function InboxScreen({
   useEffect(() => {
     if (!activeConversation) return;
 
-    setOpenAction(null);
     setSwipeState(null);
-    setConversationSwipeState(null);
+    setOpenAction(null);
     setListOpenAction(null);
     setProfilePeekConversationId(null);
+    setMessagePinStateByConversation((prev) => {
+      if (prev[activeConversation.id]) return prev;
+      return {
+        ...prev,
+        [activeConversation.id]: {},
+      };
+    });
 
     setThreadMessagesByConversation((prev) => {
       const hidden = hiddenIdsRef.current[activeConversation.id] ?? new Set<string>();
@@ -227,9 +213,31 @@ export default function InboxScreen({
         [activeConversation.id]: next,
       };
     });
-  }, [activeConversation, setConversationSwipeState, setSwipeState]);
+  }, [activeConversation, messagePinStateByConversation, setSwipeState]);
 
-  const visibleConversations = useMemo(() => {
+  useEffect(() => {
+    return () => {
+      Object.values(deleteTimersRef.current).forEach((timer) => window.clearTimeout(timer));
+    };
+  }, []);
+
+  const currentMessages = useMemo(() => {
+    if (!activeConversation) return [];
+    return threadMessagesByConversation[activeConversation.id] ?? activeConversation.messages.map(toThreadMessage);
+  }, [activeConversation, threadMessagesByConversation]);
+
+  const activeConversationMessages = useMemo(() => {
+    if (!activeConversation) return [];
+    const pinMap = messagePinStateByConversation[activeConversation.id] ?? {};
+    return orderThreadMessages(
+      currentMessages.map((message) => ({
+        ...message,
+        isPinned: Boolean(pinMap[message.id] ?? message.isPinned),
+      }))
+    );
+  }, [activeConversation, currentMessages, messagePinStateByConversation]);
+
+  const conversationRows = useMemo(() => {
     return conversations
       .map((conversation, index) => ({
         conversation,
@@ -249,127 +257,157 @@ export default function InboxScreen({
       .map((entry) => entry.conversation);
   }, [conversationMetaById, conversations]);
 
-  useLayoutEffect(() => {
-    if (!activeConversation) return;
-    const prevRects = prevRectsRef.current;
-    if (prevRects.size === 0) return;
+  const profilePeekConversation = profilePeekConversationId
+    ? conversations.find((conversation) => conversation.id === profilePeekConversationId) ?? null
+    : null;
 
-    const currentMessages = threadMessagesByConversation[activeConversation.id] ?? activeConversation.messages.map(toThreadMessage);
-    currentMessages.forEach((message) => {
-      const node = rowRefs.current[message.id];
-      const prevRect = prevRects.get(message.id);
-      if (!node || !prevRect) return;
-      const nextRect = node.getBoundingClientRect();
-      const dx = prevRect.left - nextRect.left;
-      const dy = prevRect.top - nextRect.top;
-      if (dx || dy) {
-        node.animate(
-          [
-            { transform: `translate(${dx}px, ${dy}px)` },
-            { transform: 'translate(0, 0)' },
-          ],
-          { duration: 240, easing: 'cubic-bezier(0.2, 0, 0, 1)' }
-        );
-      }
+  const startSwipe = useCallback((
+    kind: SwipeKind,
+    id: string,
+    event: ReactPointerEvent<HTMLDivElement>,
+    currentOpenSide: SwipeSide | null,
+    clearOtherOpen: () => void,
+  ) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('button, textarea, input, select, a')) return;
+
+    clearOtherOpen();
+
+    const existing = currentOpenSide ? actionOffset(currentOpenSide) : 0;
+    setSwipeState({
+      kind,
+      id,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startOffset: existing,
+      offset: existing,
+      locked: false,
     });
 
-    prevRectsRef.current = new Map();
-  }, [activeConversation, threadMessagesByConversation]);
-
-  useLayoutEffect(() => {
-    if (activeConversation) return;
-    const prevRects = prevConversationRectsRef.current;
-    if (prevRects.size === 0) return;
-
-    visibleConversations.forEach((conversation) => {
-      const node = conversationRowRefs.current[conversation.id];
-      const prevRect = prevRects.get(conversation.id);
-      if (!node || !prevRect) return;
-      const nextRect = node.getBoundingClientRect();
-      const dx = prevRect.left - nextRect.left;
-      const dy = prevRect.top - nextRect.top;
-      if (dx || dy) {
-        node.animate(
-          [
-            { transform: `translate(${dx}px, ${dy}px)` },
-            { transform: 'translate(0, 0)' },
-          ],
-          { duration: 240, easing: 'cubic-bezier(0.2, 0, 0, 1)' }
-        );
-      }
-    });
-
-    prevConversationRectsRef.current = new Map();
-  }, [activeConversation, visibleConversations]);
-
-  useEffect(() => {
-    return () => {
-      Object.values(deleteTimersRef.current).forEach((timer) => window.clearTimeout(timer));
-      Object.values(conversationDeleteTimersRef.current).forEach((timer) => window.clearTimeout(timer));
-    };
-  }, []);
-
-  const currentMessages = useMemo(() => {
-    if (!activeConversation) return [];
-    return threadMessagesByConversation[activeConversation.id] ?? activeConversation.messages.map(toThreadMessage);
-  }, [activeConversation, threadMessagesByConversation]);
-
-  const conversationRows = visibleConversations;
-
-  const submit = () => {
-    if (!activeConversation || !draft.trim()) return;
-    onSendMessage(activeConversation.id, draft);
-    setDraft('');
-  };
-
-  const restoreOpenAction = useCallback((messageId: string, side: SwipeSide | null) => {
-    if (!side) {
-      setOpenAction((current) => (current?.messageId === messageId ? null : current));
-      return;
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // ignore browsers that already transferred or do not support capture cleanly
     }
-    setOpenAction({ messageId, side });
-  }, []);
+  }, [setSwipeState]);
 
-  const setConversationMessages = useCallback(
-    (updater: (messages: ThreadMessage[]) => ThreadMessage[]) => {
-      if (!activeConversation) return;
-      setThreadMessagesByConversation((prev) => {
-        const current = prev[activeConversation.id] ?? activeConversation.messages.map(toThreadMessage);
-        const next = updater(current);
-        return { ...prev, [activeConversation.id]: next };
-      });
-    },
-    [activeConversation]
-  );
+  const beginMessageSwipe = useCallback((event: ReactPointerEvent<HTMLDivElement>, messageId: string) => {
+    startSwipe(
+      'message',
+      messageId,
+      event,
+      openAction?.messageId === messageId ? openAction.side : null,
+      () => {
+        if (openAction && openAction.messageId !== messageId) setOpenAction(null);
+      },
+    );
+  }, [openAction, startSwipe]);
 
-  const commitPinToggle = useCallback((messageId: string) => {
+  const beginConversationSwipe = useCallback((event: ReactPointerEvent<HTMLDivElement>, conversationId: string) => {
+    startSwipe(
+      'conversation',
+      conversationId,
+      event,
+      listOpenAction?.conversationId === conversationId ? listOpenAction.side : null,
+      () => {
+        if (listOpenAction && listOpenAction.conversationId !== conversationId) setListOpenAction(null);
+      },
+    );
+  }, [listOpenAction, startSwipe]);
+
+  const updateSwipe = useCallback((clientX: number, clientY: number) => {
+    const currentSwipe = swipeRef.current;
+    if (!currentSwipe) return;
+
+    const dx = clientX - currentSwipe.startX;
+    const dy = clientY - currentSwipe.startY;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+
+    if (!currentSwipe.locked) {
+      if (absX < 6 && absY < 6) return;
+      if (absY > VERTICAL_CANCEL_DISTANCE && absY > absX * VERTICAL_CANCEL_RATIO) {
+        setSwipeState(null);
+        return;
+      }
+      if (absX < SWIPE_LOCK_THRESHOLD || absX < absY + 2) return;
+      setSwipeState({ ...currentSwipe, locked: true });
+    }
+
+    const nextOffset = clamp(currentSwipe.startOffset + dx, -MAX_SWIPE, MAX_SWIPE);
+    setSwipeState({ ...currentSwipe, locked: true, offset: nextOffset });
+  }, [setSwipeState]);
+
+  const finishSwipe = useCallback((clientX: number, clientY: number, cancel = false) => {
+    const currentSwipe = swipeRef.current;
+    if (!currentSwipe) return;
+
+    const dx = clientX - currentSwipe.startX;
+    const dy = clientY - currentSwipe.startY;
+    const isVertical = Math.abs(dy) > VERTICAL_CANCEL_DISTANCE && Math.abs(dy) > Math.abs(dx) * VERTICAL_CANCEL_RATIO;
+    const offset = clamp(currentSwipe.offset, -MAX_SWIPE, MAX_SWIPE);
+    const resolvedSide = cancel || isVertical
+      ? null
+      : Math.abs(offset) >= COMMIT_THRESHOLD
+        ? swipeSideFromOffset(offset)
+        : Math.abs(offset) >= REVEAL_THRESHOLD
+          ? swipeSideFromOffset(offset)
+          : currentSwipe.startOffset > 0
+            ? 'pin'
+            : currentSwipe.startOffset < 0
+              ? 'delete'
+              : null;
+
+    setSwipeState(null);
+
+    if (currentSwipe.kind === 'message') {
+      if (resolvedSide) {
+        setOpenAction({ messageId: currentSwipe.id, side: resolvedSide });
+      } else {
+        setOpenAction((current) => (current?.messageId === currentSwipe.id ? null : current));
+      }
+    } else {
+      if (resolvedSide) {
+        setListOpenAction({ conversationId: currentSwipe.id, side: resolvedSide });
+      } else {
+        setListOpenAction((current) => (current?.conversationId === currentSwipe.id ? null : current));
+      }
+    }
+  }, [setSwipeState]);
+
+  const toggleMessagePin = useCallback((messageId: string) => {
     if (!activeConversation) return;
-    captureRects();
     setSwipeState(null);
     setOpenAction(null);
-    setConversationMessages((messages) =>
-      orderThreadMessages(
-        messages.map((message) =>
-          message.id === messageId
-            ? { ...message, isPinned: !message.isPinned }
-            : message
-        )
-      )
-    );
-  }, [activeConversation, captureRects, setConversationMessages, setSwipeState]);
+    setMessagePinStateByConversation((prev) => {
+      const currentConversationPins = prev[activeConversation.id] ?? {};
+      const nextPinned = !currentConversationPins[messageId];
+      return {
+        ...prev,
+        [activeConversation.id]: {
+          ...currentConversationPins,
+          [messageId]: nextPinned,
+        },
+      };
+    });
+  }, [activeConversation, setSwipeState]);
 
-  const commitDelete = useCallback((messageId: string, direction: SwipeSide) => {
+  const deleteMessage = useCallback((messageId: string) => {
     if (!activeConversation) return;
     setSwipeState(null);
     setOpenAction(null);
 
-    setConversationMessages((messages) =>
-      messages.map((message) =>
-        message.id === messageId
-          ? { ...message, isDeleting: true, deleteDirection: direction }
-          : message
-      )
-    );
+    setThreadMessagesByConversation((prev) => {
+      const current = prev[activeConversation.id] ?? [];
+      return {
+        ...prev,
+        [activeConversation.id]: current.map((message) =>
+          message.id === messageId ? { ...message, isDeleting: true, deleteDirection: 'delete' } : message
+        ),
+      };
+    });
 
     const timerKey = `${activeConversation.id}:${messageId}`;
     const existingTimer = deleteTimersRef.current[timerKey];
@@ -377,33 +415,20 @@ export default function InboxScreen({
 
     deleteTimersRef.current[timerKey] = window.setTimeout(() => {
       deleteTimersRef.current[timerKey] = 0;
-      captureRects();
       const hidden = hiddenIdsRef.current[activeConversation.id] ?? new Set<string>();
       hidden.add(messageId);
       hiddenIdsRef.current[activeConversation.id] = hidden;
       setThreadMessagesByConversation((prev) => {
         const current = prev[activeConversation.id] ?? [];
-        const next = current.filter((message) => message.id !== messageId);
-        return { ...prev, [activeConversation.id]: next };
+        return { ...prev, [activeConversation.id]: current.filter((message) => message.id !== messageId) };
       });
       delete deleteTimersRef.current[timerKey];
     }, 220);
-  }, [activeConversation, captureRects, setConversationMessages, setSwipeState]);
+  }, [activeConversation, setSwipeState]);
 
-  const captureConversationRects = useCallback(() => {
-    const rects = new Map<string, DOMRect>();
-    visibleConversations.forEach((conversation) => {
-      const node = conversationRowRefs.current[conversation.id];
-      if (node) rects.set(conversation.id, node.getBoundingClientRect());
-    });
-    prevConversationRectsRef.current = rects;
-  }, [visibleConversations]);
-
-  const commitConversationPinToggle = useCallback((conversationId: string) => {
-    captureConversationRects();
-    setConversationSwipeState(null);
+  const toggleConversationPin = useCallback((conversationId: string) => {
+    setSwipeState(null);
     setListOpenAction(null);
-    suppressConversationClickRef.current = conversationId;
     setConversationMetaById((prev) => {
       const current = prev[conversationId] ?? {
         pinned: false,
@@ -422,13 +447,11 @@ export default function InboxScreen({
         },
       };
     });
-  }, [captureConversationRects, setConversationSwipeState]);
+  }, [setSwipeState]);
 
-  const commitConversationDelete = useCallback((conversationId: string) => {
-    captureConversationRects();
-    setConversationSwipeState(null);
+  const deleteConversation = useCallback((conversationId: string) => {
+    setSwipeState(null);
     setListOpenAction(null);
-    suppressConversationClickRef.current = conversationId;
     setConversationMetaById((prev) => {
       const current = prev[conversationId] ?? {
         pinned: false,
@@ -446,12 +469,11 @@ export default function InboxScreen({
       };
     });
 
-    const existingTimer = conversationDeleteTimersRef.current[conversationId];
+    const existingTimer = deleteTimersRef.current[conversationId];
     if (existingTimer) window.clearTimeout(existingTimer);
 
-    conversationDeleteTimersRef.current[conversationId] = window.setTimeout(() => {
-      conversationDeleteTimersRef.current[conversationId] = 0;
-      captureConversationRects();
+    deleteTimersRef.current[conversationId] = window.setTimeout(() => {
+      deleteTimersRef.current[conversationId] = 0;
       setConversationMetaById((prev) => {
         const current = prev[conversationId];
         if (!current) return prev;
@@ -465,257 +487,54 @@ export default function InboxScreen({
           },
         };
       });
-      if (activeConversationId === conversationId) {
+      if (activeConversationIdRef.current === conversationId) {
         onBackToList();
       }
-      delete conversationDeleteTimersRef.current[conversationId];
+      delete deleteTimersRef.current[conversationId];
     }, 220);
-  }, [activeConversationId, captureConversationRects, onBackToList, setConversationSwipeState]);
+  }, [onBackToList, setSwipeState]);
 
-  const handleConversationPointerDown = useCallback((
-    event: ReactPointerEvent<HTMLDivElement>,
-    conversationId: string,
-  ) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-
-    if (conversationOpenAction && conversationOpenAction.conversationId !== conversationId) {
-      setListOpenAction(null);
-    }
-
-    const existing = conversationOpenAction?.conversationId === conversationId ? actionOffset(conversationOpenAction.side) : 0;
-    setConversationSwipeState({
-      conversationId,
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      startOffset: existing,
-      offset: existing,
-      locked: false,
-    });
-
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }, [conversationOpenAction, setConversationSwipeState]);
-
-  const handleConversationPointerMove = useCallback((
-    event: ReactPointerEvent<HTMLDivElement>,
-    conversationId: string,
-  ) => {
-    const currentSwipe = conversationSwipeRef.current;
-    if (!currentSwipe || currentSwipe.conversationId !== conversationId) return;
-
-    const dx = event.clientX - currentSwipe.startX;
-    const dy = event.clientY - currentSwipe.startY;
-    const absX = Math.abs(dx);
-    const absY = Math.abs(dy);
-
-    if (!currentSwipe.locked) {
-      if (absX < 6 && absY < 6) return;
-      if (absY > 18 && absY > absX * 1.2) {
-        setConversationSwipeState(null);
-        return;
-      }
-      if (absX < 10 || absX < absY + 4) return;
-      setConversationSwipeState({ ...currentSwipe, locked: true });
-    }
-
-    event.preventDefault();
-    const nextOffset = clamp(currentSwipe.startOffset + dx, -MAX_SWIPE, MAX_SWIPE);
-    setConversationSwipeState({ ...currentSwipe, locked: true, offset: nextOffset });
-    const side = Math.abs(nextOffset) >= REVEAL_THRESHOLD ? swipeSideFromOffset(nextOffset) : null;
-    if (side) {
-      setListOpenAction({ conversationId, side });
-      suppressConversationClickRef.current = conversationId;
-    } else if (Math.abs(nextOffset) < REVEAL_THRESHOLD && conversationOpenAction?.conversationId !== conversationId) {
-      setListOpenAction(null);
-    }
-  }, [conversationOpenAction, setConversationSwipeState]);
-
-  const handleConversationPointerUp = useCallback((
-    event: ReactPointerEvent<HTMLDivElement>,
-    conversationId: string,
-  ) => {
-    const currentSwipe = conversationSwipeRef.current;
-    if (!currentSwipe || currentSwipe.conversationId !== conversationId) return;
-
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {
-      // ignore capture release issues on browsers that already released it
-    }
-
-    const offset = clamp(currentSwipe.offset, -MAX_SWIPE, MAX_SWIPE);
-    const resolvedSide = Math.abs(offset) >= COMMIT_THRESHOLD
-      ? swipeSideFromOffset(offset)
-      : currentSwipe.startOffset > 0
-        ? 'pin'
-        : currentSwipe.startOffset < 0
-          ? 'delete'
-          : null;
-
-    setConversationSwipeState(null);
-    if (resolvedSide) {
-      setListOpenAction({ conversationId, side: resolvedSide });
-      suppressConversationClickRef.current = conversationId;
-    } else {
-      setListOpenAction((current) => (current?.conversationId === conversationId ? null : current));
-    }
-  }, [setConversationSwipeState]);
-
-  const handleConversationPointerCancel = useCallback((conversationId: string) => {
-    const currentSwipe = conversationSwipeRef.current;
-    if (!currentSwipe || currentSwipe.conversationId !== conversationId) return;
-    setConversationSwipeState(null);
-    setListOpenAction((current) => {
-      const resolvedSide = Math.abs(currentSwipe.offset) >= COMMIT_THRESHOLD
-        ? swipeSideFromOffset(currentSwipe.offset)
-        : currentSwipe.startOffset > 0
-          ? 'pin'
-          : currentSwipe.startOffset < 0
-            ? 'delete'
-            : null;
-      return resolvedSide ? { conversationId, side: resolvedSide } : (current?.conversationId === conversationId ? null : current);
-    });
-  }, [setConversationSwipeState]);
-
-  const handleThreadPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
-    if (event.target === event.currentTarget) {
-      setOpenAction(null);
-      setSwipeState(null);
-    }
-  }, [setSwipeState]);
-
-  const handleRowPointerDown = useCallback((
-    event: ReactPointerEvent<HTMLDivElement>,
-    messageId: string,
-  ) => {
-    if (!activeConversation) return;
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-
-    if (openAction && openAction.messageId !== messageId) {
-      setOpenAction(null);
-    }
-
-    const existing = openAction?.messageId === messageId ? actionOffset(openAction.side) : 0;
-    setSwipeState({
-      messageId,
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      startOffset: existing,
-      offset: existing,
-      locked: false,
-    });
-
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }, [activeConversation, openAction, setSwipeState]);
-
-  const handleRowPointerMove = useCallback((
-    event: ReactPointerEvent<HTMLDivElement>,
-    messageId: string,
-  ) => {
-    const currentSwipe = swipeRef.current;
-    if (!currentSwipe || currentSwipe.messageId !== messageId) return;
-
-    const dx = event.clientX - currentSwipe.startX;
-    const dy = event.clientY - currentSwipe.startY;
-    const absX = Math.abs(dx);
-    const absY = Math.abs(dy);
-
-    if (!currentSwipe.locked) {
-      if (absX < 6 && absY < 6) return;
-      if (absY > 18 && absY > absX * 1.2) {
-        setSwipeState(null);
-        return;
-      }
-      if (absX < 10 || absX < absY + 4) return;
-      setSwipeState({ ...currentSwipe, locked: true });
-    }
-
-    event.preventDefault();
-    const nextOffset = clamp(currentSwipe.startOffset + dx, -MAX_SWIPE, MAX_SWIPE);
-    setSwipeState({ ...currentSwipe, locked: true, offset: nextOffset });
-    const side = Math.abs(nextOffset) >= REVEAL_THRESHOLD ? swipeSideFromOffset(nextOffset) : null;
-    if (side) {
-      setOpenAction({ messageId, side });
-    } else if (Math.abs(nextOffset) < REVEAL_THRESHOLD && openAction?.messageId !== messageId) {
-      setOpenAction(null);
-    }
-  }, [openAction, setSwipeState]);
-
-  const handleRowPointerUp = useCallback((
-    event: ReactPointerEvent<HTMLDivElement>,
-    messageId: string,
-  ) => {
-    const currentSwipe = swipeRef.current;
-    if (!currentSwipe || currentSwipe.messageId !== messageId) return;
-
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {
-      // ignore capture release issues on browsers that already released it
-    }
-
-    const offset = clamp(currentSwipe.offset, -MAX_SWIPE, MAX_SWIPE);
-    const resolvedSide = Math.abs(offset) >= COMMIT_THRESHOLD
-      ? swipeSideFromOffset(offset)
-      : currentSwipe.startOffset > 0
-        ? 'pin'
-        : currentSwipe.startOffset < 0
-          ? 'delete'
-          : null;
-
-    setSwipeState(null);
-    restoreOpenAction(messageId, resolvedSide);
-
-  }, [restoreOpenAction, setSwipeState]);
-
-  const handleRowPointerCancel = useCallback((messageId: string) => {
-    const currentSwipe = swipeRef.current;
-    if (!currentSwipe || currentSwipe.messageId !== messageId) return;
-    setSwipeState(null);
-    restoreOpenAction(messageId, Math.abs(currentSwipe.offset) >= COMMIT_THRESHOLD ? swipeSideFromOffset(currentSwipe.offset) : (currentSwipe.startOffset > 0 ? 'pin' : currentSwipe.startOffset < 0 ? 'delete' : null));
-  }, [restoreOpenAction, setSwipeState]);
-
-  const handleActionClick = useCallback((messageId: string, action: SwipeSide) => {
-    if (action === 'pin') {
-      commitPinToggle(messageId);
-    } else {
-      commitDelete(messageId, 'delete');
-    }
-  }, [commitDelete, commitPinToggle]);
-
-  const getMessageOffset = useCallback((message: ThreadMessage) => {
-    if (swipe?.messageId === message.id) {
-      return clamp(swipe.offset, -MAX_SWIPE, MAX_SWIPE);
-    }
+  const currentMessageOffset = useCallback((message: ThreadMessage) => {
+    if (swipe?.kind === 'message' && swipe.id === message.id) return clamp(swipe.offset, -MAX_SWIPE, MAX_SWIPE);
     if (openAction?.messageId === message.id) return actionOffset(openAction.side);
     return 0;
   }, [openAction, swipe]);
 
-  const getConversationOffset = useCallback((conversation: Conversation) => {
-    if (conversationSwipe?.conversationId === conversation.id) {
-      return clamp(conversationSwipe.offset, -MAX_SWIPE, MAX_SWIPE);
-    }
-    if (conversationOpenAction?.conversationId === conversation.id) return actionOffset(conversationOpenAction.side);
+  const currentConversationOffset = useCallback((conversation: Conversation) => {
+    if (swipe?.kind === 'conversation' && swipe.id === conversation.id) return clamp(swipe.offset, -MAX_SWIPE, MAX_SWIPE);
+    if (listOpenAction?.conversationId === conversation.id) return actionOffset(listOpenAction.side);
     return 0;
-  }, [conversationOpenAction, conversationSwipe]);
+  }, [listOpenAction, swipe]);
+
+  const currentMessageSide = useCallback((message: ThreadMessage) => {
+    if (swipe?.kind === 'message' && swipe.id === message.id) {
+      const offset = currentMessageOffset(message);
+      return offset > 0 ? 'pin' : offset < 0 ? 'delete' : null;
+    }
+    if (openAction?.messageId === message.id) return openAction.side;
+    return null;
+  }, [currentMessageOffset, openAction, swipe]);
+
+  const currentConversationSide = useCallback((conversation: Conversation) => {
+    if (swipe?.kind === 'conversation' && swipe.id === conversation.id) {
+      const offset = currentConversationOffset(conversation);
+      return offset > 0 ? 'pin' : offset < 0 ? 'delete' : null;
+    }
+    if (listOpenAction?.conversationId === conversation.id) return listOpenAction.side;
+    return null;
+  }, [currentConversationOffset, listOpenAction, swipe]);
 
   const handleConversationCardClick = useCallback((conversationId: string) => {
-    if (suppressConversationClickRef.current === conversationId) {
-      suppressConversationClickRef.current = null;
-      return;
-    }
-    if (conversationSwipe || conversationOpenAction) {
-      setConversationSwipeState(null);
+    if (swipeRef.current?.locked) {
+      setSwipeState(null);
       setListOpenAction(null);
       return;
     }
+    if (listOpenAction && listOpenAction.conversationId !== conversationId) {
+      setListOpenAction(null);
+    }
     onOpenConversation(conversationId);
-  }, [conversationOpenAction, conversationSwipe, onOpenConversation, setConversationSwipeState]);
-
-  const profilePeekConversation = profilePeekConversationId
-    ? conversations.find((conversation) => conversation.id === profilePeekConversationId) ?? null
-    : null;
+  }, [listOpenAction, onOpenConversation, setSwipeState]);
 
   const profilePeekModal = (
     <ProfilePeekModal
@@ -766,44 +585,77 @@ export default function InboxScreen({
           </div>
         </div>
 
-        <div className="inbox-chat-thread" onPointerDown={handleThreadPointerDown}>
-          {currentMessages.map((message) => {
-            const offset = getMessageOffset(message);
-            const revealSide =
-              swipe?.messageId === message.id
-                ? (offset > 0 ? 'pin' : offset < 0 ? 'delete' : null)
-                : openAction?.messageId === message.id
-                  ? openAction.side
-                  : null;
+        <div className="inbox-chat-thread" onPointerDown={(event) => {
+          if (event.target === event.currentTarget) {
+            setOpenAction(null);
+            setSwipeState(null);
+          }
+        }}>
+          {activeConversationMessages.map((message) => {
+            const offset = currentMessageOffset(message);
+            const revealSide = currentMessageSide(message);
+            const isPinned = Boolean(messagePinStateByConversation[activeConversation.id]?.[message.id] ?? message.isPinned);
 
             return (
               <div
                 key={message.id}
                 className={`inbox-message-swipe-row ${message.isDeleting ? `is-deleting ${message.deleteDirection ?? ''}` : ''}`}
-                ref={(node) => {
-                  rowRefs.current[message.id] = node;
+                onPointerDown={(event) => beginMessageSwipe(event, message.id)}
+                onPointerMove={(event) => {
+                  if (swipe?.kind === 'message' && swipe.id === message.id) {
+                    updateSwipe(event.clientX, event.clientY);
+                  }
                 }}
-                onPointerDown={(event) => handleRowPointerDown(event, message.id)}
-                onPointerMove={(event) => handleRowPointerMove(event, message.id)}
-                onPointerUp={(event) => handleRowPointerUp(event, message.id)}
-                onPointerCancel={() => handleRowPointerCancel(message.id)}
+                onPointerUp={(event) => {
+                  if (swipe?.kind === 'message' && swipe.id === message.id) {
+                    const currentSwipe = swipeRef.current;
+                    const isTapLike = Boolean(
+                      currentSwipe &&
+                      currentSwipe.kind === 'message' &&
+                      currentSwipe.id === message.id &&
+                      !currentSwipe.locked &&
+                      Math.abs(event.clientX - currentSwipe.startX) < 8 &&
+                      Math.abs(event.clientY - currentSwipe.startY) < 8
+                    );
+                    try {
+                      event.currentTarget.releasePointerCapture(event.pointerId);
+                    } catch {
+                      // ignore
+                    }
+                    finishSwipe(event.clientX, event.clientY, false);
+                    if (isTapLike && activeConversation) {
+                      setProfilePeekConversationId(activeConversation.id);
+                    }
+                  }
+                }}
+                onPointerCancel={(event) => {
+                  if (swipe?.kind === 'message' && swipe.id === message.id) {
+                    try {
+                      event.currentTarget.releasePointerCapture(event.pointerId);
+                    } catch {
+                      // ignore
+                    }
+                    finishSwipe(event.clientX, event.clientY, true);
+                  }
+                }}
               >
-                <div className={`inbox-message-actions inbox-message-actions-left ${revealSide === 'pin' ? 'show' : ''}`}>
+                <div className={`inbox-message-actions inbox-message-actions-left inbox-conversation-actions-left ${revealSide === 'pin' ? 'show' : ''}`}>
                   <button
                     type="button"
-                    className="inbox-message-action inbox-pin-action"
+                    className={`inbox-message-action inbox-pin-action ${isPinned ? 'is-unpin' : 'is-pin'}`}
+                    aria-label={isPinned ? 'Unpin message' : 'Pin message'}
                     onPointerDown={(event) => event.stopPropagation()}
                     onClick={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
-                      handleActionClick(message.id, 'pin');
+                      toggleMessagePin(message.id);
                     }}
                   >
-                    <PinIcon />
-                    <span>{message.isPinned ? 'Unpin' : 'Pin'}</span>
+                    <span className="inbox-action-icon">{isPinned ? <UnpinIcon /> : <PinIcon />}</span>
+                    <span className="inbox-action-text">{isPinned ? 'Unpin' : 'Pin'}</span>
                   </button>
                 </div>
-                <div className={`inbox-message-actions inbox-message-actions-right ${revealSide === 'delete' ? 'show' : ''}`}>
+                <div className={`inbox-message-actions inbox-message-actions-right inbox-conversation-actions-right ${revealSide === 'delete' ? 'show' : ''}`}>
                   <button
                     type="button"
                     className="inbox-message-action inbox-delete-action"
@@ -811,7 +663,7 @@ export default function InboxScreen({
                     onClick={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
-                      handleActionClick(message.id, 'delete');
+                      deleteMessage(message.id);
                     }}
                   >
                     <DeleteIcon />
@@ -819,12 +671,12 @@ export default function InboxScreen({
                   </button>
                 </div>
                 <div
-                  className={`inbox-bubble-row ${message.author === 'self' ? 'self' : 'other'} ${message.isPinned ? 'is-pinned' : ''}`}
+                  className={`inbox-bubble-row ${message.author === 'self' ? 'self' : 'other'} ${isPinned ? 'is-pinned' : ''}`}
                   style={{ transform: `translate3d(${offset}px, 0, 0)` } as CSSProperties}
                 >
                   <div className={`inbox-bubble ${message.author === 'self' ? 'self' : 'other'}`}>
                     <div className="inbox-bubble-top">
-                      {message.isPinned && <span className="inbox-message-pin-badge">Pinned</span>}
+                      {isPinned && <span className="inbox-message-pin-badge">Pinned</span>}
                     </div>
                     <div>{message.text}</div>
                     <div className="inbox-bubble-time">{formatMessageTime(message.createdAt)}</div>
@@ -843,7 +695,11 @@ export default function InboxScreen({
             placeholder={`Message ${activeConversation.participantName.split(' ')[0]}...`}
             rows={1}
           />
-          <button className="inbox-send-btn" type="button" onClick={submit}>
+          <button className="inbox-send-btn" type="button" onClick={() => {
+            if (!activeConversation || !draft.trim()) return;
+            onSendMessage(activeConversation.id, draft);
+            setDraft('');
+          }}>
             Send
           </button>
         </div>
@@ -862,48 +718,79 @@ export default function InboxScreen({
         <span className="section-title">Chat</span>
       </div>
 
-      <div className="scroll-area" onPointerDown={(event) => {
-        if (event.target === event.currentTarget) {
-          setListOpenAction(null);
-          setConversationSwipeState(null);
-        }
-      }}>
+      <div
+        className="scroll-area"
+        onPointerDown={(event) => {
+          if (event.target === event.currentTarget) {
+            setListOpenAction(null);
+            setSwipeState(null);
+          }
+        }}
+      >
         <div className="inbox-list">
           {conversationRows.map((conversation) => {
             const lastMessage = conversation.messages[conversation.messages.length - 1];
-            const offset = getConversationOffset(conversation);
-            const revealSide =
-              conversationSwipe?.conversationId === conversation.id
-                ? (offset > 0 ? 'pin' : offset < 0 ? 'delete' : null)
-                : conversationOpenAction?.conversationId === conversation.id
-                  ? conversationOpenAction.side
-                  : null;
+            const offset = currentConversationOffset(conversation);
+            const revealSide = currentConversationSide(conversation);
+            const isPinned = Boolean(conversationMetaById[conversation.id]?.pinned);
 
             return (
               <div
                 key={conversation.id}
                 className="inbox-item-swipe-row"
-                ref={(node) => {
-                  conversationRowRefs.current[conversation.id] = node;
+                onPointerDown={(event) => beginConversationSwipe(event, conversation.id)}
+                onPointerMove={(event) => {
+                  if (swipe?.kind === 'conversation' && swipe.id === conversation.id) {
+                    updateSwipe(event.clientX, event.clientY);
+                  }
                 }}
-                onPointerDown={(event) => handleConversationPointerDown(event, conversation.id)}
-                onPointerMove={(event) => handleConversationPointerMove(event, conversation.id)}
-                onPointerUp={(event) => handleConversationPointerUp(event, conversation.id)}
-                onPointerCancel={() => handleConversationPointerCancel(conversation.id)}
+                onPointerUp={(event) => {
+                  if (swipe?.kind === 'conversation' && swipe.id === conversation.id) {
+                    const currentSwipe = swipeRef.current;
+                    const isTapLike = Boolean(
+                      currentSwipe &&
+                      currentSwipe.kind === 'conversation' &&
+                      currentSwipe.id === conversation.id &&
+                      !currentSwipe.locked &&
+                      Math.abs(event.clientX - currentSwipe.startX) < 8 &&
+                      Math.abs(event.clientY - currentSwipe.startY) < 8
+                    );
+                    try {
+                      event.currentTarget.releasePointerCapture(event.pointerId);
+                    } catch {
+                      // ignore
+                    }
+                    finishSwipe(event.clientX, event.clientY, false);
+                    if (isTapLike) {
+                      handleConversationCardClick(conversation.id);
+                    }
+                  }
+                }}
+                onPointerCancel={(event) => {
+                  if (swipe?.kind === 'conversation' && swipe.id === conversation.id) {
+                    try {
+                      event.currentTarget.releasePointerCapture(event.pointerId);
+                    } catch {
+                      // ignore
+                    }
+                    finishSwipe(event.clientX, event.clientY, true);
+                  }
+                }}
               >
                 <div className={`inbox-message-actions inbox-message-actions-left inbox-conversation-actions-left ${revealSide === 'pin' ? 'show' : ''}`}>
                   <button
                     type="button"
-                    className="inbox-message-action inbox-pin-action"
+                    className={`inbox-message-action inbox-pin-action ${isPinned ? 'is-unpin' : 'is-pin'}`}
+                    aria-label={isPinned ? 'Unpin conversation' : 'Pin conversation'}
                     onPointerDown={(event) => event.stopPropagation()}
                     onClick={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
-                      commitConversationPinToggle(conversation.id);
+                      toggleConversationPin(conversation.id);
                     }}
                   >
-                    <PinIcon />
-                    <span>{conversation.pinned ? 'Unpin' : 'Pin'}</span>
+                    <span className="inbox-action-icon">{isPinned ? <UnpinIcon /> : <PinIcon />}</span>
+                    <span className="inbox-action-text">{isPinned ? 'Unpin' : 'Pin'}</span>
                   </button>
                 </div>
                 <div className={`inbox-message-actions inbox-message-actions-right inbox-conversation-actions-right ${revealSide === 'delete' ? 'show' : ''}`}>
@@ -914,7 +801,7 @@ export default function InboxScreen({
                     onClick={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
-                      commitConversationDelete(conversation.id);
+                      deleteConversation(conversation.id);
                     }}
                   >
                     <DeleteIcon />
@@ -926,7 +813,6 @@ export default function InboxScreen({
                   role="button"
                   tabIndex={0}
                   style={{ transform: `translate3d(${offset}px, 0, 0)` } as CSSProperties}
-                  onClick={() => handleConversationCardClick(conversation.id)}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault();
@@ -960,6 +846,7 @@ export default function InboxScreen({
           })}
         </div>
       </div>
+
       {profilePeekModal}
     </>
   );

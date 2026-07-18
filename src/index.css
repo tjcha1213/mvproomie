@@ -1754,7 +1754,42 @@ img {
 }
 
 .inbox-pin-action {
+  width: 92px;
   background: linear-gradient(135deg, #fbbf24, #d97706);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 14px 30px rgba(180, 83, 9, 0.24);
+}
+
+.inbox-pin-action.is-unpin {
+  background: linear-gradient(135deg, #f3f4f6, #d1d5db);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), 0 14px 30px rgba(107, 114, 128, 0.2);
+  color: #374151;
+}
+
+.inbox-pin-action.is-pin {
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 14px 30px rgba(180, 83, 9, 0.24);
+}
+
+.inbox-pin-action.is-unpin svg {
+  transform: rotate(-14deg);
+  color: #4b5563;
+}
+
+.inbox-action-icon,
+.inbox-action-text {
+  position: relative;
+  z-index: 1;
+}
+
+.inbox-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inbox-action-text {
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 .inbox-delete-action {
