@@ -6,6 +6,10 @@ export interface ChatMessage {
   author: 'self' | 'other';
   text: string;
   timestamp: number;
+  replyTo?: {
+    name: string;
+    text: string;
+  };
 }
 
 export interface Conversation {
@@ -43,8 +47,14 @@ const STARTER_EXCHANGES = [
 const PARTICIPANT_PHOTOS = Array.from({ length: 5 }, (_, index) => avatarAt(index + 10));
 
 
-function message(id: string, author: ChatMessage['author'], text: string, timestamp: number): ChatMessage {
-  return { id, author, text, timestamp };
+function message(
+  id: string,
+  author: ChatMessage['author'],
+  text: string,
+  timestamp: number,
+  replyTo?: ChatMessage['replyTo']
+): ChatMessage {
+  return { id, author, text, timestamp, replyTo };
 }
 
 function latestMessageTimestamp(conversation: Conversation): number {
@@ -173,7 +183,11 @@ export function openConversationWithPrompt(
 export function sendConversationReply(
   conversations: Conversation[],
   conversationId: string,
-  text: string
+  text: string,
+  replyTo?: {
+    name: string;
+    text: string;
+  }
 ): Conversation[] {
   const trimmed = text.trim();
   if (!trimmed) return conversations;
@@ -186,7 +200,7 @@ export function sendConversationReply(
       unreadCount: 0,
       messages: [
         ...conversation.messages,
-        message(`${conversationId}-self-${now}`, 'self', trimmed, now),
+        message(`${conversationId}-self-${now}`, 'self', trimmed, now, replyTo),
         message(
           `${conversationId}-other-${now}`,
           'other',

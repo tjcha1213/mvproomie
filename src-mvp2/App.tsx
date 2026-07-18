@@ -92,8 +92,15 @@ function App() {
     setActiveConversationId(conversationId);
   }, [listings]);
 
-  const sendReply = useCallback((conversationId: string, text: string) => {
-    setConversations((prev) => sendConversationReply(prev, conversationId, text));
+  const sendReply = useCallback((
+    conversationId: string,
+    text: string,
+    replyTo?: {
+      name: string;
+      text: string;
+    }
+  ) => {
+    setConversations((prev) => sendConversationReply(prev, conversationId, text, replyTo));
   }, []);
 
   const toggleSave = useCallback((id: number) => {
