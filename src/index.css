@@ -1734,10 +1734,7 @@ img {
   min-height: auto;
   overflow: visible;
   padding: 16px;
-  padding-bottom: 24px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--primary) 4%, #ffffff), #ffffff 30%),
-    var(--bg);
+  background: var(--surface);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1747,6 +1744,7 @@ img {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  background: var(--surface);
 }
 
 .inbox-chat-layout {
@@ -1754,6 +1752,7 @@ img {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  background: var(--surface);
 }
 
 .inbox-chat-screen {
@@ -1762,6 +1761,7 @@ img {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  background: var(--surface);
 }
 
 .inbox-chat-body {
@@ -1769,6 +1769,7 @@ img {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  background: var(--surface);
 }
 
 .inbox-chat-footer {
