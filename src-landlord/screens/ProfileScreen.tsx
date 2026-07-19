@@ -29,7 +29,6 @@ const MENU_ITEMS = [
 
 export default function ProfileScreen({ units, onOpenListings, onOpenTenants, onOpenTheme, onOpenReviews, notifications, onOpenNotification, onShowToast }: Props) {
   const occupied = units.filter(u => u.status === 'Occupied').length;
-  const [mode, setMode] = useState<'Tenant Mode' | 'Landlord Mode'>('Landlord Mode');
   const [chooser, setChooser] = useState<'tenant' | 'landlord' | null>(null);
 
   const navigateTo = (path: string) => {
@@ -37,7 +36,6 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
   };
 
   const openChooser = (nextMode: 'Tenant Mode' | 'Landlord Mode') => {
-    setMode(nextMode);
     setChooser(nextMode === 'Tenant Mode' ? 'tenant' : 'landlord');
   };
 
@@ -99,10 +97,10 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
             <div className="profile-mode-title">Account mode</div>
           </div>
           <div className="profile-mode-toggle" role="tablist" aria-label="Account mode">
-            <button type="button" className={`profile-mode-btn ${mode === 'Tenant Mode' ? 'active' : ''}`} onClick={() => openChooser('Tenant Mode')}>
+            <button type="button" className="profile-mode-btn" onClick={() => openChooser('Tenant Mode')}>
               Tenant Mode
             </button>
-            <button type="button" className={`profile-mode-btn ${mode === 'Landlord Mode' ? 'active' : ''}`} onClick={() => openChooser('Landlord Mode')}>
+            <button type="button" className="profile-mode-btn active" onClick={() => openChooser('Landlord Mode')}>
               Landlord Mode
             </button>
           </div>

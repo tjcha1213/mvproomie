@@ -18,7 +18,6 @@ interface Props {
 }
 
 export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
-  const [mode, setMode] = useState<'Tenant Mode' | 'Landlord Mode'>('Tenant Mode');
   const [chooser, setChooser] = useState<'tenant' | 'landlord' | null>(null);
 
   const navigateTo = (path: string) => {
@@ -26,7 +25,6 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
   };
 
   const openChooser = (nextMode: 'Tenant Mode' | 'Landlord Mode') => {
-    setMode(nextMode);
     setChooser(nextMode === 'Tenant Mode' ? 'tenant' : 'landlord');
   };
 
@@ -65,10 +63,10 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
             <div className="profile-mode-title">Account mode</div>
           </div>
           <div className="profile-mode-toggle" role="tablist" aria-label="Account mode">
-            <button type="button" className={`profile-mode-btn ${mode === 'Tenant Mode' ? 'active' : ''}`} onClick={() => openChooser('Tenant Mode')}>
+            <button type="button" className="profile-mode-btn active" onClick={() => openChooser('Tenant Mode')}>
               Tenant Mode
             </button>
-            <button type="button" className={`profile-mode-btn ${mode === 'Landlord Mode' ? 'active' : ''}`} onClick={() => openChooser('Landlord Mode')}>
+            <button type="button" className="profile-mode-btn" onClick={() => openChooser('Landlord Mode')}>
               Landlord Mode
             </button>
           </div>
