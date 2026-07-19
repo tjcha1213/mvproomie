@@ -701,7 +701,6 @@ export default function InboxScreen({
   }, [clearMessageLongPress]);
 
   const stopActionEvent = useCallback((event: ReactPointerEvent<HTMLElement> | ReactMouseEvent<HTMLElement>) => {
-    event.preventDefault();
     event.stopPropagation();
   }, []);
 
