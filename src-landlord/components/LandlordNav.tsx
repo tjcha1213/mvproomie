@@ -40,7 +40,7 @@ export default function LandlordNav({ activeTab, onTabChange, inquiryBadge, onAd
       </button>
 
       <button className={`bottom-nav-item ${activeTab === 'tenants' ? 'active' : ''}`} onClick={() => onTabChange('tenants')}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+        <svg viewBox="0 0 24 24" fill={activeTab === 'tenants' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
           <path d="M8 11a4 4 0 1 0-0.001-8.001A4 4 0 0 0 8 11Z"/>
           <path d="M16.5 12.5a3.5 3.5 0 1 0-.001-7.001A3.5 3.5 0 0 0 16.5 12.5Z"/>
           <path d="M3.5 20v-1.1a5.9 5.9 0 0 1 9.2-4.9"/>
@@ -60,7 +60,11 @@ export default function LandlordNav({ activeTab, onTabChange, inquiryBadge, onAd
 
       <button className={`bottom-nav-item ${activeTab === 'inquiries' ? 'active' : ''}`} onClick={() => onTabChange('inquiries')} style={{ position: 'relative' }}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          <path
+            d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+            fill={activeTab === 'inquiries' ? 'currentColor' : 'none'}
+          />
+          <path d="M8 9h8M8 13h6" stroke={activeTab === 'inquiries' ? '#fff' : 'currentColor'} strokeWidth="1.8" />
         </svg>
         {inquiryBadge > 0 && (
           <span style={{
