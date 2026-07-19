@@ -218,6 +218,7 @@ export default function InboxScreen({
   const inboxScrollerRef = useRef<HTMLDivElement | null>(null);
   const inboxScrollAnchorRef = useRef<HTMLDivElement | null>(null);
   const activeConversationIdRef = useRef<string | null>(activeConversationId);
+  const suppressProfilePeekRef = useRef<{ conversationId: string; until: number } | null>(null);
   const longPressRef = useRef<{ conversationId: string; timer: number | null; startX: number; startY: number; triggered: boolean } | null>(null);
   const messageLongPressRef = useRef<{
     messageId: string;
@@ -340,6 +341,24 @@ export default function InboxScreen({
         snapToBottom();
       });
     });
+  }, []);
+
+  const suppressConversationProfilePeek = useCallback((conversationId: string) => {
+    suppressProfilePeekRef.current = {
+      conversationId,
+      until: Date.now() + 650,
+    };
+  }, []);
+
+  const shouldSuppressConversationProfilePeek = useCallback((conversationId: string) => {
+    const current = suppressProfilePeekRef.current;
+    if (!current) return false;
+    if (current.conversationId !== conversationId) return false;
+    if (Date.now() > current.until) {
+      suppressProfilePeekRef.current = null;
+      return false;
+    }
+    return true;
   }, []);
 
   useLayoutEffect(() => {
@@ -1125,6 +1144,7 @@ export default function InboxScreen({
                     aria-label={isPinned ? 'Unpin conversation' : 'Pin conversation'}
                     onPointerDown={(event) => {
                       stopActionEvent(event);
+                      suppressConversationProfilePeek(conversation.id);
                       toggleConversationPin(conversation.id);
                     }}
                     onClick={(event) => {
@@ -1143,6 +1163,7 @@ export default function InboxScreen({
                     className="inbox-message-action inbox-delete-action"
                     onPointerDown={(event) => {
                       stopActionEvent(event);
+                      suppressConversationProfilePeek(conversation.id);
                       deleteConversation(conversation.id);
                     }}
                     onClick={(event) => {
@@ -1172,6 +1193,7 @@ export default function InboxScreen({
                     type="button"
                     onClick={(event) => {
                       event.stopPropagation();
+                      if (shouldSuppressConversationProfilePeek(conversation.id)) return;
                       setProfilePeekConversationId(conversation.id);
                     }}
                     aria-label={`View ${conversation.participantName} profile`}
