@@ -188,7 +188,7 @@ img {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  padding-bottom: 8px;
+  padding: 4px 6px 6px;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
   position: relative;
   z-index: 1000;
@@ -199,10 +199,12 @@ img {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px 0;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 0 6px;
   color: var(--text-light);
   font-size: 10px;
+  line-height: 1;
   font-weight: 500;
   transition: color 0.2s;
   cursor: pointer;
@@ -212,10 +214,34 @@ img {
   color: var(--primary);
 }
 
+.bottom-nav-home-logo {
+  display: block;
+  width: 38px;
+  height: 10px;
+  margin-bottom: 2px;
+  background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.bottom-nav-home-logo.active {
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+}
+
 .bottom-nav-item svg {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
   transition: transform 0.2s;
+}
+
+.bottom-nav-item:active .bottom-nav-home-logo {
+  transform: scale(0.9);
 }
 
 .bottom-nav-item:active svg {

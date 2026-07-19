@@ -11,10 +11,20 @@ export default function LandlordNav({ activeTab, onTabChange, inquiryBadge, onAd
   return (
     <nav className="bottom-nav">
       <button className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => onTabChange('dashboard')}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M3 11.5 12 4l9 7.5"/>
-          <path d="M5.5 10.5V20h13V10.5"/>
-          <path d="M10 20v-5h4v5"/>
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <path
+            d="M3.5 8.8 12 2.7l8.5 6.1V19H3.5z"
+            fill={activeTab === 'dashboard' ? 'currentColor' : 'none'}
+            stroke="currentColor"
+            strokeWidth="2"
+          />
+          <circle
+            cx="12"
+            cy="9.8"
+            r="1.2"
+            fill={activeTab === 'dashboard' ? '#fff' : 'currentColor'}
+            stroke="none"
+          />
         </svg>
         Home
       </button>

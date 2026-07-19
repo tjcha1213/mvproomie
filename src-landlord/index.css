@@ -190,7 +190,7 @@ img {
   position: relative;
   z-index: 30;
   /* Clear the home indicator on full-screen phones (0 elsewhere). */
-  padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  padding: 4px 6px calc(6px + env(safe-area-inset-bottom));
   box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
 }
 
@@ -199,10 +199,12 @@ img {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px 0;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 0 6px;
   color: var(--text-light);
   font-size: 10px;
+  line-height: 1;
   font-weight: 500;
   transition: color 0.2s;
   cursor: pointer;
@@ -213,8 +215,9 @@ img {
 }
 
 .bottom-nav-item svg {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
   transition: transform 0.2s;
 }
 

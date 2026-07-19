@@ -10,9 +10,20 @@ export default function BottomNav({ activeTab, onTabChange, savedCount }: Props)
   return (
     <nav className="bottom-nav">
       <button className={`bottom-nav-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => onTabChange('home')}>
-        <svg viewBox="0 0 24 24" fill={activeTab === 'home' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <path
+            d="M3.5 8.8 12 2.7l8.5 6.1V19H3.5z"
+            fill={activeTab === 'home' ? 'currentColor' : 'none'}
+            stroke="currentColor"
+            strokeWidth="2"
+          />
+          <circle
+            cx="12"
+            cy="9.8"
+            r="1.2"
+            fill={activeTab === 'home' ? '#fff' : 'currentColor'}
+            stroke="none"
+          />
         </svg>
         Home
       </button>
@@ -42,9 +53,17 @@ export default function BottomNav({ activeTab, onTabChange, savedCount }: Props)
       </button>
 
       <button className={`bottom-nav-item ${activeTab === 'inbox' ? 'active' : ''}`} onClick={() => onTabChange('inbox')}>
-        <svg viewBox="0 0 24 24" fill={activeTab === 'inbox' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
-          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-          <polyline points="22,6 12,13 2,6"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path
+            d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+            fill={activeTab === 'inbox' ? 'currentColor' : 'none'}
+            stroke="currentColor"
+          />
+          <polyline
+            points="22,6 12,13 2,6"
+            stroke={activeTab === 'inbox' ? '#fff' : 'currentColor'}
+            fill="none"
+          />
         </svg>
         Chat
       </button>

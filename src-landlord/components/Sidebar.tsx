@@ -11,7 +11,10 @@ interface Props {
 const ITEMS: { tab: Tab; label: string; icon: React.ReactNode }[] = [
   {
     tab: 'dashboard', label: 'Home',
-    icon: <><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13V10.5"/><path d="M10 20v-5h4v5"/></>,
+    icon: <>
+      <path d="M3.5 8.8 12 2.7l8.5 6.1V19H3.5z" />
+      <circle cx="12" cy="9.8" r="1.2" />
+    </>,
   },
   {
     tab: 'listings', label: 'Listings',
@@ -58,9 +61,65 @@ export default function Sidebar({ activeTab, onTabChange, inquiryBadge, onAdd }:
             className={`ll-sidebar-item ${activeTab === item.tab ? 'active' : ''}`}
             onClick={() => onTabChange(item.tab)}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-              {item.icon}
-            </svg>
+            {item.tab === 'dashboard' ? (
+              <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+                <path
+                  d="M3.5 8.8 12 2.7l8.5 6.1V19H3.5z"
+                  fill={activeTab === item.tab ? 'currentColor' : 'none'}
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+                <circle
+                  cx="12"
+                  cy="9.8"
+                  r="1.2"
+                  fill={activeTab === item.tab ? '#fff' : 'currentColor'}
+                  stroke="none"
+                />
+              </svg>
+            ) : item.tab === 'listings' ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                <rect
+                  x="4"
+                  y="5"
+                  width="16"
+                  height="14"
+                  rx="2"
+                  fill={activeTab === item.tab ? 'currentColor' : 'none'}
+                />
+                <path d="M8 9h8" stroke={activeTab === item.tab ? '#fff' : 'currentColor'} />
+                <path d="M8 13h8" stroke={activeTab === item.tab ? '#fff' : 'currentColor'} />
+                <path d="M8 17h5" stroke={activeTab === item.tab ? '#fff' : 'currentColor'} />
+              </svg>
+            ) : item.tab === 'payments' ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                <rect
+                  x="2"
+                  y="5"
+                  width="20"
+                  height="14"
+                  rx="2"
+                  fill={activeTab === item.tab ? 'currentColor' : 'none'}
+                />
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="3"
+                  fill={activeTab === item.tab ? '#fff' : 'none'}
+                />
+              </svg>
+            ) : (
+              <svg
+                viewBox="0 0 24 24"
+                fill={activeTab === item.tab ? 'currentColor' : 'none'}
+                stroke="currentColor"
+                strokeWidth="2"
+                width="18"
+                height="18"
+              >
+                {item.icon}
+              </svg>
+            )}
             <span>{item.label}</span>
             {item.tab === 'inquiries' && inquiryBadge > 0 && (
               <span className="ll-sidebar-badge">{inquiryBadge}</span>
