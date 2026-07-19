@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import AppLogo from '../components/AppLogo';
 import type { Conversation } from '../chat';
 import ProfilePeekModal from '../../src/components/ProfilePeekModal';
@@ -216,6 +216,7 @@ export default function InboxScreen({
   const hiddenIdsRef = useRef<Record<string, Set<string>>>({});
   const swipeRef = useRef<SwipeSession | null>(null);
   const inboxScrollerRef = useRef<HTMLDivElement | null>(null);
+  const inboxScrollAnchorRef = useRef<HTMLDivElement | null>(null);
   const activeConversationIdRef = useRef<string | null>(activeConversationId);
   const longPressRef = useRef<{ conversationId: string; timer: number | null; startX: number; startY: number; triggered: boolean } | null>(null);
   const messageLongPressRef = useRef<{
@@ -322,6 +323,18 @@ export default function InboxScreen({
       Object.values(deleteTimersRef.current).forEach((timer) => window.clearTimeout(timer));
     };
   }, []);
+
+  useLayoutEffect(() => {
+    if (!activeConversation) return;
+    const scroller = inboxScrollerRef.current;
+    const anchor = inboxScrollAnchorRef.current;
+    if (!scroller || !anchor) return;
+    const raf = window.requestAnimationFrame(() => {
+      anchor.scrollIntoView({ block: 'end', behavior: 'auto' });
+      scroller.scrollTop = scroller.scrollHeight;
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, [activeConversation?.id, activeConversation?.messages.length, replyTarget?.text]);
 
   useEffect(() => {
     if (!activeConversation) return;
@@ -876,6 +889,7 @@ export default function InboxScreen({
                     </div>
                   );
                 })}
+                <div ref={inboxScrollAnchorRef} className="inbox-scroll-anchor" aria-hidden="true" />
               </div>
             </div>
 

@@ -1996,6 +1996,12 @@ img {
   border-top: 0;
 }
 
+.inbox-scroll-anchor {
+  width: 100%;
+  height: 1px;
+  flex-shrink: 0;
+}
+
 .inbox-message-swipe-row {
   position: relative;
   overflow: hidden;
