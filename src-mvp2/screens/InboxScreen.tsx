@@ -1078,18 +1078,12 @@ export default function InboxScreen({
                   }
                 }}
               >
-                <div
-                  className={`inbox-message-actions inbox-message-actions-left inbox-conversation-actions-left ${revealSide === 'pin' ? 'show' : ''}`}
-                  onPointerDownCapture={stopActionEvent}
-                  onPointerUpCapture={stopActionEvent}
-                  onClickCapture={stopActionEvent}
-                >
+                <div className={`inbox-message-actions inbox-message-actions-left inbox-conversation-actions-left ${revealSide === 'pin' ? 'show' : ''}`}>
                   <button
                     type="button"
                     className={`inbox-message-action inbox-pin-action ${isPinned ? 'is-unpin' : 'is-pin'}`}
                     aria-label={isPinned ? 'Unpin conversation' : 'Pin conversation'}
                     onPointerDown={stopActionEvent}
-                    onPointerUp={stopActionEvent}
                     onClick={(event) => {
                       stopActionEvent(event);
                       toggleConversationPin(conversation.id);
@@ -1099,17 +1093,11 @@ export default function InboxScreen({
                     <span className="inbox-action-text">{isPinned ? 'Unpin' : 'Pin'}</span>
                   </button>
                 </div>
-                <div
-                  className={`inbox-message-actions inbox-message-actions-right inbox-conversation-actions-right ${revealSide === 'delete' ? 'show' : ''}`}
-                  onPointerDownCapture={stopActionEvent}
-                  onPointerUpCapture={stopActionEvent}
-                  onClickCapture={stopActionEvent}
-                >
+                <div className={`inbox-message-actions inbox-message-actions-right inbox-conversation-actions-right ${revealSide === 'delete' ? 'show' : ''}`}>
                   <button
                     type="button"
                     className="inbox-message-action inbox-delete-action"
                     onPointerDown={stopActionEvent}
-                    onPointerUp={stopActionEvent}
                     onClick={(event) => {
                       stopActionEvent(event);
                       deleteConversation(conversation.id);
