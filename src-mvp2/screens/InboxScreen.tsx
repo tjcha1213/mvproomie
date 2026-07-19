@@ -324,17 +324,31 @@ export default function InboxScreen({
     };
   }, []);
 
-  useLayoutEffect(() => {
-    if (!activeConversation) return;
+  const scrollInboxToBottom = useCallback(() => {
     const scroller = inboxScrollerRef.current;
     const anchor = inboxScrollAnchorRef.current;
-    if (!scroller || !anchor) return;
-    const raf = window.requestAnimationFrame(() => {
-      anchor.scrollIntoView({ block: 'end', behavior: 'auto' });
+    if (!scroller) return;
+
+    const snapToBottom = () => {
+      anchor?.scrollIntoView({ block: 'end', behavior: 'auto' });
       scroller.scrollTop = scroller.scrollHeight;
+    };
+
+    window.requestAnimationFrame(() => {
+      snapToBottom();
+      window.requestAnimationFrame(() => {
+        snapToBottom();
+      });
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!activeConversation) return;
+    const raf = window.requestAnimationFrame(() => {
+      scrollInboxToBottom();
     });
     return () => window.cancelAnimationFrame(raf);
-  }, [activeConversation?.id, activeConversation?.messages.length, replyTarget?.text]);
+  }, [activeConversation?.id, activeConversation?.messages.length, replyTarget?.text, scrollInboxToBottom]);
 
   useEffect(() => {
     if (!activeConversation) return;
@@ -786,7 +800,7 @@ export default function InboxScreen({
                       onPointerDown={(event) => {
                         if (event.pointerType === 'mouse' && event.button !== 0) return;
                         const target = event.target as HTMLElement | null;
-                        if (target?.closest('button, textarea, input, select, a')) return;
+                        if (target?.closest('button, textarea, input, select, a, .inbox-message-actions')) return;
                         clearMessageLongPress();
                         setMessageContextMenu(null);
                         messageLongPressRef.current = {
@@ -924,6 +938,9 @@ export default function InboxScreen({
                   onSendMessage(activeConversation.id, draft, replyTarget ?? undefined);
                   setDraft('');
                   setReplyTarget(null);
+                  window.requestAnimationFrame(() => {
+                    scrollInboxToBottom();
+                  });
                 }}>
                   Send
                 </button>
