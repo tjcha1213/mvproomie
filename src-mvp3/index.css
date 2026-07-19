@@ -1664,6 +1664,9 @@ img {
   position: relative;
   overflow: hidden;
   width: 100%;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .inbox-item-swipe-row .inbox-message-actions {
