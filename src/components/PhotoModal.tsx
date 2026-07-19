@@ -10,7 +10,6 @@ interface Props {
 export default function PhotoModal({ open, images, initialIndex, onClose }: Props) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const stripRef = useRef<HTMLDivElement>(null);
-  const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     if (!open) return;
@@ -31,10 +30,11 @@ export default function PhotoModal({ open, images, initialIndex, onClose }: Prop
     const nextIndex = Math.max(0, Math.min(images.length - 1, initialIndex));
     setActiveIndex(nextIndex);
     requestAnimationFrame(() => {
-      slideRefs.current[nextIndex]?.scrollIntoView({
+      const track = stripRef.current;
+      if (!track) return;
+      track.scrollTo({
+        left: track.clientWidth * nextIndex,
         behavior: 'auto',
-        block: 'nearest',
-        inline: 'start',
       });
     });
   }, [open, initialIndex, images.length]);
@@ -49,11 +49,12 @@ export default function PhotoModal({ open, images, initialIndex, onClose }: Prop
   const scrollToIndex = useCallback((index: number, behavior: ScrollBehavior) => {
     const nextIndex = Math.max(0, Math.min(images.length - 1, index));
     setActiveIndex(nextIndex);
+    const track = stripRef.current;
+    if (!track) return;
     requestAnimationFrame(() => {
-      slideRefs.current[nextIndex]?.scrollIntoView({
+      track.scrollTo({
+        left: track.clientWidth * nextIndex,
         behavior,
-        block: 'nearest',
-        inline: 'start',
       });
     });
   }, [images.length]);
@@ -71,13 +72,7 @@ export default function PhotoModal({ open, images, initialIndex, onClose }: Prop
         </button>
         <div className="photo-modal-strip" ref={stripRef} onScroll={handleScroll}>
           {images.map((src, index) => (
-            <div
-              className="photo-modal-slide"
-              key={`${src}-${index}`}
-              ref={(node) => {
-                slideRefs.current[index] = node;
-              }}
-            >
+            <div className="photo-modal-slide" key={`${src}-${index}`}>
               <img className="photo-modal-image" src={src} alt={`Listing photo ${index + 1}`} />
             </div>
           ))}
@@ -90,6 +85,7 @@ export default function PhotoModal({ open, images, initialIndex, onClose }: Prop
               onClick={() => scrollToIndex(activeIndex - 1, 'smooth')}
               disabled={activeIndex === 0}
               aria-label="Previous photo"
+              onPointerDown={(event) => event.stopPropagation()}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="15 18 9 12 15 6" />
@@ -101,6 +97,7 @@ export default function PhotoModal({ open, images, initialIndex, onClose }: Prop
               onClick={() => scrollToIndex(activeIndex + 1, 'smooth')}
               disabled={activeIndex === images.length - 1}
               aria-label="Next photo"
+              onPointerDown={(event) => event.stopPropagation()}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="9 18 15 12 9 6" />
@@ -117,6 +114,7 @@ export default function PhotoModal({ open, images, initialIndex, onClose }: Prop
                 className={`photo-modal-dot ${index === activeIndex ? 'active' : ''}`}
                 onClick={() => scrollToIndex(index, 'smooth')}
                 aria-label={`Show photo ${index + 1}`}
+                onPointerDown={(event) => event.stopPropagation()}
               />
             ))}
           </div>
