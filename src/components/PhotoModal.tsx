@@ -10,6 +10,7 @@ interface Props {
 export default function PhotoModal({ open, images, initialIndex, onClose }: Props) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const stripRef = useRef<HTMLDivElement>(null);
+  const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     if (!open) return;
@@ -30,9 +31,10 @@ export default function PhotoModal({ open, images, initialIndex, onClose }: Prop
     const nextIndex = Math.max(0, Math.min(images.length - 1, initialIndex));
     setActiveIndex(nextIndex);
     requestAnimationFrame(() => {
-      stripRef.current?.scrollTo({
-        left: stripRef.current.clientWidth * nextIndex,
+      slideRefs.current[nextIndex]?.scrollIntoView({
         behavior: 'auto',
+        block: 'nearest',
+        inline: 'start',
       });
     });
   }, [open, initialIndex, images.length]);
@@ -47,9 +49,12 @@ export default function PhotoModal({ open, images, initialIndex, onClose }: Prop
   const scrollToIndex = useCallback((index: number, behavior: ScrollBehavior) => {
     const nextIndex = Math.max(0, Math.min(images.length - 1, index));
     setActiveIndex(nextIndex);
-    stripRef.current?.scrollTo({
-      left: stripRef.current.clientWidth * nextIndex,
-      behavior,
+    requestAnimationFrame(() => {
+      slideRefs.current[nextIndex]?.scrollIntoView({
+        behavior,
+        block: 'nearest',
+        inline: 'start',
+      });
     });
   }, [images.length]);
 
@@ -66,7 +71,13 @@ export default function PhotoModal({ open, images, initialIndex, onClose }: Prop
         </button>
         <div className="photo-modal-strip" ref={stripRef} onScroll={handleScroll}>
           {images.map((src, index) => (
-            <div className="photo-modal-slide" key={`${src}-${index}`}>
+            <div
+              className="photo-modal-slide"
+              key={`${src}-${index}`}
+              ref={(node) => {
+                slideRefs.current[index] = node;
+              }}
+            >
               <img className="photo-modal-image" src={src} alt={`Listing photo ${index + 1}`} />
             </div>
           ))}

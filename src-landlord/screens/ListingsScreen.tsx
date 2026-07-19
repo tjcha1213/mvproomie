@@ -211,11 +211,17 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
     track.scrollTo({ left: carouselIndex * track.clientWidth, behavior: 'smooth' });
   }, [carouselIndex]);
 
-  useEffect(() => {
-    const track = lightboxRef.current;
-    if (!track || lightboxIndex === null) return;
-    track.scrollTo({ left: lightboxIndex * track.clientWidth, behavior: 'smooth' });
-  }, [lightboxIndex]);
+  function openLightboxPhoto(index: number) {
+    setLightboxIndex(index);
+    requestAnimationFrame(() => {
+      const track = lightboxRef.current;
+      if (!track) return;
+      track.scrollTo({
+        left: track.clientWidth * index,
+        behavior: 'smooth',
+      });
+    });
+  }
 
   return (
     <>
@@ -337,7 +343,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
                     key={`${selectedUnit.id}-hero-${index}`}
                     type="button"
                     className="listing-modal-carousel-slide"
-                    onClick={() => setLightboxIndex(index)}
+                    onClick={() => openLightboxPhoto(index)}
                     aria-label={`Open photo ${index + 1} full size`}
                   >
                     <img src={image} alt={`${selectedUnit.title} photo ${index + 1}`} />
@@ -613,8 +619,8 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
               className="listing-lightbox-track"
               ref={lightboxRef}
               onScroll={(event) => {
-                const target = event.currentTarget;
-                const nextIndex = Math.round(target.scrollLeft / Math.max(target.clientWidth, 1));
+                const track = event.currentTarget;
+                const nextIndex = Math.round(track.scrollLeft / Math.max(track.clientWidth, 1));
                 if (nextIndex !== lightboxIndex) setLightboxIndex(nextIndex);
               }}
             >
@@ -635,7 +641,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
                 <button
                   type="button"
                   className="listing-lightbox-nav is-prev"
-                  onClick={() => setLightboxIndex((current) => current === null ? 0 : Math.max(current - 1, 0))}
+                  onClick={() => openLightboxPhoto(Math.max((lightboxIndex ?? 0) - 1, 0))}
                   disabled={lightboxIndex === 0}
                   aria-label="Previous photo"
                 >
@@ -646,7 +652,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
                 <button
                   type="button"
                   className="listing-lightbox-nav is-next"
-                  onClick={() => setLightboxIndex((current) => current === null ? 0 : Math.min(current + 1, selectedUnitGallery.length - 1))}
+                  onClick={() => openLightboxPhoto(Math.min((lightboxIndex ?? 0) + 1, selectedUnitGallery.length - 1))}
                   disabled={lightboxIndex === selectedUnitGallery.length - 1}
                   aria-label="Next photo"
                 >
@@ -660,7 +666,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
                       key={`${selectedUnit.id}-lightbox-dot-${index}`}
                       type="button"
                       className={`listing-modal-carousel-dot ${lightboxIndex === index ? 'active' : ''}`}
-                      onClick={() => setLightboxIndex(index)}
+                      onClick={() => openLightboxPhoto(index)}
                       aria-label={`Go to full photo ${index + 1}`}
                     />
                   ))}
