@@ -78,7 +78,7 @@ export default function Sidebar({ activeTab, onTabChange, inquiryBadge, onAdd }:
                 />
               </svg>
             ) : item.tab === 'listings' ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
                 <rect
                   x="4"
                   y="5"
@@ -87,9 +87,9 @@ export default function Sidebar({ activeTab, onTabChange, inquiryBadge, onAdd }:
                   rx="2"
                   fill={activeTab === item.tab ? 'currentColor' : 'none'}
                 />
-                <path d="M8 9h8" stroke={activeTab === item.tab ? '#fff' : 'currentColor'} />
-                <path d="M8 13h8" stroke={activeTab === item.tab ? '#fff' : 'currentColor'} />
-                <path d="M8 17h5" stroke={activeTab === item.tab ? '#fff' : 'currentColor'} />
+                <path d="M8 9h8" stroke={activeTab === item.tab ? '#fff' : 'currentColor'} strokeWidth="1.8" />
+                <path d="M8 13h8" stroke={activeTab === item.tab ? '#fff' : 'currentColor'} strokeWidth="1.8" />
+                <path d="M8 17h5" stroke={activeTab === item.tab ? '#fff' : 'currentColor'} strokeWidth="1.8" />
               </svg>
             ) : item.tab === 'payments' ? (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">

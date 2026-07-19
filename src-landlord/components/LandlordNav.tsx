@@ -30,11 +30,11 @@ export default function LandlordNav({ activeTab, onTabChange, inquiryBadge, onAd
       </button>
 
       <button className={`bottom-nav-item ${activeTab === 'listings' ? 'active' : ''}`} onClick={() => onTabChange('listings')}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="4" y="5" width="16" height="14" rx="2" fill={activeTab === 'listings' ? 'currentColor' : 'none'} />
-          <path d="M8 9h8" stroke={activeTab === 'listings' ? '#fff' : 'currentColor'} />
-          <path d="M8 13h8" stroke={activeTab === 'listings' ? '#fff' : 'currentColor'} />
-          <path d="M8 17h5" stroke={activeTab === 'listings' ? '#fff' : 'currentColor'} />
+          <path d="M8 9h8" stroke={activeTab === 'listings' ? '#fff' : 'currentColor'} strokeWidth="1.8" />
+          <path d="M8 13h8" stroke={activeTab === 'listings' ? '#fff' : 'currentColor'} strokeWidth="1.8" />
+          <path d="M8 17h5" stroke={activeTab === 'listings' ? '#fff' : 'currentColor'} strokeWidth="1.8" />
         </svg>
         Listings
       </button>
