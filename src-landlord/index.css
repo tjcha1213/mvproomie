@@ -3261,14 +3261,14 @@ img {
 
 .unit-card-top {
   display: flex;
-  gap: 12px;
-  padding: 12px;
+  gap: 11px;
+  padding: 10px;
 }
 
 .unit-thumb {
   position: relative;
-  width: 118px;
-  height: 92px;
+  width: 132px;
+  height: 104px;
   border-radius: var(--radius-md);
   overflow: hidden;
   flex-shrink: 0;
@@ -3298,8 +3298,8 @@ img {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 3px 0 4px;
+  gap: 4px;
+  margin: 2px 0 3px;
 }
 
 .listing-id-row-modal {
@@ -3353,14 +3353,15 @@ img {
 
 .unit-title-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 2px;
 }
 
 .unit-title {
   font-size: 14px;
+  line-height: 1.12;
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
@@ -3370,12 +3371,14 @@ img {
 
 .unit-location {
   font-size: 11.5px;
+  line-height: 1.25;
   color: var(--text-muted);
   margin-bottom: 4px;
 }
 
 .unit-price {
   font-size: 14px;
+  line-height: 1.15;
   font-weight: 800;
   color: var(--primary);
 }
@@ -3391,6 +3394,27 @@ img {
   color: #B45309;
   font-weight: 600;
   margin-top: 3px;
+}
+
+.unit-status-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 88px;
+  flex-shrink: 0;
+}
+
+.unit-warning-inline {
+  min-height: 14px;
+  margin-top: 2px;
+  margin-bottom: 0;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.unit-warning-inline.is-visible {
+  opacity: 1;
+  visibility: visible;
 }
 
 .unit-card-bottom {
@@ -3427,6 +3451,14 @@ img {
 }
 
 .unit-actions { display: flex; gap: 6px; }
+
+.unit-actions-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  margin-left: auto;
+}
 
 .unit-btn {
   padding: 6px 11px;
@@ -5653,6 +5685,8 @@ img {
 
   .unit-thumb {
     position: relative;
+    width: 146px;
+    height: 114px;
     border: 1px solid color-mix(in srgb, var(--border-light) 72%, #ffffff);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.36);
     background: #e8edf3;

@@ -263,7 +263,12 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
                 <div className="unit-info">
                   <div className="unit-title-row">
                     <span className="unit-title">{u.title}</span>
-                    <StatusBadge status={u.status} />
+                    <div className="unit-status-stack">
+                      <StatusBadge status={u.status} />
+                      <div className={`unit-warning unit-warning-inline ${!u.verified && u.status !== 'Draft' ? 'is-visible' : ''}`}>
+                        ⚠ Not verified
+                      </div>
+                    </div>
                   </div>
                   <div className="listing-id-row">
                     <span className="entity-id-tag">{u.propertyId}</span>
@@ -271,9 +276,6 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
                   </div>
                   <div className="unit-location">{u.location}</div>
                   <div className="unit-price">{formatPeso(u.price)} <span>/ month</span></div>
-                  {!u.verified && u.status !== 'Draft' && (
-                    <div className="unit-warning">⚠ Not verified</div>
-                  )}
                 </div>
               </div>
               <div className="unit-card-bottom">
@@ -291,25 +293,27 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
                     {u.inquiries}
                   </span>
                 </div>
-                <div className="unit-actions">
-                  <button
-                    className={`unit-btn ${u.status === 'Draft' ? 'unit-btn-primary' : ''}`}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleStatusAction(u);
-                    }}
-                  >
-                    {getPrimaryActionLabel(u)}
-                  </button>
-                  <button
-                    className="unit-btn"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      openEditModal(u);
-                    }}
-                  >
-                    Edit
-                  </button>
+                <div className="unit-actions-group">
+                  <div className="unit-actions">
+                    <button
+                      className={`unit-btn ${u.status === 'Draft' ? 'unit-btn-primary' : ''}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleStatusAction(u);
+                      }}
+                    >
+                      {getPrimaryActionLabel(u)}
+                    </button>
+                    <button
+                      className="unit-btn"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        openEditModal(u);
+                      }}
+                    >
+                      Edit
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
