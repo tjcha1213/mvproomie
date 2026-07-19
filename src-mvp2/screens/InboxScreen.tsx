@@ -717,196 +717,200 @@ export default function InboxScreen({
 
   if (activeConversation) {
     return (
-      <>
+      <div className="inbox-chat-screen">
         <div className="app-header">
           <div className="logo"><AppLogo /></div>
         </div>
 
-        <div className="inbox-chat-header">
-          <button className="inbox-chat-back" type="button" onClick={onBackToList} aria-label="Back to inbox">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </button>
-          <div className="inbox-chat-header-main">
-            <button
-              type="button"
-              className="inbox-chat-header-avatar inbox-chat-header-avatar-button"
-              onClick={() => setProfilePeekConversationId(activeConversation.id)}
-              aria-label={`View ${activeConversation.participantName} profile`}
-            >
-              <img src={activeConversation.participantPhoto} alt={activeConversation.participantName} />
+        <div className="inbox-chat-layout">
+          <div className="inbox-chat-header">
+            <button className="inbox-chat-back" type="button" onClick={onBackToList} aria-label="Back to inbox">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
             </button>
-            <div className="inbox-chat-title-block">
-              <div className="inbox-chat-name-row">
-                <div className="inbox-chat-title">{activeConversation.participantName}</div>
-                <div className="inbox-chat-role">{activeConversation.participantRole}</div>
-              </div>
-              <div className="inbox-chat-subtitle">
-                {activeConversation.listingTitle} · {activeConversation.listingLocation}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="scroll-area inbox-chat-scroller" ref={inboxScrollerRef}>
-          <div className="inbox-chat-thread" onPointerDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setMessageContextMenu(null);
-              setSwipeState(null);
-            }
-          }}>
-            {activeConversationMessages.map((message) => {
-              const isPinned = Boolean(messagePinStateByConversation[activeConversation.id]?.[message.id] ?? message.isPinned);
-              const reaction = messageReactionByConversation[activeConversation.id]?.[message.id];
-
-              return (
-                <div
-                  key={message.id}
-                  className={`inbox-message-swipe-row ${message.isDeleting ? `is-deleting ${message.deleteDirection ?? ''}` : ''}`}
-                  onPointerDown={(event) => {
-                    if (event.pointerType === 'mouse' && event.button !== 0) return;
-                    const target = event.target as HTMLElement | null;
-                    if (target?.closest('button, textarea, input, select, a')) return;
-                    clearMessageLongPress();
-                    setMessageContextMenu(null);
-                    messageLongPressRef.current = {
-                      messageId: message.id,
-                      timer: window.setTimeout(() => {
-                        const current = messageLongPressRef.current;
-                        if (!current || current.messageId !== message.id || current.triggered) return;
-                        current.triggered = true;
-                        openMessageContextMenu(message.id, current.rect ?? event.currentTarget.getBoundingClientRect());
-                      }, MESSAGE_LONG_PRESS_DELAY),
-                      startX: event.clientX,
-                      startY: event.clientY,
-                      triggered: false,
-                      rect: event.currentTarget.getBoundingClientRect(),
-                    };
-
-                    try {
-                      event.currentTarget.setPointerCapture(event.pointerId);
-                    } catch {
-                      // ignore
-                    }
-                  }}
-                  onPointerMove={(event) => {
-                    const current = messageLongPressRef.current;
-                    if (current && current.messageId === message.id && !current.triggered) {
-                      const dx = event.clientX - current.startX;
-                      const dy = event.clientY - current.startY;
-                      if (Math.abs(dx) > MESSAGE_LONG_PRESS_MOVE_TOLERANCE || Math.abs(dy) > MESSAGE_LONG_PRESS_MOVE_TOLERANCE) {
-                        clearMessageLongPress();
-                      }
-                    }
-                  }}
-                  onPointerUp={(event) => {
-                    const current = messageLongPressRef.current;
-                    const longPressTriggered = Boolean(current && current.messageId === message.id && current.triggered);
-                    try {
-                      event.currentTarget.releasePointerCapture(event.pointerId);
-                    } catch {
-                      // ignore
-                    }
-                    clearMessageLongPress();
-                    if (!longPressTriggered && messageContextMenu?.messageId === message.id) {
-                      setMessageContextMenu(null);
-                      return;
-                    }
-                  }}
-                  onPointerCancel={(event) => {
-                    try {
-                      event.currentTarget.releasePointerCapture(event.pointerId);
-                    } catch {
-                      // ignore
-                    }
-                    clearMessageLongPress();
-                  }}
-                >
-                  <div
-                    className={`inbox-bubble-row ${message.author === 'self' ? 'self' : 'other'} ${isPinned ? 'is-pinned' : ''}`}
-                  >
-                    <div className={`inbox-bubble ${message.author === 'self' ? 'self' : 'other'}`}>
-                      {message.isDeleted ? (
-                        <div className="inbox-deleted-message">
-                          <span className="inbox-deleted-message-icon"><DeletedNoticeIcon /></span>
-                          <span className="inbox-deleted-message-text">Message deleted</span>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="inbox-bubble-top">
-                            {isPinned && <span className="inbox-message-pin-badge">Pinned</span>}
-                          </div>
-                          {message.author === 'self' && message.replyTo && (
-                            <div className="inbox-reply-quote">
-                              <div className="inbox-reply-source">Replying to</div>
-                              <div className="inbox-reply-name">{message.replyTo.name}</div>
-                              <div className="inbox-reply-text">{message.replyTo.text}</div>
-                            </div>
-                          )}
-                          {message.author === 'self' && message.replyTo && <div className="inbox-reply-divider" />}
-                          <div>{message.text}</div>
-                          <div className="inbox-bubble-time">
-                            <span className="inbox-message-time">{formatMessageTime(message.createdAt)}</span>
-                            {message.id === latestReadMessageId && (
-                              <>
-                                <span className="inbox-time-divider" aria-hidden="true">•</span>
-                                <span className="inbox-read-label">Read</span>
-                              </>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  {reaction && !message.isDeleted && (
-                    <div className={`inbox-message-reaction-row ${message.author === 'self' ? 'self' : 'other'}`}>
-                      <div className="inbox-message-reaction" aria-label={`Reaction ${reaction.emoji} ${reaction.count} times`}>
-                        <span className="inbox-message-reaction-emoji">{reaction.emoji}</span>
-                        <span className="inbox-message-reaction-count">{reaction.count}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="inbox-chat-footer">
-          {replyTarget && (
-            <div className="inbox-reply-banner">
-              <div className="inbox-reply-banner-copy">
-                <div className="inbox-reply-banner-title">Replying to {replyTarget.name}</div>
-                <div className="inbox-reply-banner-text">{replyTarget.text}</div>
-              </div>
+            <div className="inbox-chat-header-main">
               <button
                 type="button"
-                className="inbox-reply-banner-close"
-                onClick={() => setReplyTarget(null)}
-                aria-label="Cancel reply"
+                className="inbox-chat-header-avatar inbox-chat-header-avatar-button"
+                onClick={() => setProfilePeekConversationId(activeConversation.id)}
+                aria-label={`View ${activeConversation.participantName} profile`}
               >
-                ×
+                <img src={activeConversation.participantPhoto} alt={activeConversation.participantName} />
               </button>
+              <div className="inbox-chat-title-block">
+                <div className="inbox-chat-name-row">
+                  <div className="inbox-chat-title">{activeConversation.participantName}</div>
+                  <div className="inbox-chat-role">{activeConversation.participantRole}</div>
+                </div>
+                <div className="inbox-chat-subtitle">
+                  {activeConversation.listingTitle} · {activeConversation.listingLocation}
+                </div>
+              </div>
             </div>
-          )}
+          </div>
 
-          <div className="inbox-composer">
-            <textarea
-              className="inbox-composer-input"
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder={`Message ${activeConversation.participantName.split(' ')[0]}...`}
-              rows={1}
-            />
-            <button className="inbox-send-btn" type="button" onClick={() => {
-              if (!activeConversation || !draft.trim()) return;
-              onSendMessage(activeConversation.id, draft, replyTarget ?? undefined);
-              setDraft('');
-              setReplyTarget(null);
-            }}>
-              Send
-            </button>
+          <div className="inbox-chat-body">
+            <div className="scroll-area inbox-chat-scroller" ref={inboxScrollerRef}>
+              <div className="inbox-chat-thread" onPointerDown={(event) => {
+                if (event.target === event.currentTarget) {
+                  setMessageContextMenu(null);
+                  setSwipeState(null);
+                }
+              }}>
+                {activeConversationMessages.map((message) => {
+                  const isPinned = Boolean(messagePinStateByConversation[activeConversation.id]?.[message.id] ?? message.isPinned);
+                  const reaction = messageReactionByConversation[activeConversation.id]?.[message.id];
+
+                  return (
+                    <div
+                      key={message.id}
+                      className={`inbox-message-swipe-row ${message.isDeleting ? `is-deleting ${message.deleteDirection ?? ''}` : ''}`}
+                      onPointerDown={(event) => {
+                        if (event.pointerType === 'mouse' && event.button !== 0) return;
+                        const target = event.target as HTMLElement | null;
+                        if (target?.closest('button, textarea, input, select, a')) return;
+                        clearMessageLongPress();
+                        setMessageContextMenu(null);
+                        messageLongPressRef.current = {
+                          messageId: message.id,
+                          timer: window.setTimeout(() => {
+                            const current = messageLongPressRef.current;
+                            if (!current || current.messageId !== message.id || current.triggered) return;
+                            current.triggered = true;
+                            openMessageContextMenu(message.id, current.rect ?? event.currentTarget.getBoundingClientRect());
+                          }, MESSAGE_LONG_PRESS_DELAY),
+                          startX: event.clientX,
+                          startY: event.clientY,
+                          triggered: false,
+                          rect: event.currentTarget.getBoundingClientRect(),
+                        };
+
+                        try {
+                          event.currentTarget.setPointerCapture(event.pointerId);
+                        } catch {
+                          // ignore
+                        }
+                      }}
+                      onPointerMove={(event) => {
+                        const current = messageLongPressRef.current;
+                        if (current && current.messageId === message.id && !current.triggered) {
+                          const dx = event.clientX - current.startX;
+                          const dy = event.clientY - current.startY;
+                          if (Math.abs(dx) > MESSAGE_LONG_PRESS_MOVE_TOLERANCE || Math.abs(dy) > MESSAGE_LONG_PRESS_MOVE_TOLERANCE) {
+                            clearMessageLongPress();
+                          }
+                        }
+                      }}
+                      onPointerUp={(event) => {
+                        const current = messageLongPressRef.current;
+                        const longPressTriggered = Boolean(current && current.messageId === message.id && current.triggered);
+                        try {
+                          event.currentTarget.releasePointerCapture(event.pointerId);
+                        } catch {
+                          // ignore
+                        }
+                        clearMessageLongPress();
+                        if (!longPressTriggered && messageContextMenu?.messageId === message.id) {
+                          setMessageContextMenu(null);
+                          return;
+                        }
+                      }}
+                      onPointerCancel={(event) => {
+                        try {
+                          event.currentTarget.releasePointerCapture(event.pointerId);
+                        } catch {
+                          // ignore
+                        }
+                        clearMessageLongPress();
+                      }}
+                    >
+                      <div
+                        className={`inbox-bubble-row ${message.author === 'self' ? 'self' : 'other'} ${isPinned ? 'is-pinned' : ''}`}
+                      >
+                        <div className={`inbox-bubble ${message.author === 'self' ? 'self' : 'other'}`}>
+                          {message.isDeleted ? (
+                            <div className="inbox-deleted-message">
+                              <span className="inbox-deleted-message-icon"><DeletedNoticeIcon /></span>
+                              <span className="inbox-deleted-message-text">Message deleted</span>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="inbox-bubble-top">
+                                {isPinned && <span className="inbox-message-pin-badge">Pinned</span>}
+                              </div>
+                              {message.author === 'self' && message.replyTo && (
+                                <div className="inbox-reply-quote">
+                                  <div className="inbox-reply-source">Replying to</div>
+                                  <div className="inbox-reply-name">{message.replyTo.name}</div>
+                                  <div className="inbox-reply-text">{message.replyTo.text}</div>
+                                </div>
+                              )}
+                              {message.author === 'self' && message.replyTo && <div className="inbox-reply-divider" />}
+                              <div>{message.text}</div>
+                              <div className="inbox-bubble-time">
+                                <span className="inbox-message-time">{formatMessageTime(message.createdAt)}</span>
+                                {message.id === latestReadMessageId && (
+                                  <>
+                                    <span className="inbox-time-divider" aria-hidden="true">•</span>
+                                    <span className="inbox-read-label">Read</span>
+                                  </>
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      {reaction && !message.isDeleted && (
+                        <div className={`inbox-message-reaction-row ${message.author === 'self' ? 'self' : 'other'}`}>
+                          <div className="inbox-message-reaction" aria-label={`Reaction ${reaction.emoji} ${reaction.count} times`}>
+                            <span className="inbox-message-reaction-emoji">{reaction.emoji}</span>
+                            <span className="inbox-message-reaction-count">{reaction.count}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="inbox-chat-footer">
+              {replyTarget && (
+                <div className="inbox-reply-banner">
+                  <div className="inbox-reply-banner-copy">
+                    <div className="inbox-reply-banner-title">Replying to {replyTarget.name}</div>
+                    <div className="inbox-reply-banner-text">{replyTarget.text}</div>
+                  </div>
+                  <button
+                    type="button"
+                    className="inbox-reply-banner-close"
+                    onClick={() => setReplyTarget(null)}
+                    aria-label="Cancel reply"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+
+              <div className="inbox-composer">
+                <textarea
+                  className="inbox-composer-input"
+                  value={draft}
+                  onChange={(event) => setDraft(event.target.value)}
+                  placeholder={`Message ${activeConversation.participantName.split(' ')[0]}...`}
+                  rows={1}
+                />
+                <button className="inbox-send-btn" type="button" onClick={() => {
+                  if (!activeConversation || !draft.trim()) return;
+                  onSendMessage(activeConversation.id, draft, replyTarget ?? undefined);
+                  setDraft('');
+                  setReplyTarget(null);
+                }}>
+                  Send
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -974,7 +978,7 @@ export default function InboxScreen({
         })()}
 
         {profilePeekModal}
-      </>
+      </div>
     );
   }
 

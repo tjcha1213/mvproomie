@@ -127,7 +127,7 @@ function App() {
     <div className="app-shell">
       <div className="phone-container">
         <StatusBar />
-        <div className={`screen ${isBack ? 'fade-slide-enter' : ''}`} key={currentScreen}>
+        <div className={`screen ${isBack ? 'fade-slide-enter' : ''}`}>
           {currentScreen === 'home' && (
             <HomeScreen
               listings={listings}
@@ -161,7 +161,7 @@ function App() {
               onShowToast={showToast}
             />
           )}
-          {currentScreen === 'inbox' && (
+          <div style={{ display: currentScreen === 'inbox' ? 'flex' : 'none', flex: 1, minHeight: 0, flexDirection: 'column' }}>
             <InboxScreen
               conversations={conversations}
               activeConversationId={activeConversationId}
@@ -169,7 +169,7 @@ function App() {
               onBackToList={() => setActiveConversationId(null)}
               onSendMessage={sendReply}
             />
-          )}
+          </div>
           {currentScreen === 'profile' && <ProfileScreen onShowToast={showToast} onOpenTheme={() => setThemeOpen(true)} />}
         </div>
 

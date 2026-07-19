@@ -1746,13 +1746,38 @@ img {
 .inbox-chat-scroller {
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
+}
+
+.inbox-chat-layout {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.inbox-chat-screen {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.inbox-chat-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .inbox-chat-footer {
   flex-shrink: 0;
+  margin-top: auto;
   padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
   background: var(--surface);
   border-top: 1px solid var(--border-light);
+  z-index: 20;
 }
 
 .inbox-chat-footer .inbox-reply-banner {
