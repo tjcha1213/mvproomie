@@ -930,6 +930,16 @@ export default function InboxScreen({
                   className="inbox-composer-input"
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
+                  onFocus={() => {
+                    window.requestAnimationFrame(() => {
+                      scrollInboxToBottom();
+                    });
+                  }}
+                  onBlur={() => {
+                    window.requestAnimationFrame(() => {
+                      scrollInboxToBottom();
+                    });
+                  }}
                   placeholder={`Message ${activeConversation.participantName.split(' ')[0]}...`}
                   rows={1}
                 />
