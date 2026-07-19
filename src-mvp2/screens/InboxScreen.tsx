@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import AppLogo from '../components/AppLogo';
 import type { Conversation } from '../chat';
 import ProfilePeekModal from '../../src/components/ProfilePeekModal';
@@ -700,6 +700,11 @@ export default function InboxScreen({
     clearMessageLongPress();
   }, [clearMessageLongPress]);
 
+  const stopActionEvent = useCallback((event: ReactPointerEvent<HTMLElement> | ReactMouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+  }, []);
+
   const profilePeekModal = (
     <ProfilePeekModal
       open={profilePeekConversation !== null}
@@ -1073,15 +1078,20 @@ export default function InboxScreen({
                   }
                 }}
               >
-                <div className={`inbox-message-actions inbox-message-actions-left inbox-conversation-actions-left ${revealSide === 'pin' ? 'show' : ''}`}>
+                <div
+                  className={`inbox-message-actions inbox-message-actions-left inbox-conversation-actions-left ${revealSide === 'pin' ? 'show' : ''}`}
+                  onPointerDownCapture={stopActionEvent}
+                  onPointerUpCapture={stopActionEvent}
+                  onClickCapture={stopActionEvent}
+                >
                   <button
                     type="button"
                     className={`inbox-message-action inbox-pin-action ${isPinned ? 'is-unpin' : 'is-pin'}`}
                     aria-label={isPinned ? 'Unpin conversation' : 'Pin conversation'}
-                    onPointerDown={(event) => event.stopPropagation()}
+                    onPointerDown={stopActionEvent}
+                    onPointerUp={stopActionEvent}
                     onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
+                      stopActionEvent(event);
                       toggleConversationPin(conversation.id);
                     }}
                   >
@@ -1089,14 +1099,19 @@ export default function InboxScreen({
                     <span className="inbox-action-text">{isPinned ? 'Unpin' : 'Pin'}</span>
                   </button>
                 </div>
-                <div className={`inbox-message-actions inbox-message-actions-right inbox-conversation-actions-right ${revealSide === 'delete' ? 'show' : ''}`}>
+                <div
+                  className={`inbox-message-actions inbox-message-actions-right inbox-conversation-actions-right ${revealSide === 'delete' ? 'show' : ''}`}
+                  onPointerDownCapture={stopActionEvent}
+                  onPointerUpCapture={stopActionEvent}
+                  onClickCapture={stopActionEvent}
+                >
                   <button
                     type="button"
                     className="inbox-message-action inbox-delete-action"
-                    onPointerDown={(event) => event.stopPropagation()}
+                    onPointerDown={stopActionEvent}
+                    onPointerUp={stopActionEvent}
                     onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
+                      stopActionEvent(event);
                       deleteConversation(conversation.id);
                     }}
                   >
