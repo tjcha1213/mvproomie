@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback, type UIEvent as ReactUIEvent } from 'react';
 import type { Unit, UnitStatus } from '../data';
 import { formatPeso } from '../data';
 import Header from '../components/Header';
@@ -75,6 +75,8 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
   const [editPhotos, setEditPhotos] = useState<string[]>([]);
   const carouselRef = useRef<HTMLDivElement>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
+  const carouselSnapTimerRef = useRef<number | null>(null);
+  const lightboxSnapTimerRef = useRef<number | null>(null);
 
   const filtered = filter === 'All' ? units : units.filter(u => u.status === filter);
   const selectedUnit = selectedUnitId === null ? null : units.find((u) => u.id === selectedUnitId) ?? null;
@@ -203,13 +205,53 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
     setHistoryView('log');
     setSelectedHistoryDate(null);
     setHistoryMonthIndex(Math.max(historyMonths.length - 1, 0));
+
+    const track = carouselRef.current;
+    if (track) {
+      track.scrollTo({ left: 0, behavior: 'auto' });
+    }
   }, [selectedUnitId, historyMonths.length]);
 
-  useEffect(() => {
+  useEffect(() => () => {
+    if (carouselSnapTimerRef.current !== null) {
+      window.clearTimeout(carouselSnapTimerRef.current);
+    }
+    if (lightboxSnapTimerRef.current !== null) {
+      window.clearTimeout(lightboxSnapTimerRef.current);
+    }
+  }, []);
+
+  const scrollCarouselToIndex = useCallback((index: number, behavior: ScrollBehavior = 'smooth') => {
     const track = carouselRef.current;
-    if (!track) return;
-    track.scrollTo({ left: carouselIndex * track.clientWidth, behavior: 'smooth' });
-  }, [carouselIndex]);
+    if (!track || selectedUnitGallery.length === 0) return;
+    const nextIndex = Math.max(0, Math.min(selectedUnitGallery.length - 1, index));
+    setCarouselIndex(nextIndex);
+    requestAnimationFrame(() => {
+      track.scrollTo({
+        left: track.clientWidth * nextIndex,
+        behavior,
+      });
+    });
+  }, [selectedUnitGallery.length]);
+
+  const handleCarouselScroll = useCallback((event: ReactUIEvent<HTMLDivElement>) => {
+    const track = event.currentTarget;
+    const width = Math.max(track.clientWidth, 1);
+    const nextIndex = Math.max(0, Math.min(selectedUnitGallery.length - 1, Math.round(track.scrollLeft / width)));
+    setCarouselIndex((current) => (current === nextIndex ? current : nextIndex));
+
+    if (carouselSnapTimerRef.current !== null) {
+      window.clearTimeout(carouselSnapTimerRef.current);
+    }
+
+    carouselSnapTimerRef.current = window.setTimeout(() => {
+      const settledIndex = Math.max(0, Math.min(selectedUnitGallery.length - 1, Math.round(track.scrollLeft / width)));
+      const targetLeft = settledIndex * width;
+      if (Math.abs(track.scrollLeft - targetLeft) > 1) {
+        track.scrollTo({ left: targetLeft, behavior: 'smooth' });
+      }
+    }, 90);
+  }, [selectedUnitGallery.length]);
 
   function openLightboxPhoto(index: number) {
     setLightboxIndex(index);
@@ -222,6 +264,25 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
       });
     });
   }
+
+  const handleLightboxScroll = useCallback((event: ReactUIEvent<HTMLDivElement>) => {
+    const track = event.currentTarget;
+    const width = Math.max(track.clientWidth, 1);
+    const nextIndex = Math.max(0, Math.min(selectedUnitGallery.length - 1, Math.round(track.scrollLeft / width)));
+    setLightboxIndex((current) => (current === nextIndex ? current : nextIndex));
+
+    if (lightboxSnapTimerRef.current !== null) {
+      window.clearTimeout(lightboxSnapTimerRef.current);
+    }
+
+    lightboxSnapTimerRef.current = window.setTimeout(() => {
+      const settledIndex = Math.max(0, Math.min(selectedUnitGallery.length - 1, Math.round(track.scrollLeft / width)));
+      const targetLeft = settledIndex * width;
+      if (Math.abs(track.scrollLeft - targetLeft) > 1) {
+        track.scrollTo({ left: targetLeft, behavior: 'smooth' });
+      }
+    }, 90);
+  }, [selectedUnitGallery.length]);
 
   return (
     <>
@@ -336,11 +397,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
               <div
                 className="listing-modal-carousel"
                 ref={carouselRef}
-                onScroll={(event) => {
-                  const target = event.currentTarget;
-                  const nextIndex = Math.round(target.scrollLeft / Math.max(target.clientWidth, 1));
-                  if (nextIndex !== carouselIndex) setCarouselIndex(nextIndex);
-                }}
+                onScroll={handleCarouselScroll}
               >
                 {selectedUnitGallery.map((image, index) => (
                   <button
@@ -360,7 +417,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
                     key={`${selectedUnit.id}-dot-${index}`}
                     type="button"
                     className={`listing-modal-carousel-dot ${carouselIndex === index ? 'active' : ''}`}
-                    onClick={() => setCarouselIndex(index)}
+                    onClick={() => scrollCarouselToIndex(index)}
                     aria-label={`Go to photo ${index + 1}`}
                   />
                 ))}
@@ -622,11 +679,7 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
             <div
               className="listing-lightbox-track"
               ref={lightboxRef}
-              onScroll={(event) => {
-                const track = event.currentTarget;
-                const nextIndex = Math.round(track.scrollLeft / Math.max(track.clientWidth, 1));
-                if (nextIndex !== lightboxIndex) setLightboxIndex(nextIndex);
-              }}
+              onScroll={handleLightboxScroll}
             >
               {selectedUnitGallery.map((image, index) => (
                 <div key={`${selectedUnit.id}-lightbox-${index}`} className="listing-lightbox-slide">

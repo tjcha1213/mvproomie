@@ -19,10 +19,10 @@ interface Props {
   onShowToast: (msg: string) => void;
 }
 
-type Filter = 'All' | InquiryStatus;
+type Filter = 'All' | InquiryStatus | 'Calendar';
 type SwipeSide = 'delete' | 'pin';
 
-const FILTERS: Filter[] = ['All', 'New', 'Replied', 'Viewing'];
+const FILTERS: Filter[] = ['All', 'New', 'Replied', 'Viewing', 'Calendar'];
 const ACTION_WIDTH = 92;
 const REVEAL_THRESHOLD = 10;
 const COMMIT_THRESHOLD = 48;
@@ -53,6 +53,11 @@ type ThreadMessageMeta = {
   hidden: boolean;
   deleting: boolean;
   deleteDirection: SwipeSide | null;
+};
+
+type ViewingAppointment = {
+  date: string;
+  time: string;
 };
 
 type MessageSwipeState = {
@@ -128,6 +133,20 @@ function swipeSideFromOffset(offset: number) {
   return null;
 }
 
+function heatLevelClass(count: number) {
+  if (count >= 6) return 'heat-level-6';
+  if (count >= 4) return 'heat-level-5';
+  if (count >= 2) return 'heat-level-4';
+  if (count === 1) return 'heat-level-2';
+  return 'heat-level-0';
+}
+
+function calendarCountLabel(count: number) {
+  if (count <= 0) return '0';
+  if (count >= 6) return '6+';
+  return String(count);
+}
+
 function DeleteIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -179,6 +198,9 @@ export default function InquiriesScreen({
   const [scheduleMonth, setScheduleMonth] = useState(() => new Date());
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('10:00');
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date());
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState('');
+  const [viewingByInquiryId, setViewingByInquiryId] = useState<Record<number, ViewingAppointment>>({});
   const deleteTimersRef = useRef<Record<string, number>>({});
   const messageSwipeRef = useRef<MessageSwipeState | null>(null);
   const suppressNextInquiryClickRef = useRef<number | null>(null);
@@ -197,6 +219,26 @@ export default function InquiriesScreen({
         }
       }
       return next;
+    });
+  }, [inquiries]);
+
+  useEffect(() => {
+    setViewingByInquiryId((prev) => {
+      let changed = false;
+      const next = { ...prev };
+
+      for (const inquiry of inquiries) {
+        if (inquiry.status !== 'Viewing' || !inquiry.viewingAt) continue;
+        if (!next[inquiry.id]) {
+          next[inquiry.id] = {
+            date: inquiry.viewingAt,
+            time: inquiry.viewingTime ?? '10:00',
+          };
+          changed = true;
+        }
+      }
+
+      return changed ? next : prev;
     });
   }, [inquiries]);
 
@@ -234,7 +276,7 @@ export default function InquiriesScreen({
   }, [chatOpenId, inquiries]);
 
   const filtered = useMemo(() => {
-    const base = filter === 'All' ? inquiries : inquiries.filter((i) => i.status === filter);
+    const base = filter === 'All' || filter === 'Calendar' ? inquiries : inquiries.filter((i) => i.status === filter);
 
     return base
       .map((inquiry, index) => ({
@@ -253,6 +295,56 @@ export default function InquiriesScreen({
         return a.index - b.index;
       });
   }, [filter, inquiries, metaById]);
+
+  const viewingEntries = useMemo(() => {
+    return inquiries
+      .map((inquiry) => {
+        const scheduled = viewingByInquiryId[inquiry.id];
+        const scheduleDateValue = scheduled?.date ?? inquiry.viewingAt;
+        if (!scheduleDateValue) return null;
+        return {
+          inquiry,
+          date: scheduleDateValue,
+          time: scheduled?.time ?? inquiry.viewingTime ?? inquiry.time,
+        };
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+      .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+  }, [inquiries, viewingByInquiryId]);
+
+  const viewingCalendarMonth = useMemo(() => {
+    if (calendarSelectedDate) {
+      const current = new Date(`${calendarSelectedDate}T12:00:00`);
+      return new Date(current.getFullYear(), current.getMonth(), 1);
+    }
+    return new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
+  }, [calendarMonth, calendarSelectedDate]);
+
+  const viewingCalendar = buildCalendarMonth(viewingCalendarMonth);
+  const selectedViewingDateEntries = useMemo(() => {
+    if (!calendarSelectedDate) {
+      return viewingEntries.filter((entry) => {
+        const entryDate = new Date(`${entry.date}T12:00:00`);
+        return (
+          entryDate.getFullYear() === viewingCalendarMonth.getFullYear() &&
+          entryDate.getMonth() === viewingCalendarMonth.getMonth()
+        );
+      });
+    }
+    return viewingEntries.filter((entry) => entry.date === calendarSelectedDate);
+  }, [calendarSelectedDate, viewingCalendarMonth, viewingEntries]);
+
+  const viewingCountsByDate = useMemo(() => {
+    const counts = new Map<string, number>();
+    viewingEntries.forEach((entry) => {
+      const key = entry.date;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    });
+    return counts;
+  }, [viewingEntries]);
+
+  const showCalendarView = filter === 'Calendar';
+  const displayedInquiryCount = showCalendarView ? viewingEntries.length : filtered.length;
 
   const unitTitle = (id: number) => units.find((u) => u.id === id)?.title ?? '';
   const activeChat = chatOpenId === null ? null : inquiries.find((inquiry) => inquiry.id === chatOpenId) ?? null;
@@ -329,6 +421,13 @@ export default function InquiriesScreen({
       },
       'Viewing',
     );
+    setViewingByInquiryId((prev) => ({
+      ...prev,
+      [scheduleInquiry.id]: {
+        date: scheduleDate,
+        time: scheduleTime,
+      },
+    }));
     onShowToast(`📅 Viewing scheduled with ${scheduleInquiry.name}`);
     setScheduleInquiryId(null);
   }
@@ -817,7 +916,9 @@ export default function InquiriesScreen({
 
       <div className="scroll-area">
         <div className="section-header">
-          <span className="section-title">Inquiries ({filtered.length})</span>
+          <span className="section-title">
+            {showCalendarView ? `Viewing calendar (${displayedInquiryCount})` : `Inquiries (${displayedInquiryCount})`}
+          </span>
         </div>
 
         <div className="search-filter-chips">
@@ -828,7 +929,181 @@ export default function InquiriesScreen({
           ))}
         </div>
 
-        {filtered.length === 0 ? (
+        {showCalendarView ? (
+          <div className="calendar-views inquiry-calendar-tab-shell">
+            <div className="calendar-nav">
+              <div className="calendar-nav-group" aria-label="Calendar month navigation">
+                <span className="calendar-nav-title">Month</span>
+                <div className="calendar-nav-controls">
+                  <button
+                    type="button"
+                    className="calendar-arrow-btn"
+                    onClick={() => setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
+                    aria-label="Previous month"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                  </button>
+                  <strong>{viewingCalendarMonth.toLocaleDateString('en-US', { month: 'long' })}</strong>
+                  <button
+                    type="button"
+                    className="calendar-arrow-btn"
+                    onClick={() => setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
+                    aria-label="Next month"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div className="calendar-nav-group" aria-label="Calendar year navigation">
+                <span className="calendar-nav-title">Year</span>
+                <div className="calendar-nav-controls">
+                  <button
+                    type="button"
+                    className="calendar-arrow-btn"
+                    onClick={() => setCalendarMonth((current) => new Date(current.getFullYear() - 1, current.getMonth(), 1))}
+                    aria-label="Previous year"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                  </button>
+                  <strong>{viewingCalendarMonth.getFullYear()}</strong>
+                  <button
+                    type="button"
+                    className="calendar-arrow-btn"
+                    onClick={() => setCalendarMonth((current) => new Date(current.getFullYear() + 1, current.getMonth(), 1))}
+                    aria-label="Next year"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="calendar-header-row">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                <span key={day} className="calendar-weekday">{day}</span>
+              ))}
+            </div>
+
+            <div className="calendar-grid">
+              {viewingCalendar.cells.map((cell) => {
+                if (cell.kind === 'blank') {
+                  return <div key={cell.id} className="calendar-day calendar-day-empty" aria-hidden="true" />;
+                }
+
+                const count = viewingCountsByDate.get(cell.date) ?? 0;
+                const isSelected = cell.date === calendarSelectedDate;
+
+                return (
+                  <button
+                    key={cell.id}
+                    type="button"
+                    className={`calendar-day ${heatLevelClass(count)} ${isSelected ? 'is-selected' : ''}`}
+                    aria-label={`${cell.date}: ${count} scheduled viewings`}
+                    onClick={() => setCalendarSelectedDate((current) => (current === cell.date ? '' : cell.date))}
+                  >
+                    <div className="calendar-day-fill" />
+                    <span className="calendar-day-number">{cell.day}</span>
+                    <span className="calendar-day-count">{calendarCountLabel(count)}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="inquiry-calendar-summary">
+              {calendarSelectedDate
+                ? `Scheduled viewings for ${new Date(`${calendarSelectedDate}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                : 'Tap a day to see the scheduled viewings.'}
+            </div>
+
+            <div className="inquiry-list inquiry-calendar-results">
+              {selectedViewingDateEntries.length === 0 ? (
+                <div className="empty-state inquiry-calendar-empty">
+                  <div className="empty-title">No scheduled viewing</div>
+                  <div className="empty-sub">There are no inquirers booked on this date.</div>
+                </div>
+              ) : (
+                selectedViewingDateEntries.map(({ inquiry }) => (
+                  <div key={inquiry.id} className="inquiry-item">
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      className="inquiry-main"
+                      onClick={() => setOpenId((current) => (current === inquiry.id ? null : inquiry.id))}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setOpenId((current) => (current === inquiry.id ? null : inquiry.id));
+                        }
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="inbox-avatar inbox-avatar-button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setProfilePeekInquiryId(inquiry.id);
+                        }}
+                        aria-label={`View ${inquiry.name} profile`}
+                      >
+                        <img src={inquiry.avatar ?? ''} alt={inquiry.name} />
+                      </button>
+                      <div className="inbox-info">
+                        <div className="inquiry-name-row">
+                          <span className="inbox-name">{inquiry.name}</span>
+                          <StatusBadge status={inquiry.status} />
+                        </div>
+                        <div className="listing-id-row">
+                          <span className="entity-id-tag">{inquiry.userId}</span>
+                          <span className={`roomie-score-chip is-${inquiry.trust.roomieTemperature.toLowerCase()}`}>
+                            {inquiry.trust.roomieTemperature === 'Cool' ? '❄️' : inquiry.trust.roomieTemperature === 'Warm' ? '🌤️' : '🔥'} Roomie {inquiry.trust.roomieScore}
+                          </span>
+                        </div>
+                        <div className="inquiry-unit">{unitTitle(inquiry.unitId)}</div>
+                        <div className="inbox-preview">{inquiry.message}</div>
+                      </div>
+                      <div className="inbox-meta">
+                        <div className="inbox-time">{inquiry.time}</div>
+                      </div>
+                    </div>
+
+                    {openId === inquiry.id && (
+                      <div className="inquiry-actions">
+                        <div className="inquiry-reply-box">
+                          <label className="inquiry-reply-label" htmlFor={`reply-calendar-${inquiry.id}`}>Quick reply</label>
+                          <textarea
+                            id={`reply-calendar-${inquiry.id}`}
+                            className="inquiry-reply-input"
+                            rows={3}
+                            placeholder="Write a quick reply to the inquiry here"
+                            value={draftReplies[inquiry.id] ?? ''}
+                            onChange={(event) => setDraft(inquiry.id, event.target.value)}
+                          />
+                        </div>
+                        <button className="unit-btn unit-btn-primary" onClick={() => { sendReply(inquiry); }}>
+                          Reply
+                        </button>
+                        <button className="unit-btn" onClick={() => { setScheduleInquiryId(inquiry.id); }}>
+                          Schedule viewing
+                        </button>
+                        <button className="unit-btn" onClick={() => { setChatOpenId(inquiry.id); }}>
+                          Open chat
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

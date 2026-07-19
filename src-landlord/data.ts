@@ -291,6 +291,8 @@ export interface Inquiry {
   message: string;
   time: string;
   status: InquiryStatus;
+  viewingAt?: string;
+  viewingTime?: string;
   thread: {
     id: number;
     sender: 'tenant' | 'landlord' | 'system';
@@ -352,6 +354,8 @@ export const INQUIRIES: Inquiry[] = [
     message: 'Thank you! See you on Saturday at 2pm.',
     time: 'Yesterday',
     status: 'Viewing',
+    viewingAt: '2026-07-18',
+    viewingTime: '2:00 PM',
     thread: [
       { id: 41, sender: 'tenant', text: 'Can I schedule a viewing this weekend? 🙂', time: '2d ago' },
       { id: 42, sender: 'landlord', text: 'Yes, Saturday at 2pm works 👍 Please bring one valid ID.', time: 'Yesterday' },
