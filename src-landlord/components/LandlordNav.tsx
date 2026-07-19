@@ -31,10 +31,10 @@ export default function LandlordNav({ activeTab, onTabChange, inquiryBadge, onAd
 
       <button className={`bottom-nav-item ${activeTab === 'listings' ? 'active' : ''}`} onClick={() => onTabChange('listings')}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="4" y="5" width="16" height="14" rx="2"/>
-          <path d="M8 9h8"/>
-          <path d="M8 13h8"/>
-          <path d="M8 17h5"/>
+          <rect x="4" y="5" width="16" height="14" rx="2" fill={activeTab === 'listings' ? 'currentColor' : 'none'} />
+          <path d="M8 9h8" stroke={activeTab === 'listings' ? '#fff' : 'currentColor'} />
+          <path d="M8 13h8" stroke={activeTab === 'listings' ? '#fff' : 'currentColor'} />
+          <path d="M8 17h5" stroke={activeTab === 'listings' ? '#fff' : 'currentColor'} />
         </svg>
         Listings
       </button>
@@ -76,9 +76,9 @@ export default function LandlordNav({ activeTab, onTabChange, inquiryBadge, onAd
 
       <button className={`bottom-nav-item ${activeTab === 'payments' ? 'active' : ''}`} onClick={() => onTabChange('payments')}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="2" y="5" width="20" height="14" rx="2"/>
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M6 9h.01M18 15h.01"/>
+          <rect x="2" y="5" width="20" height="14" rx="2" fill={activeTab === 'payments' ? 'currentColor' : 'none'} />
+          <circle cx="12" cy="12" r="3" fill={activeTab === 'payments' ? '#fff' : 'none'} />
+          <path d="M6 9h.01M18 15h.01" stroke={activeTab === 'payments' ? '#fff' : 'currentColor'} />
         </svg>
         Payments
       </button>
