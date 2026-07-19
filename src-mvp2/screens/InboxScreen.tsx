@@ -1123,8 +1123,7 @@ export default function InboxScreen({
                     type="button"
                     className={`inbox-message-action inbox-pin-action ${isPinned ? 'is-unpin' : 'is-pin'}`}
                     aria-label={isPinned ? 'Unpin conversation' : 'Pin conversation'}
-                    onPointerDown={stopActionEvent}
-                    onPointerUp={(event) => {
+                    onPointerDown={(event) => {
                       stopActionEvent(event);
                       toggleConversationPin(conversation.id);
                     }}
@@ -1142,8 +1141,7 @@ export default function InboxScreen({
                   <button
                     type="button"
                     className="inbox-message-action inbox-delete-action"
-                    onPointerDown={stopActionEvent}
-                    onPointerUp={(event) => {
+                    onPointerDown={(event) => {
                       stopActionEvent(event);
                       deleteConversation(conversation.id);
                     }}

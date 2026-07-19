@@ -2067,6 +2067,7 @@ img {
   pointer-events: none;
   cursor: pointer;
   transition: transform 0.16s ease, opacity 0.16s ease;
+  touch-action: manipulation;
 }
 
 .inbox-message-actions-left.show .inbox-message-action,
