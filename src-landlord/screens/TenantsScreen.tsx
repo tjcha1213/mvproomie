@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Payment, Unit } from '../data';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
+import ProfilePeekModal from '../../src/components/ProfilePeekModal';
 
 interface Props {
   units: Unit[];
@@ -28,6 +29,7 @@ function statusLabel(status: Payment['status']) {
 
 export default function TenantsScreen({ units, payments, onOpenProfile, notifications, onOpenNotification }: Props) {
   const occupiedUnits = units.filter((unit) => unit.status === 'Occupied');
+  const [profilePeekPaymentId, setProfilePeekPaymentId] = useState<number | null>(null);
 
   const tenantGroups = useMemo(() => {
     return occupiedUnits
@@ -47,6 +49,7 @@ export default function TenantsScreen({ units, payments, onOpenProfile, notifica
   const totalTenants = tenantGroups.reduce((sum, group) => sum + group.payments.length, 0);
   const multiTenantUnits = tenantGroups.filter((group) => group.payments.length > 1).length;
   const overdueTenants = tenantGroups.reduce((sum, group) => sum + group.overdueCount, 0);
+  const profilePeekPayment = profilePeekPaymentId === null ? null : payments.find((payment) => payment.id === profilePeekPaymentId) ?? null;
 
   return (
     <>
@@ -95,9 +98,14 @@ export default function TenantsScreen({ units, payments, onOpenProfile, notifica
             <div className="tenant-overview-list">
               {unitPayments.map((payment) => (
                 <div key={payment.id} className="tenant-overview-item">
-                  <div className="tenant-overview-avatar">
+                  <button
+                    type="button"
+                    className="tenant-overview-avatar tenant-overview-avatar-button"
+                    onClick={() => setProfilePeekPaymentId(payment.id)}
+                    aria-label={`View ${payment.tenant} profile`}
+                  >
                     <img src={payment.avatar ?? ''} alt={payment.tenant} />
-                  </div>
+                  </button>
                   <div className="tenant-overview-copy">
                     <div className="tenant-overview-name-row">
                       <span className="tenant-overview-name">{payment.tenant}</span>
@@ -125,6 +133,22 @@ export default function TenantsScreen({ units, payments, onOpenProfile, notifica
 
         <div style={{ height: 24 }} />
       </div>
+
+      <ProfilePeekModal
+        open={profilePeekPayment !== null}
+        avatar={profilePeekPayment?.avatar ?? ''}
+        name={profilePeekPayment?.tenant ?? ''}
+        role="Tenant"
+        userId={profilePeekPayment?.tenantId}
+        subtitle={profilePeekPayment ? `${profilePeekPayment.method} · ${profilePeekPayment.dueLabel}` : undefined}
+        details={profilePeekPayment ? [
+          `Unit: ${units.find((unit) => unit.id === profilePeekPayment.unitId)?.title ?? 'Unknown unit'}`,
+          `Status: ${statusLabel(profilePeekPayment.status)}`,
+          `Amount: ${profilePeekPayment.amount.toLocaleString('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 })}`,
+          `Notes: ${profilePeekPayment.notes}`,
+        ] : []}
+        onClose={() => setProfilePeekPaymentId(null)}
+      />
     </>
   );
 }
