@@ -19,6 +19,7 @@ interface Props {
 }
 
 const MENU_ITEMS = [
+  { key: 'settings', label: 'Account Settings', icon: PROFILE_MENU_ICONS.settings },
   { key: 'personal', label: 'Personal Details', icon: PROFILE_MENU_ICONS.personal },
   { key: 'security', label: 'Login & Security', icon: PROFILE_MENU_ICONS.security },
   { key: 'verification', label: 'Verification', icon: PROFILE_MENU_ICONS.verification },
@@ -114,6 +115,10 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
               type="button"
               className="profile-menu-item"
               onClick={() => {
+                if (item.key === 'settings') {
+                  onShowToast('Account Settings — coming soon');
+                  return;
+                }
                 if (item.key === 'reviews') {
                   onOpenReviews();
                   return;

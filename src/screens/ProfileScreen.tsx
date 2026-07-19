@@ -5,6 +5,7 @@ import { JUAN_AVATAR } from '../avatarPool';
 import { PROFILE_MENU_ICONS } from '../components/ProfileMenuIcons';
 
 const MENU_ITEMS = [
+  { label: 'Account Settings', icon: PROFILE_MENU_ICONS.settings },
   { label: 'Personal Details', icon: PROFILE_MENU_ICONS.personal },
   { label: 'Login & Security', icon: PROFILE_MENU_ICONS.security },
   { label: 'Verification', icon: PROFILE_MENU_ICONS.verification },
