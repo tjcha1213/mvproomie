@@ -1148,7 +1148,7 @@ export default function InboxScreen({
                   </button>
                 </div>
                 <div
-                  className={`inbox-item ${isPinned ? 'is-pinned' : ''}`}
+                  className={`inbox-item ${isPinned ? 'is-pinned' : ''} ${revealSide ? 'is-action-open' : ''}`}
                   role="button"
                   tabIndex={0}
                   style={{ transform: `translate3d(${offset}px, 0, 0)` } as CSSProperties}

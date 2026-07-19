@@ -1517,6 +1517,10 @@ img {
   border-radius: 0;
 }
 
+.inbox-item.is-action-open {
+  pointer-events: none;
+}
+
 .inbox-item.is-pinned {
   background: color-mix(in srgb, var(--primary) 7%, #ffffff);
   box-shadow: inset 6px 0 0 var(--primary);
