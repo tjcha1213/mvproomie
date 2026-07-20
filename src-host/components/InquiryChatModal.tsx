@@ -193,7 +193,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
         time: 'Just now',
         replyTo: replyTarget ?? undefined,
       },
-      inquiry.status === 'New' ? 'Viewing' : undefined,
+      'Replied',
     );
     onShowToast('💬 Reply sent');
     setDraft('');
@@ -586,14 +586,14 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
           >
             <button type="button" className="message-context-action" onClick={() => handleMessageLongPressAction('copy')}>Copy</button>
             <button type="button" className="message-context-action" onClick={() => handleMessageLongPressAction('reply')}>Reply</button>
+            {inquiry.thread.find((entry) => entry.id === messageContextMenu.messageId)?.sender === 'host' && (
+              <button type="button" className="message-context-action is-destructive" onClick={() => handleMessageLongPressAction('delete')}>Delete</button>
+            )}
             <div className="message-context-emoji-row" aria-label="Quick reactions">
               {['👍', '❤️', '😂', '😮', '🙏', '🔥'].map((emoji) => (
                 <button key={emoji} type="button" className="message-context-emoji" onClick={() => handleMessageLongPressAction('emoji', emoji)}>{emoji}</button>
               ))}
             </div>
-            {inquiry.thread.find((entry) => entry.id === messageContextMenu.messageId)?.sender === 'host' && (
-              <button type="button" className="message-context-action is-destructive" onClick={() => handleMessageLongPressAction('delete')}>Delete</button>
-            )}
           </div>
         </div>
       )}

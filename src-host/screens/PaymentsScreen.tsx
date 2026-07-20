@@ -4,6 +4,7 @@ import { formatPeso } from '../data';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
 import ProfilePeekModal from '../../src/components/ProfilePeekModal';
+import PaymentLogModal from '../components/PaymentLogModal';
 
 interface Props {
   payments: Payment[];
@@ -502,171 +503,19 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
         <div style={{ height: 16 }} />
       </div>
 
-      {selectedPayment && (
-        <div className="listing-modal-overlay" onClick={() => setSelectedPaymentId(null)}>
-          <div className="listing-modal payment-modal" onClick={event => event.stopPropagation()}>
-            <div className="listing-modal-head">
-              <div className="payment-modal-identity">
-                <div className="inbox-avatar payment-modal-avatar">
-                  <img src={selectedPayment.avatar ?? ''} alt={selectedPayment.tenant} />
-                </div>
-                <div>
-                <div className="listing-modal-topline">Payment log</div>
-                <h3>{selectedPayment.tenant}</h3>
-                <div className="listing-id-row listing-id-row-modal">
-                  <span className="entity-id-tag">{selectedPayment.tenantId}</span>
-                  <span className={`roomie-score-chip is-${selectedPayment.trust.roomieTemperature.toLowerCase()}`}>{selectedPayment.trust.roomieTemperature === 'Cool' ? '❄️' : selectedPayment.trust.roomieTemperature === 'Warm' ? '🌤️' : '🔥'} Roomie {selectedPayment.trust.roomieScore}</span>
-                </div>
-                <p>{unitTitle(selectedPayment.unitId)}</p>
-                </div>
-              </div>
-              <button className="listing-modal-close" onClick={() => setSelectedPaymentId(null)} aria-label="Close payment log">
-                ×
-              </button>
-            </div>
-            <div className="listing-modal-body">
-              <div className="listing-modal-price-row">
-                <span className="listing-modal-price">{formatPeso(selectedPayment.amount)}</span>
-                <StatusBadge status={selectedPayment.status} />
-              </div>
-
-              <div className="listing-modal-detail-grid">
-                <div className="listing-modal-detail">
-                  <span>Method</span>
-                  <strong>{selectedPayment.method}</strong>
-                </div>
-                <div className="listing-modal-detail">
-                  <span>Reference</span>
-                  <strong>{selectedPayment.reference}</strong>
-                </div>
-                <div className="listing-modal-detail">
-                  <span>Due date</span>
-                  <strong>{selectedPayment.dueDate}</strong>
-                </div>
-                <div className="listing-modal-detail">
-                  <span>Paid date</span>
-                  <strong>{selectedPayment.paidDate ?? 'Not settled yet'}</strong>
-                </div>
-                <div className="listing-modal-detail">
-                  <span>Banking route</span>
-                  <strong>{selectedPayment.bank}</strong>
-                </div>
-                <div className="listing-modal-detail">
-                  <span>Account</span>
-                  <strong>{selectedPayment.account}</strong>
-                </div>
-              </div>
-
-              <div className="listing-modal-section">
-                <div className="listing-modal-section-title">Payment analytics</div>
-                <div className="payment-modal-grid">
-                  <div className="payment-analytics-card">
-                    <div className="payment-analytics-title-row">
-                      <div className="payment-analytics-title">Tenant payment trend</div>
-                      <div className="payment-tooltip-anchor payment-info-trigger" tabIndex={0} aria-label="Tenant payment trend details">
-                        i
-                        <TooltipBubble
-                          title="Tenant payment trend"
-                          lines={[
-                            `Shows this account's last 6 billing cycles`,
-                            `${selectedPayment.bank} · ${selectedPayment.account}`,
-                          ]}
-                        />
-                      </div>
-                    </div>
-                    <div className="payment-trend-shell">
-                      <button
-                        type="button"
-                        className="bar-nav-btn payment-trend-nav"
-                        aria-label="Show previous 6-month payment log window"
-                        disabled={!canViewOlderPaymentTrend}
-                        onClick={() => setPaymentTrendWindowStart((current) => Math.max(current - 1, 0))}
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="15 18 9 12 15 6" />
-                        </svg>
-                      </button>
-                      <div className="payment-mini-chart">
-                      {visibleSelectedPaymentTrend.map((item, index) => {
-                        return (
-                          <button
-                            key={`${item.label}-${item.date.getFullYear()}-${index}`}
-                            type="button"
-                            className="payment-mini-col payment-mini-col-button"
-                            onClick={() => onShowToast(`${selectedPayment.tenant} · ${item.label} ${item.date.getFullYear()} · ${formatPeso(item.value)}`)}
-                          >
-                            <div className="payment-mini-tip">{formatPeso(item.value)}</div>
-                            <div className="payment-mini-bar-wrap">
-                              <div
-                                className={`payment-mini-bar ${index === visibleSelectedPaymentTrend.length - 1 ? 'is-current' : ''}`}
-                                style={{ height: `${Math.max((item.value / selectedPaymentTrendMax) * 100, 12)}%` }}
-                              />
-                            </div>
-                            <div className="payment-mini-label">{item.label}</div>
-                            <TooltipBubble
-                              title={`${selectedPayment.tenant} · ${item.label} ${item.date.getFullYear()}`}
-                              lines={[
-                                `${formatPeso(item.value)} settled or due in that cycle`,
-                                `${index === visibleSelectedPaymentTrend.length - 1 ? selectedPayment.dueLabel : 'Historical comparison point'}`,
-                              ]}
-                            />
-                          </button>
-                        );
-                      })}
-                      </div>
-                      <button
-                        type="button"
-                        className="bar-nav-btn payment-trend-nav"
-                        aria-label="Show next 6-month payment log window"
-                        disabled={!canViewNewerPaymentTrend}
-                        onClick={() => setPaymentTrendWindowStart((current) => Math.min(current + 1, selectedPaymentTrendSeries.length - 6))}
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="payment-analytics-card">
-                    <div className="payment-analytics-title-row">
-                      <div className="payment-analytics-title">Cycle details</div>
-                      <div className="payment-tooltip-anchor payment-info-trigger" tabIndex={0} aria-label="Cycle detail explanation">
-                        i
-                        <TooltipBubble
-                          title="Cycle details"
-                          lines={[
-                            `References the current ledger entry and its banking route`,
-                            `Useful for follow-up, reconciliation, and reminder context`,
-                          ]}
-                        />
-                      </div>
-                    </div>
-                    <div className="payment-log-metrics">
-                      <div className="payment-log-metric">
-                        <span>Collection state</span>
-                        <strong>{selectedPayment.status === 'Paid' ? 'On time' : selectedPayment.status === 'Due' ? 'Upcoming' : 'Late'}</strong>
-                      </div>
-                      <div className="payment-log-metric">
-                        <span>Settlement channel</span>
-                        <strong>{selectedPayment.method}</strong>
-                      </div>
-                      <div className="payment-log-metric">
-                        <span>Follow-up action</span>
-                        <strong>{selectedPayment.reminded ? 'Reminder sent' : 'No reminder'}</strong>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="listing-modal-section">
-                <div className="listing-modal-section-title">Notes</div>
-                <p className="listing-modal-description">{selectedPayment.notes}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <PaymentLogModal
+        open={selectedPayment !== null}
+        payment={selectedPayment}
+        unitTitle={selectedPayment ? unitTitle(selectedPayment.unitId) : ''}
+        visibleSelectedPaymentTrend={visibleSelectedPaymentTrend}
+        selectedPaymentTrendMax={selectedPaymentTrendMax}
+        canViewOlderPaymentTrend={canViewOlderPaymentTrend}
+        canViewNewerPaymentTrend={canViewNewerPaymentTrend}
+        onClose={() => setSelectedPaymentId(null)}
+        onPrevTrendWindow={() => setPaymentTrendWindowStart((current) => Math.max(current - 1, 0))}
+        onNextTrendWindow={() => setPaymentTrendWindowStart((current) => Math.min(current + 1, selectedPaymentTrendSeries.length - 6))}
+        onShowToast={onShowToast}
+      />
 
       <ProfilePeekModal
         open={profilePeekPayment !== null}

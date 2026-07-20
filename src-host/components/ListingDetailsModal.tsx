@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type UIEvent as ReactUIEvent } from 'react';
 import type { Unit, UnitStatus } from '../data';
 import { formatPeso } from '../data';
+import ListingPhotoLightbox from './ListingPhotoLightbox';
 
 interface Props {
   unit: Unit | null;
@@ -30,9 +31,7 @@ export default function ListingDetailsModal({ unit, open, onClose }: Props) {
   const [selectedHistoryDate, setSelectedHistoryDate] = useState<string | null>(null);
   const [historyMonthIndex, setHistoryMonthIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
-  const lightboxRef = useRef<HTMLDivElement>(null);
   const carouselSnapTimerRef = useRef<number | null>(null);
-  const lightboxSnapTimerRef = useRef<number | null>(null);
 
   const gallery = useMemo(() => {
     if (!unit) return [];
@@ -91,11 +90,6 @@ export default function ListingDetailsModal({ unit, open, onClose }: Props) {
 
   const openLightboxPhoto = (index: number) => {
     setLightboxIndex(index);
-    requestAnimationFrame(() => {
-      const track = lightboxRef.current;
-      if (!track) return;
-      track.scrollTo({ left: track.clientWidth * index, behavior: 'smooth' });
-    });
   };
 
   const handleCarouselScroll = useCallback((event: ReactUIEvent<HTMLDivElement>) => {
@@ -106,22 +100,6 @@ export default function ListingDetailsModal({ unit, open, onClose }: Props) {
 
     if (carouselSnapTimerRef.current !== null) window.clearTimeout(carouselSnapTimerRef.current);
     carouselSnapTimerRef.current = window.setTimeout(() => {
-      const settledIndex = Math.max(0, Math.min(gallery.length - 1, Math.round(track.scrollLeft / width)));
-      const targetLeft = settledIndex * width;
-      if (Math.abs(track.scrollLeft - targetLeft) > 1) {
-        track.scrollTo({ left: targetLeft, behavior: 'smooth' });
-      }
-    }, 90);
-  }, [gallery.length]);
-
-  const handleLightboxScroll = useCallback((event: ReactUIEvent<HTMLDivElement>) => {
-    const track = event.currentTarget;
-    const width = Math.max(track.clientWidth, 1);
-    const nextIndex = Math.max(0, Math.min(gallery.length - 1, Math.round(track.scrollLeft / width)));
-    setLightboxIndex((current) => (current === nextIndex ? current : nextIndex));
-
-    if (lightboxSnapTimerRef.current !== null) window.clearTimeout(lightboxSnapTimerRef.current);
-    lightboxSnapTimerRef.current = window.setTimeout(() => {
       const settledIndex = Math.max(0, Math.min(gallery.length - 1, Math.round(track.scrollLeft / width)));
       const targetLeft = settledIndex * width;
       if (Math.abs(track.scrollLeft - targetLeft) > 1) {
@@ -150,7 +128,6 @@ export default function ListingDetailsModal({ unit, open, onClose }: Props) {
 
   useEffect(() => () => {
     if (carouselSnapTimerRef.current !== null) window.clearTimeout(carouselSnapTimerRef.current);
-    if (lightboxSnapTimerRef.current !== null) window.clearTimeout(lightboxSnapTimerRef.current);
   }, []);
 
   if (!open || !unit) return null;
@@ -352,36 +329,13 @@ export default function ListingDetailsModal({ unit, open, onClose }: Props) {
         </div>
       </div>
 
-      {lightboxIndex !== null && (
-        <div className="listing-modal-overlay listing-lightbox-overlay" onClick={onClose}>
-          <div className="listing-lightbox" onClick={(event) => event.stopPropagation()}>
-            <div className="listing-lightbox-track" ref={lightboxRef} onScroll={handleLightboxScroll}>
-              {gallery.map((image, index) => (
-                <div key={`${unit.id}-lightbox-${index}`} className="listing-lightbox-slide">
-                  <img src={image} alt={`${unit.title} enlarged photo ${index + 1}`} />
-                </div>
-              ))}
-            </div>
-            <button className="listing-modal-close" onClick={onClose} aria-label="Close full photo">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-            <div className="listing-modal-carousel-dots listing-lightbox-dots">
-              {gallery.map((_, index) => (
-                <button
-                  key={`${unit.id}-lightbox-dot-${index}`}
-                  type="button"
-                  className={`listing-modal-carousel-dot ${lightboxIndex === index ? 'active' : ''}`}
-                  onClick={() => openLightboxPhoto(index)}
-                  aria-label={`Go to full photo ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      <ListingPhotoLightbox
+        open={lightboxIndex !== null}
+        unitTitle={unit.title}
+        gallery={gallery}
+        initialIndex={lightboxIndex ?? 0}
+        onClose={onClose}
+      />
     </>
   );
 }

@@ -455,9 +455,6 @@ export default function InquiriesScreen({
       return;
     }
 
-    const viewingScheduled = Boolean(viewingByInquiryId[inquiry.id] || inquiry.viewingAt);
-    const nextStatus: InquiryStatus = viewingScheduled ? 'Viewing' : 'Replied';
-
     onAddThreadMessage(
       inquiry.id,
       {
@@ -466,7 +463,7 @@ export default function InquiriesScreen({
         time: timeStampLabel(),
         replyTo: replyTarget ?? undefined,
       },
-      nextStatus,
+      'Replied',
     );
     setDraftReplies((prev) => ({ ...prev, [inquiry.id]: '' }));
     setReplyTarget(null);
@@ -1572,6 +1569,9 @@ export default function InquiriesScreen({
               </button>
               <button type="button" className="message-context-action" onClick={() => handleMessageLongPressAction('reply')}>
                 Reply
+              </button>
+              <button type="button" className="message-context-action is-destructive" onClick={() => handleMessageLongPressAction('delete')}>
+                Delete
               </button>
               <div className="message-context-emoji-row" aria-label="Quick reactions">
                 {MESSAGE_REACTIONS.map((emoji) => (

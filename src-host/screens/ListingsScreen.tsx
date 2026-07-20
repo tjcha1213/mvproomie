@@ -3,6 +3,8 @@ import type { Unit, UnitStatus } from '../data';
 import { formatPeso } from '../data';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
+import ListingPhotoLightbox from '../components/ListingPhotoLightbox';
+import ListingEditModal, { type ListingEditDraft } from '../components/ListingEditModal';
 
 interface Props {
   units: Unit[];
@@ -73,7 +75,7 @@ export default function ListingsScreen({
   const [historyView, setHistoryView] = useState<'log' | 'calendar'>('log');
   const [selectedHistoryDate, setSelectedHistoryDate] = useState<string | null>(null);
   const [historyMonthIndex, setHistoryMonthIndex] = useState(0);
-  const [editDraft, setEditDraft] = useState({
+  const [editDraft, setEditDraft] = useState<ListingEditDraft>({
     title: '',
     location: '',
     price: '',
@@ -86,9 +88,7 @@ export default function ListingsScreen({
   });
   const [editPhotos, setEditPhotos] = useState<string[]>([]);
   const carouselRef = useRef<HTMLDivElement>(null);
-  const lightboxRef = useRef<HTMLDivElement>(null);
   const carouselSnapTimerRef = useRef<number | null>(null);
-  const lightboxSnapTimerRef = useRef<number | null>(null);
 
   const filtered = filter === 'All' ? units : units.filter(u => u.status === filter);
   const selectedUnit = selectedUnitId === null ? null : units.find((u) => u.id === selectedUnitId) ?? null;
@@ -234,9 +234,6 @@ export default function ListingsScreen({
     if (carouselSnapTimerRef.current !== null) {
       window.clearTimeout(carouselSnapTimerRef.current);
     }
-    if (lightboxSnapTimerRef.current !== null) {
-      window.clearTimeout(lightboxSnapTimerRef.current);
-    }
   }, []);
 
   const scrollCarouselToIndex = useCallback((index: number, behavior: ScrollBehavior = 'smooth') => {
@@ -273,34 +270,7 @@ export default function ListingsScreen({
 
   function openLightboxPhoto(index: number) {
     setLightboxIndex(index);
-    requestAnimationFrame(() => {
-      const track = lightboxRef.current;
-      if (!track) return;
-      track.scrollTo({
-        left: track.clientWidth * index,
-        behavior: 'smooth',
-      });
-    });
   }
-
-  const handleLightboxScroll = useCallback((event: ReactUIEvent<HTMLDivElement>) => {
-    const track = event.currentTarget;
-    const width = Math.max(track.clientWidth, 1);
-    const nextIndex = Math.max(0, Math.min(selectedUnitGallery.length - 1, Math.round(track.scrollLeft / width)));
-    setLightboxIndex((current) => (current === nextIndex ? current : nextIndex));
-
-    if (lightboxSnapTimerRef.current !== null) {
-      window.clearTimeout(lightboxSnapTimerRef.current);
-    }
-
-    lightboxSnapTimerRef.current = window.setTimeout(() => {
-      const settledIndex = Math.max(0, Math.min(selectedUnitGallery.length - 1, Math.round(track.scrollLeft / width)));
-      const targetLeft = settledIndex * width;
-      if (Math.abs(track.scrollLeft - targetLeft) > 1) {
-        track.scrollTo({ left: targetLeft, behavior: 'smooth' });
-      }
-    }, 90);
-  }, [selectedUnitGallery.length]);
 
   return (
     <>
@@ -609,148 +579,24 @@ export default function ListingsScreen({
         </div>
       )}
 
-      {editUnit && (
-        <div className="listing-modal-overlay" onClick={() => setEditUnitId(null)}>
-          <div className="listing-modal listing-edit-modal" onClick={(event) => event.stopPropagation()}>
-            <div className="listing-modal-head">
-              <div>
-                <div className="listing-modal-topline">Edit listing</div>
-                <h3>{editUnit.title}</h3>
-                <p>Update the mock listing details shown across the host demo.</p>
-              </div>
-              <button className="listing-modal-close" onClick={() => setEditUnitId(null)} aria-label="Close edit listing">
-                ×
-              </button>
-            </div>
-            <div className="listing-modal-body listing-edit-body">
-              <div className="new-listing-grid">
-                <label className="new-listing-field">
-                  <span>Listing title</span>
-                  <input value={editDraft.title} onChange={(event) => setEditDraft((prev) => ({ ...prev, title: event.target.value }))} />
-                </label>
-                <label className="new-listing-field">
-                  <span>Location</span>
-                  <input value={editDraft.location} onChange={(event) => setEditDraft((prev) => ({ ...prev, location: event.target.value }))} />
-                </label>
-                <label className="new-listing-field">
-                  <span>Monthly rent</span>
-                  <input type="number" value={editDraft.price} onChange={(event) => setEditDraft((prev) => ({ ...prev, price: event.target.value }))} />
-                </label>
-                <label className="new-listing-field">
-                  <span>Status</span>
-                  <select value={editDraft.status} onChange={(event) => setEditDraft((prev) => ({ ...prev, status: event.target.value as UnitStatus }))}>
-                    <option value="Active">Active</option>
-                    <option value="Occupied">Occupied</option>
-                    <option value="Draft">Draft</option>
-                  </select>
-                </label>
-                <label className="new-listing-field">
-                  <span>Bedrooms</span>
-                  <input type="number" value={editDraft.bedrooms} onChange={(event) => setEditDraft((prev) => ({ ...prev, bedrooms: event.target.value }))} />
-                </label>
-                <label className="new-listing-field">
-                  <span>Bathrooms</span>
-                  <input type="number" value={editDraft.bathrooms} onChange={(event) => setEditDraft((prev) => ({ ...prev, bathrooms: event.target.value }))} />
-                </label>
-                <label className="new-listing-field">
-                  <span>Floor area</span>
-                  <input type="number" value={editDraft.sqm} onChange={(event) => setEditDraft((prev) => ({ ...prev, sqm: event.target.value }))} />
-                </label>
-                <label className="new-listing-field">
-                  <span>Amenities</span>
-                  <input value={editDraft.amenities} onChange={(event) => setEditDraft((prev) => ({ ...prev, amenities: event.target.value }))} />
-                </label>
-              </div>
-              <div className="new-listing-field">
-                <span>Listing photos</span>
-                <label className="new-listing-upload">
-                  <input type="file" accept="image/*" multiple onChange={handleEditPhotoChange} />
-                  <div className="new-listing-upload-copy">
-                    <strong>Replace listing photos</strong>
-                    <small>Upload up to 4 images. The first image becomes the cover photo.</small>
-                  </div>
-                </label>
-                <div className="new-listing-photo-grid">
-                  {editPhotos.slice(0, 4).map((photo, index) => (
-                    <div key={`edit-photo-${index}`} className="new-listing-photo-slot has-photo">
-                      <img src={photo} alt={`Listing edit photo ${index + 1}`} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <label className="new-listing-field">
-                <span>Description</span>
-                <textarea value={editDraft.description} onChange={(event) => setEditDraft((prev) => ({ ...prev, description: event.target.value }))} />
-              </label>
-              <div className="listing-modal-actions">
-                <button className="unit-btn" onClick={() => setEditUnitId(null)}>Cancel</button>
-                <button className="unit-btn unit-btn-primary" onClick={saveUnitEdits}>Save changes</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ListingEditModal
+        open={editUnit !== null}
+        unit={editUnit}
+        draft={editDraft}
+        photos={editPhotos}
+        onClose={() => setEditUnitId(null)}
+        onSave={saveUnitEdits}
+        onDraftChange={setEditDraft}
+        onPhotoUpload={handleEditPhotoChange}
+      />
 
-      {selectedUnit && lightboxIndex !== null && (
-        <div className="listing-modal-overlay listing-lightbox-overlay" onClick={() => setLightboxIndex(null)}>
-          <div className="listing-lightbox-modal" role="dialog" aria-modal="true" aria-label="Listing photo viewer" onClick={(event) => event.stopPropagation()}>
-            <div
-              className="listing-lightbox-track"
-              ref={lightboxRef}
-              onScroll={handleLightboxScroll}
-            >
-              {selectedUnitGallery.map((image, index) => (
-                <div key={`${selectedUnit.id}-lightbox-${index}`} className="listing-lightbox-slide">
-                  <img src={image} alt={`${selectedUnit.title} enlarged photo ${index + 1}`} />
-                </div>
-              ))}
-            </div>
-            <button className="listing-modal-close" onClick={() => setLightboxIndex(null)} aria-label="Close full photo">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-            {selectedUnitGallery.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  className="listing-lightbox-nav is-prev"
-                  onClick={() => openLightboxPhoto(Math.max((lightboxIndex ?? 0) - 1, 0))}
-                  disabled={lightboxIndex === 0}
-                  aria-label="Previous photo"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  className="listing-lightbox-nav is-next"
-                  onClick={() => openLightboxPhoto(Math.min((lightboxIndex ?? 0) + 1, selectedUnitGallery.length - 1))}
-                  disabled={lightboxIndex === selectedUnitGallery.length - 1}
-                  aria-label="Next photo"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </button>
-                <div className="listing-lightbox-dots">
-                  {selectedUnitGallery.map((_, index) => (
-                    <button
-                      key={`${selectedUnit.id}-lightbox-dot-${index}`}
-                      type="button"
-                      className={`listing-modal-carousel-dot ${lightboxIndex === index ? 'active' : ''}`}
-                      onClick={() => openLightboxPhoto(index)}
-                      aria-label={`Go to full photo ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      <ListingPhotoLightbox
+        open={lightboxIndex !== null && selectedUnit !== null}
+        unitTitle={selectedUnit?.title ?? ''}
+        gallery={selectedUnitGallery}
+        initialIndex={lightboxIndex ?? 0}
+        onClose={() => setLightboxIndex(null)}
+      />
     </>
   );
 }
