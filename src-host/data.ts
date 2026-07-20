@@ -295,6 +295,7 @@ export interface Inquiry {
   message: string;
   time: string;
   status: InquiryStatus;
+  unreadCount: number;
   viewingAt?: string;
   viewingTime?: string;
   thread: {
@@ -324,6 +325,7 @@ export const INQUIRIES: Inquiry[] = [
     message: 'Any chance I can reserve it today? I can send the requirements right away.',
     time: '2m ago',
     status: 'New',
+    unreadCount: 3,
     thread: [
       { id: 11, sender: 'tenant', text: 'Hi po! Is the bedspace still available? Looking to move in Aug 1 🙂', time: '5m ago' },
       { id: 12, sender: 'tenant', text: 'If available, I can move the deposit today and confirm my move-in date.', time: '4m ago' },
@@ -344,6 +346,7 @@ export const INQUIRIES: Inquiry[] = [
     message: 'Can I schedule a viewing this weekend? 😊',
     time: '1h ago',
     status: 'New',
+    unreadCount: 1,
     thread: [
       { id: 21, sender: 'tenant', text: 'Can I schedule a viewing this weekend? 😊', time: '1h ago' },
     ],
@@ -362,6 +365,7 @@ export const INQUIRIES: Inquiry[] = [
     message: 'Is water included in the rent? 👀',
     time: '3h ago',
     status: 'New',
+    unreadCount: 1,
     thread: [
       { id: 31, sender: 'tenant', text: 'Is water included in the rent? 👀', time: '3h ago' },
     ],
@@ -380,6 +384,7 @@ export const INQUIRIES: Inquiry[] = [
     message: 'Thank you! See you on Saturday at 2pm.',
     time: 'Yesterday',
     status: 'Viewing',
+    unreadCount: 0,
     viewingAt: '2026-07-25',
     viewingTime: '2:00 PM',
     thread: [
@@ -402,6 +407,7 @@ export const INQUIRIES: Inquiry[] = [
     message: 'Sure, I will send my requirements tonight.',
     time: 'Mon',
     status: 'Replied',
+    unreadCount: 0,
     thread: [
       { id: 51, sender: 'tenant', text: 'Is the unit still open for July move-in? 🙂', time: 'Mon' },
       { id: 52, sender: 'host', text: 'Yes, it is still available. I can send the requirements list here 👍', time: 'Mon' },

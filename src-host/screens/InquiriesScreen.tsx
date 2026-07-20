@@ -9,6 +9,7 @@ interface Props {
   inquiries: Inquiry[];
   units: Unit[];
   onDeleteInquiry: (id: number) => void;
+  onMarkInquiryRead: (id: number) => void;
   onSetStatus: (id: number, status: InquiryStatus) => void;
   onSetViewing: (id: number, viewing: { date: string; time: string } | null) => void;
   onAddThreadMessage: (
@@ -233,6 +234,7 @@ export default function InquiriesScreen({
   inquiries,
   units,
   onDeleteInquiry,
+  onMarkInquiryRead,
   onSetStatus,
   onSetViewing,
   onAddThreadMessage,
@@ -256,7 +258,6 @@ export default function InquiriesScreen({
   const [swipe, setSwipe] = useState<SwipeState | null>(null);
   const [profilePeekInquiryId, setProfilePeekInquiryId] = useState<number | null>(null);
   const [conversationActionSheetId, setConversationActionSheetId] = useState<number | null>(null);
-  const [conversationReadById, setConversationReadById] = useState<Record<number, boolean>>({});
   const [conversationMutedById, setConversationMutedById] = useState<Record<number, boolean>>({});
   const [messageContextMenu, setMessageContextMenu] = useState<MessageContextMenuState | null>(null);
   const [replyTarget, setReplyTarget] = useState<MessageReplyTarget | null>(null);
@@ -356,11 +357,6 @@ export default function InquiriesScreen({
     setMessageContextMenu(null);
     setReplyTarget(null);
   }, [chatOpenId, inquiries]);
-
-  useEffect(() => {
-    if (chatOpenId === null) return;
-    setConversationReadById((prev) => (prev[chatOpenId] ? prev : { ...prev, [chatOpenId]: true }));
-  }, [chatOpenId]);
 
   const latestChatMessageId = chatOpenId === null
     ? null
@@ -806,7 +802,7 @@ export default function InquiriesScreen({
   const handleConversationLongPressAction = useCallback((action: 'read' | 'mute' | 'pin' | 'delete') => {
     if (conversationActionSheetId === null) return;
     if (action === 'read') {
-      setConversationReadById((prev) => ({ ...prev, [conversationActionSheetId]: true }));
+      onMarkInquiryRead(conversationActionSheetId);
       onShowToast('Marked as read');
     } else if (action === 'mute') {
       setConversationMutedById((prev) => ({ ...prev, [conversationActionSheetId]: !prev[conversationActionSheetId] }));
@@ -817,7 +813,7 @@ export default function InquiriesScreen({
       handleAction(conversationActionSheetId, 'delete');
     }
     setConversationActionSheetId(null);
-  }, [conversationActionSheetId, conversationMutedById, handleAction, onShowToast]);
+  }, [conversationActionSheetId, conversationMutedById, handleAction, onMarkInquiryRead, onShowToast]);
 
   const handleMessageLongPressAction = useCallback((action: 'copy' | 'reply' | 'emoji' | 'delete', payload?: string) => {
     if (!activeChat || !messageContextMenu) return;
@@ -871,8 +867,14 @@ export default function InquiriesScreen({
   };
 
   const openInquiryChat = (id: number) => {
+    onMarkInquiryRead(id);
     setChatOpenId(id);
   };
+
+  const closeInquiryChat = useCallback(() => {
+    setChatOpenId(null);
+    setProfilePeekInquiryId(null);
+  }, []);
 
   const profilePeekInquiry = profilePeekInquiryId === null
     ? null
@@ -1043,8 +1045,8 @@ export default function InquiriesScreen({
                         aria-label={`View ${inquiry.name} profile`}
                       >
                         <img src={inquiry.avatar ?? ''} alt={inquiry.name} />
-                        {inquiry.status === 'New' && !conversationReadById[inquiry.id] && (
-                          <InquiryCountBubble count={Math.max(inquiry.thread.filter((entry) => entry.sender === 'tenant').length, 1)} />
+                        {inquiry.unreadCount > 0 && (
+                          <InquiryCountBubble count={inquiry.unreadCount} />
                         )}
                       </button>
                       <div className="inbox-info">
@@ -1114,7 +1116,7 @@ export default function InquiriesScreen({
                   : openAction?.inquiryId === i.id
                     ? openAction.side
                     : null;
-              const isRead = Boolean(conversationReadById[i.id]);
+              const isRead = i.unreadCount === 0;
 
               return (
                 <div key={i.id} className={`inquiry-item ${meta.pinned ? 'is-pinned' : ''}`}>
@@ -1188,8 +1190,8 @@ export default function InquiriesScreen({
                         aria-label={`View ${i.name} profile`}
                       >
                         <img src={i.avatar ?? ''} alt={i.name} />
-                        {i.status === 'New' && (
-                          <InquiryCountBubble count={Math.max(i.thread.filter((entry) => entry.sender === 'tenant').length, 1)} />
+                        {i.unreadCount > 0 && (
+                          <InquiryCountBubble count={i.unreadCount} />
                         )}
                       </button>
                       <div className="inbox-info">
@@ -1405,10 +1407,7 @@ export default function InquiriesScreen({
         open={chatOpenId !== null}
         inquiry={activeChat}
         units={units}
-        onClose={() => {
-          setChatOpenId(null);
-          setProfilePeekInquiryId(null);
-        }}
+        onClose={closeInquiryChat}
         onSetStatus={onSetStatus}
         onSetViewing={onSetViewing}
         onAddThreadMessage={onAddThreadMessage}

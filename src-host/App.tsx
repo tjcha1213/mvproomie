@@ -128,6 +128,10 @@ function App() {
     );
   }, []);
 
+  const markInquiryRead = useCallback((id: number) => {
+    setInquiries((prev) => prev.map((inquiry) => (inquiry.id === id ? { ...inquiry, unreadCount: 0 } : inquiry)));
+  }, []);
+
   const deleteInquiry = useCallback((id: number) => {
     setInquiries((prev) => prev.filter((inquiry) => inquiry.id !== id));
     setSharedInquiryId((current) => (current === id ? null : current));
@@ -158,6 +162,7 @@ function App() {
         return {
           ...inquiry,
           status: status ?? inquiry.status,
+          unreadCount: message.sender === 'tenant' ? inquiry.unreadCount + 1 : inquiry.unreadCount,
           thread: [...inquiry.thread, { id: nextThreadId, ...message }],
         };
       }),
@@ -239,12 +244,12 @@ function App() {
     showToast(draft.status === 'Active' ? '🚀 New listing published to the demo' : '📝 Draft listing created');
   }, [showToast, units]);
 
-  const newInquiryCount = inquiries.filter(i => i.status === 'New').length;
+  const inquiryMessageCount = inquiries.reduce((total, inquiry) => total + inquiry.unreadCount, 0);
   const overdueTotal = payments.filter((payment) => payment.status === 'Overdue').reduce((sum, payment) => sum + payment.amount, 0);
   const draftCount = units.filter((unit) => unit.status === 'Draft').length;
   const unverifiedCount = units.filter((unit) => unit.status !== 'Draft' && !unit.verified).length;
   const notifications: HeaderNotification[] = [
-    { id: 'new-inquiries', title: `${newInquiryCount} new inquiries`, detail: 'Open the inquiries tab and respond to the newest prospects.', tab: 'inquiries' as const },
+    { id: 'new-inquiries', title: `${inquiryMessageCount} unread inquiry messages`, detail: 'Open the inquiries tab and respond to the latest prospect messages.', tab: 'inquiries' as const },
     { id: 'overdue-payments', title: `${formatPesoShort(overdueTotal)} overdue`, detail: 'Review overdue rent logs and follow up from the payments tab.', tab: 'payments' as const },
     { id: 'draft-listings', title: `${draftCount} draft listings`, detail: 'Finish and publish the listings still saved as drafts.', tab: 'listings' as const },
     { id: 'verification', title: `${unverifiedCount} listings pending verification`, detail: 'Open listings to review the units that still need verification.', tab: 'listings' as const },
@@ -259,12 +264,12 @@ function App() {
     <div className="app-shell">
       <div className="phone-container">
         {/* Desktop-only sidebar; bottom nav takes over on mobile (CSS-switched). */}
-        <Sidebar
-          activeTab={tab}
-          onTabChange={setTab}
-          inquiryBadge={newInquiryCount}
-          onAdd={openNewListing}
-        />
+          <Sidebar
+            activeTab={tab}
+            onTabChange={setTab}
+            inquiryBadge={inquiryMessageCount}
+            onAdd={openNewListing}
+          />
         <div className="screen" key={tab}>
           {tab === 'dashboard' && (
             <DashboardScreen
@@ -313,6 +318,7 @@ function App() {
                 inquiries={inquiries}
                 units={units}
                 onDeleteInquiry={deleteInquiry}
+                onMarkInquiryRead={markInquiryRead}
                 onSetStatus={setInquiryStatus}
                 onSetViewing={setInquiryViewing}
                 onAddThreadMessage={addInquiryThreadMessage}
@@ -361,12 +367,12 @@ function App() {
           )}
         </div>
 
-        <HostNav
-          activeTab={tab}
-          onTabChange={setTab}
-          inquiryBadge={newInquiryCount}
-          onAdd={openNewListing}
-        />
+            <HostNav
+              activeTab={tab}
+              onTabChange={setTab}
+              inquiryBadge={inquiryMessageCount}
+              onAdd={openNewListing}
+            />
 
         {toast && <Toast message={toast} />}
 
