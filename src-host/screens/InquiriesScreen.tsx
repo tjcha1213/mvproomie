@@ -47,6 +47,14 @@ const FILTERS: Array<{ value: Filter; label: string }> = [
   { value: 'Viewing', label: 'Scheduled' },
   { value: 'Calendar', label: 'Calendar' },
 ];
+
+const FILTER_TITLE: Record<Filter, string> = {
+  All: 'All Inquiries',
+  New: 'New Inquiries',
+  Replied: 'Replied Inquiries',
+  Viewing: 'Scheduled Inquiries',
+  Calendar: 'Scheduled Calendar',
+};
 const ACTION_WIDTH = 92;
 const REVEAL_THRESHOLD = 10;
 const COMMIT_THRESHOLD = 48;
@@ -340,6 +348,14 @@ export default function InquiriesScreen({
       const next = { ...prev };
 
       for (const inquiry of inquiries) {
+        const hasScheduledViewing = inquiry.status === 'Viewing' && Boolean(inquiry.viewingAt);
+        if (!hasScheduledViewing && next[inquiry.id]) {
+          delete next[inquiry.id];
+          changed = true;
+        }
+      }
+
+      for (const inquiry of inquiries) {
         if (inquiry.status !== 'Viewing' || !inquiry.viewingAt) continue;
         if (!next[inquiry.id]) {
           next[inquiry.id] = {
@@ -400,7 +416,11 @@ export default function InquiriesScreen({
   }, [chatOpenId, inquiries, replyTarget?.text, latestChatMessageId]);
 
   const filtered = useMemo(() => {
-    const base = filter === 'All' || filter === 'Calendar' ? inquiries : inquiries.filter((i) => i.status === filter);
+    const base = filter === 'All' || filter === 'Calendar'
+      ? inquiries
+      : filter === 'New'
+        ? inquiries.filter((i) => i.unreadCount > 0)
+        : inquiries.filter((i) => i.status === filter);
 
     return base
       .map((inquiry, index) => ({
@@ -468,7 +488,8 @@ export default function InquiriesScreen({
   }, [viewingEntries]);
 
   const showCalendarView = filter === 'Calendar';
-  const displayedInquiryCount = showCalendarView ? viewingEntries.length : inquiries.length;
+  const displayedInquiryCount = showCalendarView ? viewingEntries.length : filtered.length;
+  const inquiryTitle = FILTER_TITLE[filter];
 
   const unitTitle = (id: number) => units.find((u) => u.id === id)?.title ?? '';
   const activeChat = chatOpenId === null ? null : inquiries.find((inquiry) => inquiry.id === chatOpenId) ?? null;
@@ -911,7 +932,7 @@ export default function InquiriesScreen({
       <div className="scroll-area">
         <div className="section-header">
           <span className="section-title">
-            {showCalendarView ? `Scheduled calendar (${displayedInquiryCount})` : `Inquiries (${displayedInquiryCount})`}
+            {`${inquiryTitle} (${displayedInquiryCount})`}
           </span>
         </div>
 
