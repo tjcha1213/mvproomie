@@ -52,6 +52,7 @@ type MessageContextMenuState = {
   top: number;
   left: number;
   width: number;
+  align: 'left' | 'right';
 };
 
 type MessageReplyTarget = {
@@ -640,11 +641,19 @@ export default function InboxScreen({
     return null;
   }, [currentConversationOffset, listOpenAction, swipe]);
 
-  const openMessageContextMenu = useCallback((messageId: string, rect: DOMRect) => {
+  const openMessageContextMenu = useCallback((messageId: string, rect: DOMRect, align: 'left' | 'right') => {
     const width = MESSAGE_CONTEXT_MENU_WIDTH;
-    const left = clamp(rect.left, 12, Math.max(12, window.innerWidth - width - 12));
-    const top = clamp(rect.bottom + 8, 12, Math.max(12, window.innerHeight - 220));
-    setMessageContextMenu({ messageId, left, top, width });
+    const maxLeft = Math.max(12, window.innerWidth - width - 12);
+    const left = align === 'right'
+      ? clamp(rect.right - width, 12, maxLeft)
+      : clamp(rect.left, 12, maxLeft);
+    const menuHeight = 214;
+    const belowTop = rect.bottom + 8;
+    const aboveTop = rect.top - menuHeight - 8;
+    const top = belowTop + menuHeight <= window.innerHeight - 12
+      ? clamp(belowTop, 12, Math.max(12, window.innerHeight - menuHeight - 12))
+      : Math.max(12, aboveTop);
+    setMessageContextMenu({ messageId, left, top, width, align });
   }, []);
 
   const deleteMessage = useCallback((messageId: string) => {
@@ -840,7 +849,11 @@ export default function InboxScreen({
                             const current = messageLongPressRef.current;
                             if (!current || current.messageId !== message.id || current.triggered) return;
                             current.triggered = true;
-                            openMessageContextMenu(message.id, current.rect ?? event.currentTarget.getBoundingClientRect());
+                            openMessageContextMenu(
+                              message.id,
+                              current.rect ?? event.currentTarget.getBoundingClientRect(),
+                              message.author === 'self' ? 'right' : 'left'
+                            );
                           }, MESSAGE_LONG_PRESS_DELAY),
                           startX: event.clientX,
                           startY: event.clientY,
