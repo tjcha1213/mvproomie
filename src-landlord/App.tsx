@@ -17,6 +17,8 @@ import ProfileScreen from './screens/ProfileScreen';
 import ReviewsScreen from './screens/ReviewsScreen';
 import Toast from './components/Toast';
 import ThemePicker from './components/ThemePicker';
+import ListingDetailsModal from './components/ListingDetailsModal';
+import InquiryChatModal from './components/InquiryChatModal';
 
 const LOCATION_COORDS: { match: RegExp; lat: number; lng: number }[] = [
   { match: /katipunan|quezon city|qc/i, lat: 14.6386, lng: 121.0760 },
@@ -56,6 +58,12 @@ function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [themeOpen, setThemeOpen] = useState(false);
   const [newListingOpen, setNewListingOpen] = useState(false);
+  const [inquiriesStartFilter, setInquiriesStartFilter] = useState<'Calendar' | null>(null);
+  const [inquiriesStartDate, setInquiriesStartDate] = useState<string | null>(null);
+  const [inquiriesStartChatId, setInquiriesStartChatId] = useState<number | null>(null);
+  const [listingsStartUnitId, setListingsStartUnitId] = useState<number | null>(null);
+  const [sharedInquiryId, setSharedInquiryId] = useState<number | null>(null);
+  const [sharedListingUnitId, setSharedListingUnitId] = useState<number | null>(null);
   const [primary, setPrimary] = useState<string>(
     () => localStorage.getItem(THEME_STORAGE_KEY) || DEFAULT_PRIMARY
   );
@@ -92,7 +100,32 @@ function App() {
   }, []);
 
   const setInquiryStatus = useCallback((id: number, status: Inquiry['status']) => {
-    setInquiries(prev => prev.map(i => (i.id === id ? { ...i, status } : i)));
+    setInquiries(prev => prev.map((i) => {
+      if (i.id !== id) return i;
+      if (status === 'Viewing') return { ...i, status };
+      const { viewingAt, viewingTime, ...rest } = i;
+      return {
+        ...rest,
+        status,
+      };
+    }));
+  }, []);
+
+  const setInquiryViewing = useCallback((id: number, viewing: { date: string; time: string } | null) => {
+    setInquiries((prev) =>
+      prev.map((i) => {
+        if (i.id !== id) return i;
+        if (!viewing) {
+          const { viewingAt, viewingTime, ...rest } = i;
+          return { ...rest };
+        }
+        return {
+          ...i,
+          viewingAt: viewing.date,
+          viewingTime: viewing.time,
+        };
+      }),
+    );
   }, []);
 
   const addInquiryThreadMessage = useCallback((
@@ -234,6 +267,13 @@ function App() {
               payments={payments}
               activities={activities}
               onGoTo={setTab}
+              onOpenInquiriesCalendar={(date) => {
+                setInquiriesStartFilter('Calendar');
+                setInquiriesStartDate(date ?? null);
+                setTab('inquiries');
+              }}
+              onOpenInquiryModal={(inquiryId) => setSharedInquiryId(inquiryId)}
+              onOpenListingModal={(unitId) => setSharedListingUnitId(unitId)}
               onOpenProfile={() => setTab('profile')}
               notifications={notifications}
               onOpenNotification={openNotification}
@@ -249,6 +289,8 @@ function App() {
               notifications={notifications}
               onOpenNotification={openNotification}
               onShowToast={showToast}
+              initialSelectedUnitId={listingsStartUnitId}
+              onInitialSelectedUnitApplied={() => setListingsStartUnitId(null)}
             />
           )}
           {tab === 'tenants' && (
@@ -265,11 +307,18 @@ function App() {
               inquiries={inquiries}
               units={units}
               onSetStatus={setInquiryStatus}
+              onSetViewing={setInquiryViewing}
               onAddThreadMessage={addInquiryThreadMessage}
               onOpenProfile={() => setTab('profile')}
               notifications={notifications}
               onOpenNotification={openNotification}
               onShowToast={showToast}
+              initialFilter={inquiriesStartFilter}
+              initialCalendarDate={inquiriesStartDate}
+              initialChatInquiryId={inquiriesStartChatId}
+              onInitialFilterApplied={() => setInquiriesStartFilter(null)}
+              onInitialCalendarDateApplied={() => setInquiriesStartDate(null)}
+              onInitialChatInquiryIdApplied={() => setInquiriesStartChatId(null)}
             />
           )}
           {tab === 'payments' && (
@@ -325,6 +374,23 @@ function App() {
           open={newListingOpen}
           onClose={() => setNewListingOpen(false)}
           onCreate={createListing}
+        />
+
+        <InquiryChatModal
+          open={sharedInquiryId !== null}
+          inquiry={sharedInquiryId === null ? null : inquiries.find((inquiry) => inquiry.id === sharedInquiryId) ?? null}
+          units={units}
+          onClose={() => setSharedInquiryId(null)}
+          onSetStatus={setInquiryStatus}
+          onSetViewing={setInquiryViewing}
+          onAddThreadMessage={addInquiryThreadMessage}
+          onShowToast={showToast}
+        />
+
+        <ListingDetailsModal
+          open={sharedListingUnitId !== null}
+          unit={sharedListingUnitId === null ? null : units.find((unit) => unit.id === sharedListingUnitId) ?? null}
+          onClose={() => setSharedListingUnitId(null)}
         />
       </div>
     </div>

@@ -12,6 +12,8 @@ interface Props {
   notifications: HeaderNotification[];
   onOpenNotification: (notification: HeaderNotification) => void;
   onShowToast: (msg: string) => void;
+  initialSelectedUnitId?: number | null;
+  onInitialSelectedUnitApplied?: () => void;
 }
 
 type Filter = 'All' | UnitStatus;
@@ -52,7 +54,17 @@ function buildEditDraft(unit: Unit) {
   };
 }
 
-export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
+export default function ListingsScreen({
+  units,
+  onSetStatus,
+  onUpdateUnit,
+  onOpenProfile,
+  notifications,
+  onOpenNotification,
+  onShowToast,
+  initialSelectedUnitId,
+  onInitialSelectedUnitApplied,
+}: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
   const [editUnitId, setEditUnitId] = useState<number | null>(null);
@@ -211,6 +223,12 @@ export default function ListingsScreen({ units, onSetStatus, onUpdateUnit, onOpe
       track.scrollTo({ left: 0, behavior: 'auto' });
     }
   }, [selectedUnitId, historyMonths.length]);
+
+  useEffect(() => {
+    if (initialSelectedUnitId === null || initialSelectedUnitId === undefined) return;
+    setSelectedUnitId(initialSelectedUnitId);
+    onInitialSelectedUnitApplied?.();
+  }, [initialSelectedUnitId, onInitialSelectedUnitApplied]);
 
   useEffect(() => () => {
     if (carouselSnapTimerRef.current !== null) {

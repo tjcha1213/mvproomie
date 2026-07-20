@@ -2567,6 +2567,156 @@ img {
   margin: 12px 16px 0;
 }
 
+.ll-viewing-card {
+  margin: 12px 16px 0;
+}
+
+.ll-viewing-link {
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--border-light));
+  background: color-mix(in srgb, var(--primary) 8%, #ffffff);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--primary-dark);
+  white-space: nowrap;
+}
+
+.viewing-reminder-list {
+  display: grid;
+  gap: 8px;
+}
+
+.viewing-reminder-item {
+  width: 100%;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--border-light) 72%, var(--primary) 10%);
+  background: color-mix(in srgb, var(--surface-2) 64%, #ffffff);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+  text-align: left;
+}
+
+.viewing-reminder-date-row {
+  display: grid;
+  gap: 2px;
+}
+
+.viewing-reminder-date-row strong {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.viewing-reminder-date-row span {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.viewing-reminder-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 10px;
+}
+
+.viewing-reminder-user-card,
+.viewing-reminder-listing-card {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1.5px solid color-mix(in srgb, var(--border-light) 80%, var(--primary) 20%);
+  background: var(--surface);
+  text-align: left;
+  min-width: 0;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
+}
+
+.viewing-reminder-user-card {
+  background: color-mix(in srgb, var(--primary) 5%, #ffffff);
+}
+
+.viewing-reminder-listing-card {
+  background: color-mix(in srgb, var(--primary) 4%, #ffffff);
+}
+
+.viewing-reminder-avatar,
+.viewing-reminder-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.viewing-reminder-thumb {
+  border-radius: 10px;
+}
+
+.viewing-reminder-card-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.viewing-reminder-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.viewing-reminder-location {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.viewing-reminder-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.viewing-reminder-meta span {
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 10%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--primary) 14%, var(--border-light));
+}
+
+.viewing-reminder-title {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.viewing-reminder-empty {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--border-light);
+  background: var(--surface-2);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 /* Bar chart */
 .bar-chart-shell {
   display: grid;
@@ -6407,25 +6557,52 @@ img {
     padding-top: 18px;
   }
 
-  /* Chart + needs-attention side by side */
   .ll-dash-row {
-    display: flex;
-    gap: 12px;
-    align-items: stretch;
-    width: 100%;
-    max-width: none;
-    margin: 0;
+    display: contents;
   }
 
   .ll-dashboard-rail {
+    display: contents;
+  }
+
+  .ll-dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "left right"
+      "left right";
+    gap: 12px;
     width: 100%;
-    max-width: none;
     margin: 0;
   }
 
-  .ll-dash-row .ll-card { margin: 12px 0 0; }
-  .ll-chart-card { flex: 1.35; }
-  .ll-attn-card { flex: 1; min-width: 0; }
+  .ll-dashboard-col {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+  }
+
+  .ll-dashboard-col-left {
+    grid-area: left;
+  }
+
+  .ll-dashboard-col-right {
+    grid-area: right;
+  }
+
+  .ll-dashboard-grid > .ll-card {
+    width: 100%;
+    margin: 0;
+  }
+
+  .ll-dashboard-col > .ll-card { margin: 0; }
+  .ll-dashboard-col-left > .ll-viewing-card {
+    margin-top: 18px;
+    background: color-mix(in srgb, var(--surface-2) 76%, #ffffff);
+    border: 1.5px solid color-mix(in srgb, var(--border-light) 82%, var(--primary) 18%);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  }
   .bar-chart { height: 140px; }
   .bar-chart-shell {
     grid-template-columns: 38px minmax(0, 1fr) 38px;

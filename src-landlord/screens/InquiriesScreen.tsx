@@ -1,13 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Inquiry, InquiryStatus, Unit } from '../data';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
 import ProfilePeekModal from '../../src/components/ProfilePeekModal';
+import InquiryChatModal from '../components/InquiryChatModal';
 
 interface Props {
   inquiries: Inquiry[];
   units: Unit[];
   onSetStatus: (id: number, status: InquiryStatus) => void;
+  onSetViewing: (id: number, viewing: { date: string; time: string } | null) => void;
   onAddThreadMessage: (
     id: number,
     message: {
@@ -25,6 +27,12 @@ interface Props {
   notifications: HeaderNotification[];
   onOpenNotification: (notification: HeaderNotification) => void;
   onShowToast: (msg: string) => void;
+  initialFilter?: Filter | null;
+  onInitialFilterApplied?: () => void;
+  initialCalendarDate?: string | null;
+  onInitialCalendarDateApplied?: () => void;
+  initialChatInquiryId?: number | null;
+  onInitialChatInquiryIdApplied?: () => void;
 }
 
 type Filter = 'All' | InquiryStatus | 'Calendar';
@@ -43,7 +51,6 @@ const MAX_SWIPE = 116;
 const VERTICAL_CANCEL_DISTANCE = 22;
 const VERTICAL_CANCEL_RATIO = 1.15;
 const SWIPE_LOCK_THRESHOLD = 8;
-const MESSAGE_CONTEXT_MENU_WIDTH = 248;
 const MESSAGE_LONG_PRESS_DELAY = 560;
 const MESSAGE_LONG_PRESS_MOVE_TOLERANCE = 10;
 const MESSAGE_REACTIONS = ['👍', '❤️', '😂', '😮', '🙏', '🔥'];
@@ -65,14 +72,6 @@ type SwipeState = {
   locked: boolean;
 };
 
-type ThreadMessageMeta = {
-  pinned: boolean;
-  hidden: boolean;
-  deleting: boolean;
-  deleteDirection: SwipeSide | null;
-  isDeleted: boolean;
-};
-
 type ViewingAppointment = {
   date: string;
   time: string;
@@ -88,15 +87,6 @@ type MessageContextMenuState = {
 
 type ScheduleLaunchSource = 'list' | 'chat';
 
-type ScheduleLongPressState = {
-  inquiryId: number;
-  pointerId: number;
-  startX: number;
-  startY: number;
-  timer: number | null;
-  triggered: boolean;
-};
-
 type MessageReplyTarget = {
   name: string;
   text: string;
@@ -110,17 +100,6 @@ function StatusBadge({ status }: { status: InquiryStatus }) {
 
 function timeStampLabel() {
   return 'Just now';
-}
-
-function latestReadInquiryMessageId(inquiry: Inquiry): number | null {
-  const thread = inquiry.thread;
-  for (let index = thread.length - 1; index >= 0; index -= 1) {
-    const message = thread[index];
-    if (message.sender !== 'landlord') continue;
-    const hasTenantReplyAfter = thread.slice(index + 1).some((entry) => entry.sender === 'tenant');
-    if (hasTenantReplyAfter) return message.id;
-  }
-  return null;
 }
 
 function formatLongDateTime(date: Date) {
@@ -199,16 +178,6 @@ function DeleteIcon() {
   );
 }
 
-function DeletedNoticeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M12 8.25v5.1" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M12 15.9h.01" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 function PinIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -249,11 +218,18 @@ export default function InquiriesScreen({
   inquiries,
   units,
   onSetStatus,
+  onSetViewing,
   onAddThreadMessage,
   onOpenProfile,
   notifications,
   onOpenNotification,
   onShowToast,
+  initialFilter,
+  onInitialFilterApplied,
+  initialCalendarDate,
+  onInitialCalendarDateApplied,
+  initialChatInquiryId,
+  onInitialChatInquiryIdApplied,
 }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [openId, setOpenId] = useState<number | null>(null);
@@ -262,7 +238,6 @@ export default function InquiriesScreen({
   const [metaById, setMetaById] = useState<Record<number, InquiryMeta>>({});
   const [openAction, setOpenAction] = useState<{ inquiryId: number; side: SwipeSide } | null>(null);
   const [swipe, setSwipe] = useState<SwipeState | null>(null);
-  const [messageMetaByInquiryId, setMessageMetaByInquiryId] = useState<Record<number, Record<number, ThreadMessageMeta>>>({});
   const [profilePeekInquiryId, setProfilePeekInquiryId] = useState<number | null>(null);
   const [conversationActionSheetId, setConversationActionSheetId] = useState<number | null>(null);
   const [conversationReadById, setConversationReadById] = useState<Record<number, boolean>>({});
@@ -282,19 +257,32 @@ export default function InquiriesScreen({
   const deleteTimersRef = useRef<Record<string, number>>({});
   const suppressNextInquiryClickRef = useRef<number | null>(null);
   const conversationLongPressRef = useRef<{ inquiryId: number; timer: number | null; startX: number; startY: number; triggered: boolean } | null>(null);
-  const messageLongPressRef = useRef<{
-    inquiryId: number;
-    messageId: number;
-    timer: number | null;
-    startX: number;
-    startY: number;
-    triggered: boolean;
-    rect: DOMRect | null;
-  } | null>(null);
   const inquiryScrollerRef = useRef<HTMLDivElement | null>(null);
   const inquiryScrollAnchorRef = useRef<HTMLDivElement | null>(null);
-  const scheduleLongPressRef = useRef<ScheduleLongPressState | null>(null);
-  const suppressNextScheduleClickRef = useRef(false);
+
+  useEffect(() => {
+    if (!initialFilter) return;
+    setFilter(initialFilter);
+    onInitialFilterApplied?.();
+  }, [initialFilter, onInitialFilterApplied]);
+
+  useEffect(() => {
+    if (!initialCalendarDate) return;
+    setFilter('Calendar');
+    setCalendarSelectedDate(initialCalendarDate);
+    const selected = new Date(`${initialCalendarDate}T12:00:00`);
+    if (!Number.isNaN(selected.getTime())) {
+      setCalendarMonth(new Date(selected.getFullYear(), selected.getMonth(), 1));
+    }
+    onInitialCalendarDateApplied?.();
+  }, [initialCalendarDate, onInitialCalendarDateApplied]);
+
+  useEffect(() => {
+    if (initialChatInquiryId === null || initialChatInquiryId === undefined) return;
+    setChatOpenId(initialChatInquiryId);
+    setFilter('All');
+    onInitialChatInquiryIdApplied?.();
+  }, [initialChatInquiryId, onInitialChatInquiryIdApplied]);
 
   useEffect(() => {
     setMetaById((prev) => {
@@ -351,13 +339,6 @@ export default function InquiriesScreen({
 
     setMessageContextMenu(null);
     setReplyTarget(null);
-    setMessageMetaByInquiryId((prev) => {
-      if (prev[nextChat.id]) return prev;
-      return {
-        ...prev,
-        [nextChat.id]: {},
-      };
-    });
   }, [chatOpenId, inquiries]);
 
   const latestChatMessageId = chatOpenId === null
@@ -458,40 +439,10 @@ export default function InquiriesScreen({
 
   const unitTitle = (id: number) => units.find((u) => u.id === id)?.title ?? '';
   const activeChat = chatOpenId === null ? null : inquiries.find((inquiry) => inquiry.id === chatOpenId) ?? null;
-  const activeChatViewing = activeChat ? viewingByInquiryId[activeChat.id] : undefined;
   const scheduleInquiry = scheduleInquiryId === null ? null : inquiries.find((inquiry) => inquiry.id === scheduleInquiryId) ?? null;
   const scheduleCancelInquiry = scheduleCancelInquiryId === null ? null : inquiries.find((inquiry) => inquiry.id === scheduleCancelInquiryId) ?? null;
   const scheduleCalendar = buildCalendarMonth(scheduleMonth);
   const selectedScheduleDate = scheduleDate ? new Date(`${scheduleDate}T12:00:00`) : null;
-  const activeChatMessages = useMemo(() => {
-    if (!activeChat) return [];
-
-    const messageMeta = messageMetaByInquiryId[activeChat.id] ?? {};
-    const reactionMap = messageReactionByInquiryId[activeChat.id] ?? {};
-
-    return activeChat.thread
-      .map((entry, index) => ({
-        entry,
-        index,
-        meta: messageMeta[entry.id] ?? {
-          pinned: false,
-          hidden: false,
-          deleting: false,
-          deleteDirection: null,
-          isDeleted: false,
-        },
-        reaction: reactionMap[entry.id] ?? null,
-      }))
-      .sort((a, b) => {
-        if (a.meta.pinned !== b.meta.pinned) return a.meta.pinned ? -1 : 1;
-        return a.index - b.index;
-      });
-  }, [activeChat, messageMetaByInquiryId, messageReactionByInquiryId]);
-
-  const latestReadMessageId = useMemo(
-    () => (activeChat ? latestReadInquiryMessageId(activeChat) : null),
-    [activeChat],
-  );
 
   function setDraft(id: number, value: string) {
     setDraftReplies((prev) => ({ ...prev, [id]: value }));
@@ -545,6 +496,10 @@ export default function InquiriesScreen({
     scheduledDate.setHours(hours, minutes, 0, 0);
 
     onSetStatus(scheduleInquiry.id, 'Viewing');
+    onSetViewing(scheduleInquiry.id, {
+      date: scheduleDate,
+      time: scheduleTime,
+    });
     onAddThreadMessage(
       scheduleInquiry.id,
       {
@@ -573,70 +528,11 @@ export default function InquiriesScreen({
       delete next[scheduleCancelInquiry.id];
       return next;
     });
+    onSetViewing(scheduleCancelInquiry.id, null);
     onSetStatus(scheduleCancelInquiry.id, 'Replied');
     onShowToast(`🗓️ Viewing canceled for ${scheduleCancelInquiry.name}`);
     setScheduleCancelInquiryId(null);
   }
-
-  const clearScheduleLongPress = useCallback(() => {
-    const current = scheduleLongPressRef.current;
-    if (current?.timer) window.clearTimeout(current.timer);
-    scheduleLongPressRef.current = null;
-  }, []);
-
-  const handleSchedulePillPointerDown = useCallback((event: ReactPointerEvent<HTMLButtonElement>, inquiry: Inquiry) => {
-    if (!viewingByInquiryId[inquiry.id] && !inquiry.viewingAt) return;
-    clearScheduleLongPress();
-    const timer = window.setTimeout(() => {
-      const current = scheduleLongPressRef.current;
-      if (!current || current.inquiryId !== inquiry.id || current.triggered) return;
-      current.triggered = true;
-      suppressNextScheduleClickRef.current = true;
-      setScheduleCancelInquiryId(inquiry.id);
-    }, MESSAGE_LONG_PRESS_DELAY);
-
-    scheduleLongPressRef.current = {
-      inquiryId: inquiry.id,
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      timer,
-      triggered: false,
-    };
-
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {
-      // ignore
-    }
-  }, [clearScheduleLongPress, inquiryScrollAnchorRef, viewingByInquiryId]);
-
-  const handleSchedulePillPointerMove = useCallback((event: ReactPointerEvent<HTMLButtonElement>, inquiry: Inquiry) => {
-    const current = scheduleLongPressRef.current;
-    if (!current || current.inquiryId !== inquiry.id || current.triggered) return;
-    const dx = event.clientX - current.startX;
-    const dy = event.clientY - current.startY;
-    if (Math.abs(dx) > MESSAGE_LONG_PRESS_MOVE_TOLERANCE || Math.abs(dy) > MESSAGE_LONG_PRESS_MOVE_TOLERANCE) {
-      clearScheduleLongPress();
-    }
-  }, [clearScheduleLongPress]);
-
-  const handleSchedulePillPointerUp = useCallback((event: ReactPointerEvent<HTMLButtonElement>, inquiry: Inquiry) => {
-    const current = scheduleLongPressRef.current;
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {
-      // ignore
-    }
-    if (current && current.inquiryId === inquiry.id && current.triggered) {
-      return;
-    }
-    clearScheduleLongPress();
-  }, [clearScheduleLongPress]);
-
-  const handleSchedulePillPointerCancel = useCallback(() => {
-    clearScheduleLongPress();
-  }, [clearScheduleLongPress]);
 
   const commitPinToggle = (id: number) => {
     setSwipe(null);
@@ -704,57 +600,6 @@ export default function InquiriesScreen({
       if (openId === id) setOpenId(null);
       if (chatOpenId === id) setChatOpenId(null);
       delete deleteTimersRef.current[id];
-    }, 220);
-  };
-
-  const commitMessageDelete = (inquiryId: number, messageId: number, direction: SwipeSide) => {
-    setMessageMetaByInquiryId((prev) => {
-      const currentInquiry = prev[inquiryId] ?? {};
-      const currentMessage = currentInquiry[messageId] ?? {
-        pinned: false,
-        hidden: false,
-        deleting: false,
-        deleteDirection: null,
-        isDeleted: false,
-      };
-      return {
-        ...prev,
-        [inquiryId]: {
-          ...currentInquiry,
-          [messageId]: {
-            ...currentMessage,
-            deleting: true,
-            deleteDirection: direction,
-          },
-        },
-      };
-    });
-
-    const timerKey = `${inquiryId}:${messageId}`;
-    const existingTimer = deleteTimersRef.current[timerKey];
-    if (existingTimer) window.clearTimeout(existingTimer);
-
-    deleteTimersRef.current[timerKey] = window.setTimeout(() => {
-      deleteTimersRef.current[timerKey] = 0;
-      setMessageMetaByInquiryId((prev) => {
-        const currentInquiry = prev[inquiryId];
-        if (!currentInquiry) return prev;
-        const currentMessage = currentInquiry[messageId];
-        if (!currentMessage) return prev;
-        return {
-          ...prev,
-          [inquiryId]: {
-            ...currentInquiry,
-            [messageId]: {
-              ...currentMessage,
-              isDeleted: true,
-              deleting: false,
-              deleteDirection: null,
-            },
-          },
-        };
-      });
-      delete deleteTimersRef.current[timerKey];
     }, 220);
   };
 
@@ -933,31 +778,10 @@ export default function InquiriesScreen({
     );
   };
 
-  const deleteMessage = (messageId: number) => {
-    if (!activeChat) return;
-    commitMessageDelete(activeChat.id, messageId, 'delete');
-    onShowToast('Message deleted');
-  };
-
-  const openMessageContextMenu = useCallback((inquiryId: number, messageId: number, rect: DOMRect, align: 'left' | 'right') => {
-    const width = MESSAGE_CONTEXT_MENU_WIDTH;
-    const left = align === 'right'
-      ? clamp(rect.right - width, 12, Math.max(12, window.innerWidth - width - 12))
-      : clamp(rect.left, 12, Math.max(12, window.innerWidth - width - 12));
-    const top = clamp(rect.bottom + 8, 12, Math.max(12, window.innerHeight - 220));
-    setMessageContextMenu({ inquiryId, messageId, left, top, width });
-  }, []);
-
   const clearConversationLongPress = useCallback(() => {
     const current = conversationLongPressRef.current;
     if (current?.timer) window.clearTimeout(current.timer);
     conversationLongPressRef.current = null;
-  }, []);
-
-  const clearMessageLongPress = useCallback(() => {
-    const current = messageLongPressRef.current;
-    if (current?.timer) window.clearTimeout(current.timer);
-    messageLongPressRef.current = null;
   }, []);
 
   const handleConversationLongPressAction = useCallback((action: 'read' | 'mute' | 'pin' | 'delete') => {
@@ -1008,13 +832,10 @@ export default function InquiriesScreen({
           },
         };
       });
-    } else if (action === 'delete' && message.sender === 'landlord') {
-      deleteMessage(message.id);
-      return;
     }
 
     setMessageContextMenu(null);
-  }, [activeChat, deleteMessage, messageContextMenu]);
+  }, [activeChat, messageContextMenu]);
 
   const getOffset = (id: number) => {
     if (swipe?.inquiryId === id) return clamp(swipe.offset, -MAX_SWIPE, MAX_SWIPE);
@@ -1553,258 +1374,19 @@ export default function InquiriesScreen({
         </div>
       )}
 
-      {activeChat && (
-        <div
-          className="listing-modal-overlay"
-          onClick={() => {
-            setChatOpenId(null);
-            setProfilePeekInquiryId(null);
-          }}
-        >
-          <div
-            className="listing-modal inquiry-chat-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="inquiry-chat-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="inquiry-chat-shell">
-              <div className="inquiry-chat-header">
-                <div className="inquiry-chat-header-main">
-                  <button
-                    type="button"
-                    className="inbox-avatar inquiry-chat-avatar inquiry-chat-avatar-button"
-                    onClick={() => setProfilePeekInquiryId(activeChat.id)}
-                    aria-label={`View ${activeChat.name} profile`}
-                  >
-                    <img src={activeChat.avatar ?? ''} alt={activeChat.name} />
-                  </button>
-                  <div className="inquiry-chat-title-block">
-                    <span className="listing-modal-type">Inquiry chat</span>
-                    <h2 id="inquiry-chat-title" className="inquiry-chat-title">{activeChat.name}</h2>
-                    <div className="listing-id-row listing-id-row-modal">
-                      <span className="entity-id-tag">{activeChat.userId}</span>
-                      <span className={`roomie-score-chip is-${activeChat.trust.roomieTemperature.toLowerCase()}`}>{activeChat.trust.roomieTemperature === 'Cool' ? '❄️' : activeChat.trust.roomieTemperature === 'Warm' ? '🌤️' : '🔥'} Roomie {activeChat.trust.roomieScore}</span>
-                    </div>
-                    <div className="listing-modal-location">{unitTitle(activeChat.unitId)}</div>
-                  </div>
-                </div>
-                <div className="inquiry-chat-header-side">
-                  <button
-                    type="button"
-                    className={`inquiry-chat-schedule-pill ${activeChatViewing ? 'is-scheduled' : ''}`}
-                    onPointerDown={(event) => activeChat && handleSchedulePillPointerDown(event, activeChat)}
-                    onPointerMove={(event) => activeChat && handleSchedulePillPointerMove(event, activeChat)}
-                    onPointerUp={(event) => activeChat && handleSchedulePillPointerUp(event, activeChat)}
-                    onPointerCancel={handleSchedulePillPointerCancel}
-                    onClick={() => {
-                      if (!activeChat) return;
-                      if (suppressNextScheduleClickRef.current) {
-                        suppressNextScheduleClickRef.current = false;
-                        clearScheduleLongPress();
-                        return;
-                      }
-                      scheduleViewing(activeChat, 'chat', activeChatViewing);
-                    }}
-                  >
-                    {activeChatViewing ? 'Scheduled' : 'Schedule viewing'}
-                  </button>
-                  <button
-                    className="listing-modal-close inquiry-chat-close"
-                    onClick={() => {
-                      setChatOpenId(null);
-                      setProfilePeekInquiryId(null);
-                    }}
-                    aria-label="Close chat"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              <div className="inquiry-chat-body">
-                <div className="scroll-area inquiry-chat-scroller" ref={inquiryScrollerRef}>
-                  <div
-                    className="inquiry-chat-thread"
-                    onPointerDown={(event) => {
-                      if (event.target === event.currentTarget) {
-                        setMessageContextMenu(null);
-                        clearMessageLongPress();
-                      }
-                    }}
-                  >
-                    {activeChatMessages.map(({ entry, meta, reaction }) => {
-                      const isPinned = meta.pinned;
-                      const senderClass = `inquiry-chat-${entry.sender}`;
-                      const isRead = entry.sender === 'landlord' && entry.id === latestReadMessageId;
-                      return (
-                        <div
-                          key={entry.id}
-                          className={`inquiry-chat-message-swipe-row ${senderClass} ${meta.deleting ? `is-deleting ${meta.deleteDirection ?? ''}` : ''}`}
-                          style={{ alignSelf: entry.sender === 'tenant' ? 'flex-start' : 'flex-end' } as CSSProperties}
-                          onPointerDown={(event) => {
-                            if (meta.isDeleted) return;
-                            if (event.pointerType === 'mouse' && event.button !== 0) return;
-                            const target = event.target as HTMLElement | null;
-                            if (target?.closest('button, textarea, input, select, a')) return;
-
-                            clearMessageLongPress();
-                            setMessageContextMenu(null);
-                            messageLongPressRef.current = {
-                              inquiryId: activeChat.id,
-                              messageId: entry.id,
-                              timer: window.setTimeout(() => {
-                                const current = messageLongPressRef.current;
-                                if (!current || current.inquiryId !== activeChat.id || current.messageId !== entry.id || current.triggered) return;
-                                current.triggered = true;
-                                const rect = current.rect ?? event.currentTarget.getBoundingClientRect();
-                                openMessageContextMenu(
-                                  activeChat.id,
-                                  entry.id,
-                                  rect,
-                                  entry.sender === 'landlord' || entry.sender === 'system' ? 'right' : 'left',
-                                );
-                              }, MESSAGE_LONG_PRESS_DELAY),
-                              startX: event.clientX,
-                              startY: event.clientY,
-                              triggered: false,
-                              rect: event.currentTarget.getBoundingClientRect(),
-                            };
-                          }}
-                          onPointerMove={(event) => {
-                            const current = messageLongPressRef.current;
-                            if (current && current.inquiryId === activeChat.id && current.messageId === entry.id && !current.triggered) {
-                              const dxLong = event.clientX - current.startX;
-                              const dyLong = event.clientY - current.startY;
-                              if (Math.abs(dxLong) > MESSAGE_LONG_PRESS_MOVE_TOLERANCE || Math.abs(dyLong) > MESSAGE_LONG_PRESS_MOVE_TOLERANCE) {
-                                clearMessageLongPress();
-                              }
-                            }
-                          }}
-                          onPointerUp={(event) => {
-                            try {
-                              event.currentTarget.releasePointerCapture(event.pointerId);
-                            } catch {
-                              // ignore
-                            }
-                            const current = messageLongPressRef.current;
-                            const triggered = Boolean(current && current.inquiryId === activeChat.id && current.messageId === entry.id && current.triggered);
-                            clearMessageLongPress();
-                            if (triggered) return;
-                          }}
-                          onPointerCancel={() => {
-                            clearMessageLongPress();
-                          }}
-                        >
-                          <div
-                            className={`inquiry-chat-message inquiry-chat-message-main ${senderClass} ${isPinned ? 'is-pinned' : ''} ${meta.isDeleted ? 'is-deleted' : ''}`}
-                          >
-                            <div className="inquiry-chat-bubble">
-                              {meta.isDeleted ? (
-                                <div className="inbox-deleted-message">
-                                  <span className="inbox-deleted-message-icon">
-                                    <DeletedNoticeIcon />
-                                  </span>
-                                  <span className="inbox-deleted-message-text">Message deleted</span>
-                                </div>
-                              ) : (
-                                <>
-                                  {entry.sender === 'landlord' && entry.replyTo && (
-                                    <div className="inbox-reply-quote">
-                                      <div className="inbox-reply-source">Replying to</div>
-                                      <div className="inbox-reply-name">{entry.replyTo.name}</div>
-                                      <div className="inbox-reply-text">{entry.replyTo.text}</div>
-                                    </div>
-                                  )}
-                                  {entry.sender === 'landlord' && entry.replyTo && <div className="inbox-reply-divider" />}
-                                  <div>{entry.text}</div>
-                                  {isPinned && <span className="inquiry-chat-pin-badge">Pinned</span>}
-                                </>
-                              )}
-                            </div>
-                            {reaction && !meta.isDeleted && (
-                              <div className={`inbox-message-reaction-row ${entry.sender === 'landlord' ? 'self' : 'other'}`}>
-                                <div className="inbox-message-reaction" aria-label={`Reaction ${reaction.emoji} ${reaction.count} times`}>
-                                  <span className="inbox-message-reaction-emoji">{reaction.emoji}</span>
-                                  <span className="inbox-message-reaction-count">{reaction.count}</span>
-                                </div>
-                              </div>
-                            )}
-                            <div className="inquiry-chat-time">
-                              <span className="inquiry-message-time">{entry.time}</span>
-                              {isRead && !meta.isDeleted && (
-                                <>
-                                  <span className="inbox-time-divider" aria-hidden="true">•</span>
-                                  <span className="inbox-read-label">Read</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <div ref={inquiryScrollAnchorRef} className="inbox-scroll-anchor" aria-hidden="true" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="inquiry-chat-footer">
-                {replyTarget && (
-                  <div className="inbox-reply-banner">
-                    <div className="inbox-reply-banner-copy">
-                      <div className="inbox-reply-banner-title">Replying to {replyTarget.name}</div>
-                      <div className="inbox-reply-banner-text">{replyTarget.text}</div>
-                    </div>
-                    <button
-                      type="button"
-                      className="inbox-reply-banner-close"
-                      onClick={() => setReplyTarget(null)}
-                      aria-label="Cancel reply"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-
-                <div className="inquiry-chat-composer">
-                  <label className="inquiry-reply-label" htmlFor={`chat-reply-${activeChat.id}`}>Reply in chat</label>
-                  <textarea
-                    id={`chat-reply-${activeChat.id}`}
-                    className="inquiry-reply-input inquiry-chat-input"
-                    rows={3}
-                    placeholder="Write a reply to continue the conversation"
-                    value={draftReplies[activeChat.id] ?? ''}
-                    onChange={(event) => setDraft(activeChat.id, event.target.value)}
-                    onFocus={() => {
-                      window.requestAnimationFrame(() => {
-                        const scroller = inquiryScrollerRef.current;
-                        if (scroller) scroller.scrollTop = scroller.scrollHeight;
-                      });
-                    }}
-                    onBlur={() => {
-                      window.requestAnimationFrame(() => {
-                        const scroller = inquiryScrollerRef.current;
-                        if (scroller) scroller.scrollTop = scroller.scrollHeight;
-                      });
-                    }}
-                  />
-                  <div className="inquiry-chat-composer-actions">
-                    <button
-                      className="unit-btn unit-btn-primary"
-                      onClick={() => sendReply(activeChat)}
-                    >
-                      Send reply
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <InquiryChatModal
+        open={chatOpenId !== null}
+        inquiry={activeChat}
+        units={units}
+        onClose={() => {
+          setChatOpenId(null);
+          setProfilePeekInquiryId(null);
+        }}
+        onSetStatus={onSetStatus}
+        onSetViewing={onSetViewing}
+        onAddThreadMessage={onAddThreadMessage}
+        onShowToast={onShowToast}
+      />
 
       {scheduleInquiry && scheduleLaunchSource === 'chat' && chatOpenId !== null && (
         <div className="inquiry-chat-schedule-popover-overlay" onClick={() => setScheduleInquiryId(null)}>
@@ -1991,11 +1573,6 @@ export default function InquiriesScreen({
               <button type="button" className="message-context-action" onClick={() => handleMessageLongPressAction('reply')}>
                 Reply
               </button>
-              {message.sender === 'landlord' && (
-                <button type="button" className="message-context-action is-destructive" onClick={() => handleMessageLongPressAction('delete')}>
-                  Delete
-                </button>
-              )}
               <div className="message-context-emoji-row" aria-label="Quick reactions">
                 {MESSAGE_REACTIONS.map((emoji) => (
                   <button

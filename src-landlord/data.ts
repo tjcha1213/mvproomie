@@ -378,7 +378,7 @@ export const INQUIRIES: Inquiry[] = [
     message: 'Thank you! See you on Saturday at 2pm.',
     time: 'Yesterday',
     status: 'Viewing',
-    viewingAt: '2026-07-18',
+    viewingAt: '2026-07-25',
     viewingTime: '2:00 PM',
     thread: [
       { id: 41, sender: 'tenant', text: 'Can I schedule a viewing this weekend? 🙂', time: '2d ago' },
