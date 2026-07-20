@@ -4977,8 +4977,9 @@ img {
 
 .inquiry-chat-schedule-pill {
   border: 0;
-  min-height: 36px;
-  padding: 0 14px;
+  min-height: 42px;
+  min-width: 116px;
+  padding: 0 16px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--primary) 14%, #ffffff);
   color: var(--primary-dark);
@@ -4987,6 +4988,9 @@ img {
   letter-spacing: 0.01em;
   box-shadow: var(--shadow-sm);
   white-space: nowrap;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .inquiry-chat-schedule-pill.is-scheduled {
@@ -6874,6 +6878,11 @@ img {
     align-items: flex-end;
   }
 
+  .listing-modal-overlay.inquiry-chat-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
   .listing-modal {
     width: 100%;
     border-radius: 24px 24px 18px 18px;
@@ -6975,6 +6984,12 @@ img {
     max-width: none;
     max-height: none;
     border-radius: 0;
+  }
+
+  .listing-modal-overlay.inquiry-chat-overlay .inquiry-chat-modal {
+    width: 100dvw;
+    height: 100dvh;
+    margin: 0;
   }
 
   .inquiry-chat-back {

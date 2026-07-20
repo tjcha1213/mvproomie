@@ -130,6 +130,8 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
     rect: DOMRect | null;
   } | null>(null);
   const suppressNextScheduleClickRef = useRef(false);
+  const inquiryScrollerRef = useRef<HTMLDivElement | null>(null);
+  const inquiryScrollAnchorRef = useRef<HTMLDivElement | null>(null);
 
   const selectedScheduleDate = useMemo(() => (scheduleDate ? new Date(`${scheduleDate}T12:00:00`) : null), [scheduleDate]);
   const scheduleCalendar = useMemo(() => buildCalendarMonth(scheduleMonth), [scheduleMonth]);
@@ -137,6 +139,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
   const latestReadMessageId = useMemo(() => (inquiry ? latestReadInquiryMessageId(inquiry) : null), [inquiry]);
   const viewingRequestPending = useMemo(() => (inquiry ? hasPendingViewingRequest(inquiry) : false), [inquiry]);
   const viewingRequestText = useMemo(() => (inquiry ? latestViewingRequestText(inquiry) : null), [inquiry]);
+  const latestChatMessageId = useMemo(() => inquiry?.thread.at(-1)?.id ?? null, [inquiry]);
   const activeChatMessages = useMemo(() => {
     if (!inquiry) return [];
 
@@ -202,6 +205,27 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
       }
     }
   }, [inquiry, open]);
+
+  useEffect(() => {
+    if (!open || !inquiry) return;
+    const scroller = inquiryScrollerRef.current;
+    const anchor = inquiryScrollAnchorRef.current;
+    if (!scroller) return;
+
+    const snapToBottom = () => {
+      anchor?.scrollIntoView({ block: 'end', behavior: 'auto' });
+      scroller.scrollTop = scroller.scrollHeight;
+    };
+
+    const raf = window.requestAnimationFrame(() => {
+      snapToBottom();
+      window.requestAnimationFrame(() => {
+        snapToBottom();
+      });
+    });
+
+    return () => window.cancelAnimationFrame(raf);
+  }, [open, inquiry, latestChatMessageId, draft, replyTarget?.text]);
 
   const sendReply = () => {
     if (!inquiry) return;
@@ -331,7 +355,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
 
   return createPortal(
     <>
-        <div className="listing-modal-overlay" onClick={onClose}>
+        <div className="listing-modal-overlay inquiry-chat-overlay" onClick={onClose}>
           <div className="listing-modal inquiry-chat-modal" role="dialog" aria-modal="true" aria-labelledby="inquiry-chat-title" onClick={(event) => event.stopPropagation()}>
             <div className="inquiry-chat-shell">
               <div className="inquiry-chat-header">
@@ -361,8 +385,13 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
                   <button
                     type="button"
                     className={`inquiry-chat-schedule-pill ${inquiry.viewingAt ? 'is-scheduled' : ''}`}
-                    onPointerDown={() => {
+                    onPointerDown={(event) => {
                       if (!inquiry.viewingAt) return;
+                      try {
+                        event.currentTarget.setPointerCapture(event.pointerId);
+                      } catch {
+                        // ignore
+                      }
                       suppressNextScheduleClickRef.current = false;
                       const timer = window.setTimeout(() => {
                         suppressNextScheduleClickRef.current = true;
@@ -371,6 +400,20 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
                       const clear = () => window.clearTimeout(timer);
                       window.addEventListener('pointerup', clear, { once: true });
                       window.addEventListener('pointercancel', clear, { once: true });
+                    }}
+                    onPointerUp={(event) => {
+                      try {
+                        event.currentTarget.releasePointerCapture(event.pointerId);
+                      } catch {
+                        // ignore
+                      }
+                    }}
+                    onPointerCancel={(event) => {
+                      try {
+                        event.currentTarget.releasePointerCapture(event.pointerId);
+                      } catch {
+                        // ignore
+                      }
                     }}
                     onClick={() => {
                       if (inquiry.viewingAt && suppressNextScheduleClickRef.current) {
@@ -392,7 +435,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
               </div>
 
             <div className="inquiry-chat-body">
-              <div className="scroll-area inquiry-chat-scroller">
+              <div className="scroll-area inquiry-chat-scroller" ref={inquiryScrollerRef}>
                 <div className="inquiry-chat-thread">
                   {viewingRequestPending && (
                     <div className="inquiry-chat-request-thread-card">
@@ -511,6 +554,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
                       </div>
                     );
                   })}
+                  <div ref={inquiryScrollAnchorRef} className="inbox-scroll-anchor" aria-hidden="true" />
                 </div>
               </div>
             </div>
