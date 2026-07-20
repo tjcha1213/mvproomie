@@ -4415,6 +4415,17 @@ img {
   box-shadow: inset 6px 0 0 var(--primary);
 }
 
+.inquiry-item.is-pinned::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 6px;
+  border-radius: 0 4px 4px 0;
+  background: var(--primary);
+  z-index: 1;
+  pointer-events: none;
+}
+
 .inquiry-item.is-pinned:active {
   background: color-mix(in srgb, var(--primary) 10%, #ffffff);
 }
@@ -4647,6 +4658,24 @@ img {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.inquiry-chat-schedule-pill {
+  border: 0;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 14%, #ffffff);
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+
+.inquiry-chat-schedule-pill:active {
+  transform: translateY(1px);
 }
 
 .inquiry-chat-title-block {
@@ -6539,5 +6568,9 @@ img {
 
   .profile-peek-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inquiry-item.is-pinned::before {
+    width: 8px;
   }
 }

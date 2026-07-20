@@ -1424,6 +1424,15 @@ export default function InquiriesScreen({
                 </div>
                 <div className="inquiry-chat-header-side">
                   <button
+                    type="button"
+                    className="inquiry-chat-schedule-pill"
+                    onClick={() => {
+                      scheduleViewing(activeChat);
+                    }}
+                  >
+                    Schedule viewing
+                  </button>
+                  <button
                     className="listing-modal-close inquiry-chat-close"
                     onClick={() => {
                       setChatOpenId(null);
