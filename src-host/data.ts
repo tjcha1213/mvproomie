@@ -321,11 +321,13 @@ export const INQUIRIES: Inquiry[] = [
     tenantReviews: ['Clear and respectful in the first inquiry.', 'Responsive on viewing follow-ups.'],
     hostReviews: ['No host reviews recorded yet.'],
     unitId: 2,
-    message: 'Hi po! Is the bedspace still available? Looking to move in Aug 1 🙂',
-    time: '5m ago',
+    message: 'Any chance I can reserve it today? I can send the requirements right away.',
+    time: '2m ago',
     status: 'New',
     thread: [
       { id: 11, sender: 'tenant', text: 'Hi po! Is the bedspace still available? Looking to move in Aug 1 🙂', time: '5m ago' },
+      { id: 12, sender: 'tenant', text: 'If available, I can move the deposit today and confirm my move-in date.', time: '4m ago' },
+      { id: 13, sender: 'tenant', text: 'Any chance I can reserve it today? I can send the requirements right away.', time: '2m ago' },
     ],
   },
   {

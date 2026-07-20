@@ -278,7 +278,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
                   <h2 id="inquiry-chat-title" className="inquiry-chat-title">{inquiry.name}</h2>
                   <div className="listing-id-row listing-id-row-modal">
                     <span className="entity-id-tag">{inquiry.userId}</span>
-                    <span className={`roomie-score-chip is-${inquiry.trust.roomieTemperature.toLowerCase()}`}>{inquiry.trust.roomieTemperature === 'Cool' ? '❄️' : inquiry.trust.roomieTemperature === 'Warm' ? '🌤️' : '🔥'} Roomie {inquiry.trust.roomieScore}</span>
+                    <span className={`roomie-score-chip is-${inquiry.trust.roomieTemperature.toLowerCase()}`}>Roomie {inquiry.trust.roomieScore}</span>
                   </div>
                   <div className="listing-modal-location">{unitTitle}</div>
                 </div>

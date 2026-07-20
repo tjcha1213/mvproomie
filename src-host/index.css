@@ -1388,7 +1388,28 @@ img {
   border: 0;
   background: transparent;
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
+  position: relative;
+}
+
+.inbox-avatar-count-bubble {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 8.5px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.12);
+  pointer-events: none;
 }
 
 .inbox-info {
@@ -3443,8 +3464,10 @@ img {
 .st-active   { background: #DCFCE7; color: #15803D; }
 .st-occupied { background: var(--primary-bg); color: var(--primary-dark); }
 .st-draft    { background: var(--surface-2); color: var(--text-muted); }
-.st-new      { background: var(--primary-bg); color: var(--primary-dark); }
-.st-replied  { background: var(--surface-2); color: var(--text-muted); }
+.st-new      {
+  background: var(--primary-bg);
+  color: var(--primary-dark);
+}
 .st-viewing  { background: #FEE2E2; color: #DC2626; }
 .st-paid     { background: #DCFCE7; color: #15803D; }
 .st-due      { background: #FEF3C7; color: #B45309; }

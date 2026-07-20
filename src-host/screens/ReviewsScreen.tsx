@@ -9,8 +9,7 @@ interface Props {
 }
 
 function ScoreChip({ score, temperature }: { score: number; temperature: 'Cool' | 'Warm' | 'Hot' }) {
-  const icon = temperature === 'Cool' ? '❄️' : temperature === 'Warm' ? '🌤️' : '🔥';
-  return <span className={`roomie-score-chip is-${temperature.toLowerCase()}`}>{icon} Roomie {score}</span>;
+  return <span className={`roomie-score-chip is-${temperature.toLowerCase()}`}>Roomie {score}</span>;
 }
 
 export default function ReviewsScreen({ onOpenProfile, notifications, onOpenNotification }: Props) {

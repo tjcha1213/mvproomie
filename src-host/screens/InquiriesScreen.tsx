@@ -93,10 +93,24 @@ type MessageReplyTarget = {
   text: string;
 };
 
-function StatusBadge({ status }: { status: InquiryStatus }) {
-  const cls = status === 'New' ? 'st-new' : status === 'Viewing' ? 'st-viewing' : 'st-replied';
-  const label = status === 'Viewing' ? 'Scheduled' : status;
-  return <span className={`status-badge ${cls}`}>{label}</span>;
+function StatusBadge({ inquiry }: { inquiry: Inquiry }) {
+  const { status } = inquiry;
+  if (status !== 'Viewing') return null;
+  const cls = 'st-viewing';
+  const label = 'Scheduled';
+  return (
+    <span className={`status-badge ${cls}`} aria-label={label}>
+      {label}
+    </span>
+  );
+}
+
+function InquiryCountBubble({ count }: { count: number }) {
+  return (
+    <span className="inbox-avatar-count-bubble" aria-label={`${count} new message${count === 1 ? '' : 's'}`}>
+      {count}
+    </span>
+  );
 }
 
 function timeStampLabel() {
@@ -342,6 +356,11 @@ export default function InquiriesScreen({
     setMessageContextMenu(null);
     setReplyTarget(null);
   }, [chatOpenId, inquiries]);
+
+  useEffect(() => {
+    if (chatOpenId === null) return;
+    setConversationReadById((prev) => (prev[chatOpenId] ? prev : { ...prev, [chatOpenId]: true }));
+  }, [chatOpenId]);
 
   const latestChatMessageId = chatOpenId === null
     ? null
@@ -851,6 +870,10 @@ export default function InquiriesScreen({
     setOpenId((current) => (current === id ? null : id));
   };
 
+  const openInquiryChat = (id: number) => {
+    setChatOpenId(id);
+  };
+
   const profilePeekInquiry = profilePeekInquiryId === null
     ? null
     : inquiries.find((inquiry) => inquiry.id === profilePeekInquiryId) ?? null;
@@ -1020,16 +1043,18 @@ export default function InquiriesScreen({
                         aria-label={`View ${inquiry.name} profile`}
                       >
                         <img src={inquiry.avatar ?? ''} alt={inquiry.name} />
+                        {inquiry.status === 'New' && !conversationReadById[inquiry.id] && (
+                          <InquiryCountBubble count={Math.max(inquiry.thread.filter((entry) => entry.sender === 'tenant').length, 1)} />
+                        )}
                       </button>
                       <div className="inbox-info">
                         <div className="inquiry-name-row">
                           <span className="inbox-name">{inquiry.name}</span>
-                          <StatusBadge status={inquiry.status} />
+                          <StatusBadge inquiry={inquiry} />
                         </div>
                         <div className="listing-id-row">
-                          <span className="entity-id-tag">{inquiry.userId}</span>
                           <span className={`roomie-score-chip is-${inquiry.trust.roomieTemperature.toLowerCase()}`}>
-                            {inquiry.trust.roomieTemperature === 'Cool' ? '❄️' : inquiry.trust.roomieTemperature === 'Warm' ? '🌤️' : '🔥'} Roomie {inquiry.trust.roomieScore}
+                            Roomie {inquiry.trust.roomieScore}
                           </span>
                         </div>
                         <div className="inquiry-unit">{unitTitle(inquiry.unitId)}</div>
@@ -1059,7 +1084,7 @@ export default function InquiriesScreen({
                         <button className="unit-btn" onClick={() => { setScheduleInquiryId(inquiry.id); }}>
                           Schedule viewing
                         </button>
-                        <button className="unit-btn" onClick={() => { setChatOpenId(inquiry.id); }}>
+                        <button className="unit-btn" onClick={() => { openInquiryChat(inquiry.id); }}>
                           Open chat
                         </button>
                       </div>
@@ -1163,16 +1188,18 @@ export default function InquiriesScreen({
                         aria-label={`View ${i.name} profile`}
                       >
                         <img src={i.avatar ?? ''} alt={i.name} />
+                        {i.status === 'New' && (
+                          <InquiryCountBubble count={Math.max(i.thread.filter((entry) => entry.sender === 'tenant').length, 1)} />
+                        )}
                       </button>
                       <div className="inbox-info">
                         <div className="inquiry-name-row">
                           <span className="inbox-name">{i.name}</span>
-                          <StatusBadge status={i.status} />
+                          <StatusBadge inquiry={i} />
                         </div>
                         <div className="listing-id-row">
-                          <span className="entity-id-tag">{i.userId}</span>
                           <span className={`roomie-score-chip is-${i.trust.roomieTemperature.toLowerCase()}`}>
-                            {i.trust.roomieTemperature === 'Cool' ? '❄️' : i.trust.roomieTemperature === 'Warm' ? '🌤️' : '🔥'} Roomie {i.trust.roomieScore}
+                            Roomie {i.trust.roomieScore}
                           </span>
                         </div>
                         <div className="inquiry-unit">{unitTitle(i.unitId)}</div>
@@ -1210,9 +1237,9 @@ export default function InquiriesScreen({
                       >
                         Schedule viewing
                       </button>
-                      <button
+                        <button
                         className="unit-btn"
-                        onClick={() => { setChatOpenId(i.id); }}
+                        onClick={() => { openInquiryChat(i.id); }}
                       >
                         Open chat
                       </button>

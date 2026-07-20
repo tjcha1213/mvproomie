@@ -463,7 +463,7 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
                 <div className="payment-name">{p.tenant}</div>
                 <div className="listing-id-row">
                   <span className="entity-id-tag">{p.tenantId}</span>
-                  <span className={`roomie-score-chip is-${p.trust.roomieTemperature.toLowerCase()}`}>{p.trust.roomieTemperature === 'Cool' ? '❄️' : p.trust.roomieTemperature === 'Warm' ? '🌤️' : '🔥'} Roomie {p.trust.roomieScore}</span>
+                  <span className={`roomie-score-chip is-${p.trust.roomieTemperature.toLowerCase()}`}>Roomie {p.trust.roomieScore}</span>
                 </div>
                 <div className="payment-unit">{unitTitle(p.unitId)} · {p.dueLabel} · {p.method}</div>
               </div>

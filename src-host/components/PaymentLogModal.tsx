@@ -65,9 +65,7 @@ export default function PaymentLogModal({
               <h3>{payment.tenant}</h3>
               <div className="listing-id-row listing-id-row-modal">
                 <span className="entity-id-tag">{payment.tenantId}</span>
-                <span className={`roomie-score-chip is-${payment.trust.roomieTemperature.toLowerCase()}`}>
-                  {payment.trust.roomieTemperature === 'Cool' ? '❄️' : payment.trust.roomieTemperature === 'Warm' ? '🌤️' : '🔥'} Roomie {payment.trust.roomieScore}
-                </span>
+                <span className={`roomie-score-chip is-${payment.trust.roomieTemperature.toLowerCase()}`}>Roomie {payment.trust.roomieScore}</span>
               </div>
               <p>{unitTitle}</p>
             </div>
