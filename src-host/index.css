@@ -4426,6 +4426,13 @@ img {
 }
 
 .listing-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
   background: rgba(2, 6, 23, 0.88);
 }
 
@@ -6881,6 +6888,36 @@ img {
   .listing-modal-overlay.inquiry-chat-overlay {
     padding: 0;
     align-items: stretch;
+  }
+
+  .listing-lightbox-overlay {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  .listing-lightbox-modal {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .listing-lightbox-slide {
+    padding: 0;
+  }
+
+  .listing-lightbox-slide img {
+    border-radius: 0;
+  }
+
+  .listing-lightbox-nav {
+    top: calc(50% - 8px);
+  }
+
+  .listing-lightbox-dots {
+    bottom: calc(14px + env(safe-area-inset-bottom));
   }
 
   .listing-modal {
