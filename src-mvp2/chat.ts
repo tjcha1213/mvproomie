@@ -217,11 +217,11 @@ export function openConversationWithPrompt(
   const now = Date.now();
   const outgoingText =
     mode === 'inquiry'
-      ? `Hi ${listing.hostName.split(' ')[0]}, I'm interested in ${listing.title}. Is it still available?`
+      ? `Hi ${listing.hostName.split(' ')[0]}, I’d like to request a viewing for ${listing.title}. Is there an available slot?`
       : `Hi ${listing.hostName.split(' ')[0]}, I saw your ${listing.title} listing and wanted to ask about availability.`;
   const replyText =
     mode === 'inquiry'
-      ? 'Yes, it is. I can share viewing slots and move-in details here.'
+      ? 'Thanks for the request. I’ll review it and send the next steps here.'
       : 'Absolutely. Let me know what you want to confirm and I can help.';
 
   return {

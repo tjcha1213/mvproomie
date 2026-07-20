@@ -485,7 +485,7 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
                     onSendInquiry(l);
                   }}
                 >
-                  Send inquiry
+                  Request viewing
                 </button>
               </div>
             </div>

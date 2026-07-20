@@ -560,6 +560,14 @@ export default function InquiriesScreen({
     });
     onSetViewing(scheduleCancelInquiry.id, null);
     onSetStatus(scheduleCancelInquiry.id, 'Replied');
+    onAddThreadMessage(
+      scheduleCancelInquiry.id,
+      {
+        sender: 'system',
+        text: 'Viewing schedule canceled.',
+        time: 'Just now',
+      },
+    );
     onShowToast(`🗓️ Viewing canceled for ${scheduleCancelInquiry.name}`);
     setScheduleCancelInquiryId(null);
   }

@@ -64,6 +64,18 @@ function latestReadInquiryMessageId(inquiry: Inquiry): number | null {
   return null;
 }
 
+function hasPendingViewingRequest(inquiry: Inquiry): boolean {
+  const hasRequestText = inquiry.thread.some((entry) => entry.sender === 'tenant' && /viewing|visit|schedule/i.test(entry.text));
+  const hasAcceptedMessage = inquiry.thread.some((entry) => entry.sender === 'system' && /accepted/i.test(entry.text));
+  const hasDeclinedMessage = inquiry.thread.some((entry) => entry.sender === 'system' && /declined/i.test(entry.text));
+  return hasRequestText && !hasAcceptedMessage && !hasDeclinedMessage && inquiry.status !== 'Viewing' && !inquiry.viewingAt;
+}
+
+function latestViewingRequestText(inquiry: Inquiry): string | null {
+  const match = [...inquiry.thread].reverse().find((entry) => entry.sender === 'tenant' && /viewing|visit|schedule/i.test(entry.text));
+  return match ? match.text : null;
+}
+
 function buildCalendarMonth(baseMonth: Date) {
   const month = baseMonth.getMonth();
   const year = baseMonth.getFullYear();
@@ -87,6 +99,14 @@ function buildCalendarMonth(baseMonth: Date) {
       }),
     ] as CalendarCell[],
   };
+}
+
+function formatScheduledViewingLabel(date: string, time: string) {
+  const parsed = new Date(`${date}T12:00:00`);
+  const dateLabel = Number.isNaN(parsed.getTime())
+    ? date
+    : parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return `${dateLabel} at ${time}`;
 }
 
 export default function InquiryChatModal({ open, inquiry, units, onClose, onSetStatus, onSetViewing, onAddThreadMessage, onShowToast }: Props) {
@@ -115,6 +135,8 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
   const scheduleCalendar = useMemo(() => buildCalendarMonth(scheduleMonth), [scheduleMonth]);
   const unitTitle = inquiry ? (units.find((unit) => unit.id === inquiry.unitId)?.title ?? 'Listing') : 'Listing';
   const latestReadMessageId = useMemo(() => (inquiry ? latestReadInquiryMessageId(inquiry) : null), [inquiry]);
+  const viewingRequestPending = useMemo(() => (inquiry ? hasPendingViewingRequest(inquiry) : false), [inquiry]);
+  const viewingRequestText = useMemo(() => (inquiry ? latestViewingRequestText(inquiry) : null), [inquiry]);
   const activeChatMessages = useMemo(() => {
     if (!inquiry) return [];
 
@@ -205,14 +227,58 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
     if (!scheduleDate) return;
     onSetViewing(inquiry.id, { date: scheduleDate, time: scheduleTime });
     onSetStatus(inquiry.id, 'Viewing');
+    onAddThreadMessage(
+      inquiry.id,
+      {
+        sender: 'system',
+        text: `Viewing scheduled for ${formatScheduledViewingLabel(scheduleDate, scheduleTime)}.`,
+        time: 'Just now',
+      },
+    );
     onShowToast('📅 Viewing scheduled');
     setScheduleOpen(false);
+  };
+
+  const acceptViewingRequest = () => {
+    if (!inquiry) return;
+    onAddThreadMessage(
+      inquiry.id,
+      {
+        sender: 'system',
+        text: 'Viewing request accepted. Open the scheduler below to confirm a date and time.',
+        time: 'Just now',
+      },
+    );
+    setScheduleOpen(true);
+    onShowToast('Viewing request accepted');
+  };
+
+  const declineViewingRequest = () => {
+    if (!inquiry) return;
+    onAddThreadMessage(
+      inquiry.id,
+      {
+        sender: 'system',
+        text: 'Viewing request declined.',
+        time: 'Just now',
+      },
+      'Replied',
+    );
+    onShowToast('Viewing request declined');
   };
 
   const cancelViewing = () => {
     if (!inquiry) return;
     onSetViewing(inquiry.id, null);
     onSetStatus(inquiry.id, 'Replied');
+    onAddThreadMessage(
+      inquiry.id,
+      {
+        sender: 'system',
+        text: 'Viewing schedule canceled.',
+        time: 'Just now',
+      },
+    );
     onShowToast('🗓️ Viewing canceled');
     setScheduleCancelOpen(false);
   };
@@ -320,6 +386,22 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
             <div className="inquiry-chat-body">
               <div className="scroll-area inquiry-chat-scroller">
                 <div className="inquiry-chat-thread">
+                  {viewingRequestPending && (
+                    <div className="inquiry-chat-request-thread-card">
+                      <div className="inquiry-chat-request-thread-title">Viewing request</div>
+                      <div className="inquiry-chat-request-thread-copy">
+                        {viewingRequestText ?? 'The tenant asked to schedule a viewing.'}
+                      </div>
+                      <div className="inquiry-chat-request-thread-actions">
+                        <button type="button" className="unit-btn" onClick={declineViewingRequest}>
+                          Decline request
+                        </button>
+                        <button type="button" className="unit-btn unit-btn-primary" onClick={acceptViewingRequest}>
+                          Accept request
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   {activeChatMessages.map(({ entry: message, meta, reaction }) => {
                     const isHost = message.sender === 'host';
                     const isRead = message.sender === 'host' && message.id === latestReadMessageId;

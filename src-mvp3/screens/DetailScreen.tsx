@@ -241,7 +241,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
             Reach out directly to ask about availability, viewing schedules, or move-in timing.
           </p>
           <button className="cta-primary" onClick={() => onSendInquiry(listing)}>
-            Send Inquiry
+            Request viewing
           </button>
         </div>
       </div>

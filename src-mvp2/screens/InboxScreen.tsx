@@ -62,6 +62,13 @@ type MessageReplyTarget = {
   text: string;
 };
 
+type ViewingRequestStatus = 'pending' | 'accepted' | 'declined';
+type ViewingRequestNote = {
+  text: string;
+  time: string;
+  status: ViewingRequestStatus;
+};
+
 const ACTION_WIDTH = 92;
 const REVEAL_THRESHOLD = 10;
 const COMMIT_THRESHOLD = 48;
@@ -208,6 +215,8 @@ export default function InboxScreen({
   const [messageReactionByConversation, setMessageReactionByConversation] = useState<Record<string, Record<string, { emoji: string; count: number }>>>({});
   const [messageDeletedByConversation, setMessageDeletedByConversation] = useState<Record<string, Record<string, boolean>>>({});
   const [replyTarget, setReplyTarget] = useState<MessageReplyTarget | null>(null);
+  const [requestViewingNoticeByConversation, setRequestViewingNoticeByConversation] = useState<Record<string, ViewingRequestNote>>({});
+  const [viewingNotificationsOpen, setViewingNotificationsOpen] = useState(false);
   const [profilePeekConversationId, setProfilePeekConversationId] = useState<string | null>(null);
   const [conversationMutedById, setConversationMutedById] = useState<Record<string, boolean>>({});
   const [conversationActionSheetId, setConversationActionSheetId] = useState<string | null>(null);
@@ -216,6 +225,10 @@ export default function InboxScreen({
     () => conversations.find((conversation) => conversation.id === activeConversationId) ?? null,
     [activeConversationId, conversations]
   );
+  const requestViewingText = useCallback(() => {
+    if (!activeConversation) return '';
+    return `Hi ${activeConversation.participantName.split(' ')[0]}, I’d like to request a viewing for ${activeConversation.listingTitle}. Is there an available slot?`;
+  }, [activeConversation]);
   const deleteTimersRef = useRef<Record<string, number>>({});
   const hiddenIdsRef = useRef<Record<string, Set<string>>>({});
   const swipeRef = useRef<SwipeSession | null>(null);
@@ -400,6 +413,25 @@ export default function InboxScreen({
       }))
     );
   }, [activeConversation, currentMessages, messageDeletedByConversation, messagePinStateByConversation]);
+
+  const viewingNotificationRows = useMemo(() => {
+    return conversations
+      .map((conversation) => {
+        const note = requestViewingNoticeByConversation[conversation.id];
+        if (!note) return null;
+        const threadText = conversation.messages.map((message) => message.text).join(' ');
+        const inferredStatus: ViewingRequestStatus = /declined/i.test(threadText)
+          ? 'declined'
+          : /accepted|scheduled/i.test(threadText)
+            ? 'accepted'
+            : note.status;
+        return {
+          conversation,
+          note: { ...note, status: inferredStatus },
+        };
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+  }, [conversations, requestViewingNoticeByConversation]);
 
   const latestReadMessageId = useMemo(
     () => (activeConversation ? latestReadSelfMessageId(activeConversation) : null),
@@ -756,6 +788,20 @@ export default function InboxScreen({
     onOpenConversation(conversationId);
   }, [conversationActionSheetId, listOpenAction, onMarkConversationRead, onOpenConversation, setSwipeState]);
 
+  const handleRequestViewing = useCallback(() => {
+    if (!activeConversation) return;
+    const time = formatConversationTime(Date.now());
+    setRequestViewingNoticeByConversation((prev) => ({
+      ...prev,
+      [activeConversation.id]: {
+        text: 'Viewing request sent. Waiting for the host to respond.',
+        time,
+        status: 'pending',
+      },
+    }));
+    onSendMessage(activeConversation.id, requestViewingText());
+  }, [activeConversation, onSendMessage, requestViewingText]);
+
   const closeConversationActionSheet = useCallback(() => {
     setConversationActionSheetId(null);
   }, []);
@@ -949,8 +995,19 @@ export default function InboxScreen({
                         </div>
                       )}
                     </div>
-                  );
-                })}
+                    );
+                  })}
+                  {activeConversation && requestViewingNoticeByConversation[activeConversation.id] && (
+                    <div className="inbox-request-thread-note">
+                      <div className="inbox-request-thread-note-label">Viewing Request Sent</div>
+                      <div className="inbox-request-thread-note-text">
+                        {requestViewingNoticeByConversation[activeConversation.id].text}
+                      </div>
+                      <div className="inbox-request-thread-note-time">
+                        {requestViewingNoticeByConversation[activeConversation.id].time}
+                      </div>
+                    </div>
+                  )}
                 <div ref={inboxScrollAnchorRef} className="inbox-scroll-anchor" aria-hidden="true" />
               </div>
             </div>
@@ -972,6 +1029,20 @@ export default function InboxScreen({
                   </button>
                 </div>
               )}
+
+              <div className="inbox-request-viewing-strip">
+                <div className="inbox-request-viewing-copy">
+                  <div className="inbox-request-viewing-subtitle">Need to see the place in person? Send a viewing request from here.</div>
+                </div>
+                <button
+                  type="button"
+                  className="inbox-request-viewing-btn"
+                  onClick={handleRequestViewing}
+                  disabled={!activeConversation}
+                >
+                  Request viewing
+                </button>
+              </div>
 
               <div className="inbox-composer">
                 <textarea
@@ -1094,6 +1165,43 @@ export default function InboxScreen({
           }
         }}
       >
+        <button
+          type="button"
+          className={`inbox-viewing-notification-row ${viewingNotificationsOpen ? 'is-open' : ''}`}
+          onClick={() => setViewingNotificationsOpen((current) => !current)}
+        >
+          <div className="inbox-viewing-notification-copy">
+            <div className="inbox-viewing-notification-title">Viewing schedules</div>
+            <div className="inbox-viewing-notification-subtitle">
+              {viewingNotificationRows.length > 0
+                ? `${viewingNotificationRows.length} request${viewingNotificationRows.length === 1 ? '' : 's'} with status updates`
+                : 'No viewing requests yet'}
+            </div>
+          </div>
+          <div className="inbox-viewing-notification-chev" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+              <path d={viewingNotificationsOpen ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} />
+            </svg>
+          </div>
+        </button>
+        {viewingNotificationsOpen && (
+          <div className="inbox-viewing-notification-panel">
+            {viewingNotificationRows.length > 0 ? viewingNotificationRows.map(({ conversation, note }) => (
+              <div key={conversation.id} className="inbox-viewing-notification-item">
+                <div className="inbox-viewing-notification-item-main">
+                  <div className="inbox-viewing-notification-item-title">{conversation.listingTitle}</div>
+                  <div className="inbox-viewing-notification-item-copy">{note.text}</div>
+                </div>
+                <div className={`inbox-viewing-notification-status is-${note.status}`}>
+                  {note.status === 'pending' ? 'Pending' : note.status === 'accepted' ? 'Accepted' : 'Declined'}
+                </div>
+                <div className="inbox-viewing-notification-item-time">{note.time}</div>
+              </div>
+            )) : (
+              <div className="inbox-viewing-notification-empty">Sent viewing requests and host decisions will appear here.</div>
+            )}
+          </div>
+        )}
         <div className="inbox-list">
           {conversationRows.map((conversation) => {
             const lastMessage = conversation.messages[conversation.messages.length - 1];

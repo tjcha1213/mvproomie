@@ -429,7 +429,7 @@ export default function HomeScreen({ listings, onSelectListing, onToggleSave, on
                     onSendInquiry(l);
                   }}
                 >
-                  Send inquiry
+                  Request viewing
                 </button>
               </div>
             </div>

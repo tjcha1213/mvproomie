@@ -4906,6 +4906,56 @@ img {
   gap: 10px;
 }
 
+.inquiry-chat-request-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.inquiry-chat-request-actions .unit-btn {
+  min-height: 34px;
+  padding-inline: 12px;
+}
+
+.inquiry-chat-request-thread-card {
+  align-self: center;
+  width: min(100%, 420px);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--primary) 10%, #fff);
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, #fff);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inquiry-chat-request-thread-title {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--primary-dark);
+}
+
+.inquiry-chat-request-thread-copy {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--slate-700);
+}
+
+.inquiry-chat-request-thread-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inquiry-chat-request-thread-actions .unit-btn {
+  min-height: 34px;
+  padding-inline: 12px;
+}
+
 .inquiry-chat-schedule-pill {
   border: 0;
   min-height: 36px;
