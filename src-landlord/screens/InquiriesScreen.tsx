@@ -30,7 +30,12 @@ interface Props {
 type Filter = 'All' | InquiryStatus | 'Calendar';
 type SwipeSide = 'delete' | 'pin';
 
-const FILTERS: Filter[] = ['All', 'New', 'Replied', 'Viewing', 'Calendar'];
+const FILTERS: Array<{ value: Filter; label: string }> = [
+  { value: 'All', label: 'All' },
+  { value: 'New', label: 'New' },
+  { value: 'Viewing', label: 'Scheduled' },
+  { value: 'Calendar', label: 'Calendar' },
+];
 const ACTION_WIDTH = 92;
 const REVEAL_THRESHOLD = 10;
 const COMMIT_THRESHOLD = 48;
@@ -83,6 +88,15 @@ type MessageContextMenuState = {
 
 type ScheduleLaunchSource = 'list' | 'chat';
 
+type ScheduleLongPressState = {
+  inquiryId: number;
+  pointerId: number;
+  startX: number;
+  startY: number;
+  timer: number | null;
+  triggered: boolean;
+};
+
 type MessageReplyTarget = {
   name: string;
   text: string;
@@ -90,7 +104,8 @@ type MessageReplyTarget = {
 
 function StatusBadge({ status }: { status: InquiryStatus }) {
   const cls = status === 'New' ? 'st-new' : status === 'Viewing' ? 'st-viewing' : 'st-replied';
-  return <span className={`status-badge ${cls}`}>{status}</span>;
+  const label = status === 'Viewing' ? 'Scheduled' : status;
+  return <span className={`status-badge ${cls}`}>{label}</span>;
 }
 
 function timeStampLabel() {
@@ -256,6 +271,7 @@ export default function InquiriesScreen({
   const [replyTarget, setReplyTarget] = useState<MessageReplyTarget | null>(null);
   const [messageReactionByInquiryId, setMessageReactionByInquiryId] = useState<Record<number, Record<number, { emoji: string; count: number }>>>({});
   const [scheduleInquiryId, setScheduleInquiryId] = useState<number | null>(null);
+  const [scheduleCancelInquiryId, setScheduleCancelInquiryId] = useState<number | null>(null);
   const [scheduleLaunchSource, setScheduleLaunchSource] = useState<ScheduleLaunchSource>('list');
   const [scheduleMonth, setScheduleMonth] = useState(() => new Date());
   const [scheduleDate, setScheduleDate] = useState('');
@@ -277,6 +293,8 @@ export default function InquiriesScreen({
   } | null>(null);
   const inquiryScrollerRef = useRef<HTMLDivElement | null>(null);
   const inquiryScrollAnchorRef = useRef<HTMLDivElement | null>(null);
+  const scheduleLongPressRef = useRef<ScheduleLongPressState | null>(null);
+  const suppressNextScheduleClickRef = useRef(false);
 
   useEffect(() => {
     setMetaById((prev) => {
@@ -440,7 +458,9 @@ export default function InquiriesScreen({
 
   const unitTitle = (id: number) => units.find((u) => u.id === id)?.title ?? '';
   const activeChat = chatOpenId === null ? null : inquiries.find((inquiry) => inquiry.id === chatOpenId) ?? null;
+  const activeChatViewing = activeChat ? viewingByInquiryId[activeChat.id] : undefined;
   const scheduleInquiry = scheduleInquiryId === null ? null : inquiries.find((inquiry) => inquiry.id === scheduleInquiryId) ?? null;
+  const scheduleCancelInquiry = scheduleCancelInquiryId === null ? null : inquiries.find((inquiry) => inquiry.id === scheduleCancelInquiryId) ?? null;
   const scheduleCalendar = buildCalendarMonth(scheduleMonth);
   const selectedScheduleDate = scheduleDate ? new Date(`${scheduleDate}T12:00:00`) : null;
   const activeChatMessages = useMemo(() => {
@@ -484,6 +504,9 @@ export default function InquiriesScreen({
       return;
     }
 
+    const viewingScheduled = Boolean(viewingByInquiryId[inquiry.id] || inquiry.viewingAt);
+    const nextStatus: InquiryStatus = viewingScheduled ? 'Viewing' : 'Replied';
+
     onAddThreadMessage(
       inquiry.id,
       {
@@ -492,23 +515,27 @@ export default function InquiriesScreen({
         time: timeStampLabel(),
         replyTo: replyTarget ?? undefined,
       },
-      'Replied',
+      nextStatus,
     );
     setDraftReplies((prev) => ({ ...prev, [inquiry.id]: '' }));
     setReplyTarget(null);
     onShowToast(`✉️ Reply sent to ${inquiry.name}`);
   }
 
-  function scheduleViewing(inquiry: Inquiry, source: ScheduleLaunchSource = 'list') {
+  function scheduleViewing(
+    inquiry: Inquiry,
+    source: ScheduleLaunchSource = 'list',
+    preset?: ViewingAppointment,
+  ) {
     const today = new Date();
     const nextMorning = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-    const initialMonth = new Date(nextMorning.getFullYear(), nextMorning.getMonth(), 1);
-    const initialDate = `${nextMorning.getFullYear()}-${String(nextMorning.getMonth() + 1).padStart(2, '0')}-${String(nextMorning.getDate()).padStart(2, '0')}`;
+    const defaultMonth = new Date(nextMorning.getFullYear(), nextMorning.getMonth(), 1);
+    const initialDate = preset?.date ?? `${nextMorning.getFullYear()}-${String(nextMorning.getMonth() + 1).padStart(2, '0')}-${String(nextMorning.getDate()).padStart(2, '0')}`;
     setScheduleInquiryId(inquiry.id);
     setScheduleLaunchSource(source);
-    setScheduleMonth(initialMonth);
+    setScheduleMonth(preset?.date ? new Date(`${preset.date}T12:00:00`) : defaultMonth);
     setScheduleDate(initialDate);
-    setScheduleTime('10:00');
+    setScheduleTime(preset?.time ?? '10:00');
   }
 
   function confirmScheduleViewing() {
@@ -537,6 +564,79 @@ export default function InquiriesScreen({
     onShowToast(`📅 Viewing scheduled with ${scheduleInquiry.name}`);
     setScheduleInquiryId(null);
   }
+
+  function cancelScheduleViewing() {
+    if (!scheduleCancelInquiry) return;
+    setViewingByInquiryId((prev) => {
+      if (!prev[scheduleCancelInquiry.id]) return prev;
+      const next = { ...prev };
+      delete next[scheduleCancelInquiry.id];
+      return next;
+    });
+    onSetStatus(scheduleCancelInquiry.id, 'Replied');
+    onShowToast(`🗓️ Viewing canceled for ${scheduleCancelInquiry.name}`);
+    setScheduleCancelInquiryId(null);
+  }
+
+  const clearScheduleLongPress = useCallback(() => {
+    const current = scheduleLongPressRef.current;
+    if (current?.timer) window.clearTimeout(current.timer);
+    scheduleLongPressRef.current = null;
+  }, []);
+
+  const handleSchedulePillPointerDown = useCallback((event: ReactPointerEvent<HTMLButtonElement>, inquiry: Inquiry) => {
+    if (!viewingByInquiryId[inquiry.id] && !inquiry.viewingAt) return;
+    clearScheduleLongPress();
+    const timer = window.setTimeout(() => {
+      const current = scheduleLongPressRef.current;
+      if (!current || current.inquiryId !== inquiry.id || current.triggered) return;
+      current.triggered = true;
+      suppressNextScheduleClickRef.current = true;
+      setScheduleCancelInquiryId(inquiry.id);
+    }, MESSAGE_LONG_PRESS_DELAY);
+
+    scheduleLongPressRef.current = {
+      inquiryId: inquiry.id,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      timer,
+      triggered: false,
+    };
+
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // ignore
+    }
+  }, [clearScheduleLongPress, inquiryScrollAnchorRef, viewingByInquiryId]);
+
+  const handleSchedulePillPointerMove = useCallback((event: ReactPointerEvent<HTMLButtonElement>, inquiry: Inquiry) => {
+    const current = scheduleLongPressRef.current;
+    if (!current || current.inquiryId !== inquiry.id || current.triggered) return;
+    const dx = event.clientX - current.startX;
+    const dy = event.clientY - current.startY;
+    if (Math.abs(dx) > MESSAGE_LONG_PRESS_MOVE_TOLERANCE || Math.abs(dy) > MESSAGE_LONG_PRESS_MOVE_TOLERANCE) {
+      clearScheduleLongPress();
+    }
+  }, [clearScheduleLongPress]);
+
+  const handleSchedulePillPointerUp = useCallback((event: ReactPointerEvent<HTMLButtonElement>, inquiry: Inquiry) => {
+    const current = scheduleLongPressRef.current;
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {
+      // ignore
+    }
+    if (current && current.inquiryId === inquiry.id && current.triggered) {
+      return;
+    }
+    clearScheduleLongPress();
+  }, [clearScheduleLongPress]);
+
+  const handleSchedulePillPointerCancel = useCallback(() => {
+    clearScheduleLongPress();
+  }, [clearScheduleLongPress]);
 
   const commitPinToggle = (id: number) => {
     setSwipe(null);
@@ -941,14 +1041,14 @@ export default function InquiriesScreen({
       <div className="scroll-area">
         <div className="section-header">
           <span className="section-title">
-            {showCalendarView ? `Viewing calendar (${displayedInquiryCount})` : `Inquiries (${displayedInquiryCount})`}
+            {showCalendarView ? `Scheduled calendar (${displayedInquiryCount})` : `Inquiries (${displayedInquiryCount})`}
           </span>
         </div>
 
         <div className="search-filter-chips">
-          {FILTERS.map((f) => (
-            <button key={f} className={`filter-chip ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
-              {f}
+          {FILTERS.map(({ value, label }) => (
+            <button key={value} className={`filter-chip ${filter === value ? 'active' : ''}`} onClick={() => setFilter(value)}>
+              {label}
             </button>
           ))}
         </div>
@@ -1446,12 +1546,22 @@ export default function InquiriesScreen({
                 <div className="inquiry-chat-header-side">
                   <button
                     type="button"
-                    className="inquiry-chat-schedule-pill"
+                    className={`inquiry-chat-schedule-pill ${activeChatViewing ? 'is-scheduled' : ''}`}
+                    onPointerDown={(event) => activeChat && handleSchedulePillPointerDown(event, activeChat)}
+                    onPointerMove={(event) => activeChat && handleSchedulePillPointerMove(event, activeChat)}
+                    onPointerUp={(event) => activeChat && handleSchedulePillPointerUp(event, activeChat)}
+                    onPointerCancel={handleSchedulePillPointerCancel}
                     onClick={() => {
-                      scheduleViewing(activeChat, 'chat');
+                      if (!activeChat) return;
+                      if (suppressNextScheduleClickRef.current) {
+                        suppressNextScheduleClickRef.current = false;
+                        clearScheduleLongPress();
+                        return;
+                      }
+                      scheduleViewing(activeChat, 'chat', activeChatViewing);
                     }}
                   >
-                    Schedule viewing
+                    {activeChatViewing ? 'Scheduled' : 'Schedule viewing'}
                   </button>
                   <button
                     className="listing-modal-close inquiry-chat-close"
@@ -1768,6 +1878,44 @@ export default function InquiriesScreen({
                   Confirm viewing
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {scheduleCancelInquiry && (
+        <div className="inquiry-chat-schedule-popover-overlay" onClick={() => setScheduleCancelInquiryId(null)}>
+          <div
+            className="inquiry-chat-cancel-popover"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cancel-schedule-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="listing-modal-head inquiry-chat-schedule-popover-head">
+              <div className="listing-modal-title-block">
+                <h2 id="cancel-schedule-title" className="listing-modal-title">Cancel viewing?</h2>
+                <div className="listing-modal-subtitle">{scheduleCancelInquiry.name} · {unitTitle(scheduleCancelInquiry.unitId)}</div>
+              </div>
+              <button
+                type="button"
+                className="listing-modal-close inquiry-chat-schedule-close"
+                onClick={() => setScheduleCancelInquiryId(null)}
+                aria-label="Close cancel schedule modal"
+              >
+                ×
+              </button>
+            </div>
+            <p className="inquiry-chat-cancel-copy">
+              This will remove the scheduled viewing and return the inquiry to its regular state.
+            </p>
+            <div className="inquiry-calendar-actions">
+              <button type="button" className="unit-btn" onClick={() => setScheduleCancelInquiryId(null)}>
+                Keep schedule
+              </button>
+              <button type="button" className="unit-btn unit-btn-primary is-destructive" onClick={cancelScheduleViewing}>
+                Cancel viewing
+              </button>
             </div>
           </div>
         </div>
