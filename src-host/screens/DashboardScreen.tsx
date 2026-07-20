@@ -360,49 +360,48 @@ export default function DashboardScreen({
                 </div>
               )}
 
-              <div className="ll-card ll-viewing-card">
-                <div className="ll-card-head">
-                  <div className="ll-card-head-copy">
-                    <span className="ll-card-title">Upcoming scheduled viewings</span>
-                    <span className="ll-card-meta"><span>Quick reminder for the next few visits</span></span>
-                  </div>
-                  <button type="button" className="ll-viewing-link" onClick={() => onOpenInquiriesCalendar()}>Go to inquiries</button>
+            </div>
+            <div className="ll-card ll-viewing-card">
+              <div className="ll-card-head">
+                <div className="ll-card-head-copy">
+                  <span className="ll-card-title">Upcoming scheduled viewings</span>
+                  <span className="ll-card-meta"><span>Quick reminder for the next few visits</span></span>
                 </div>
-                <div className="viewing-reminder-list">
-                  {upcomingViewings.length === 0 ? (
-                    <div className="viewing-reminder-empty">No upcoming scheduled viewings at the moment.</div>
-                  ) : (
-                    upcomingViewings.map(({ inquiry, unitId, dateLabel, time, location, userId, listingId, listingTitle, avatar, listingImage }) => (
-                      <div key={inquiry.id} className="viewing-reminder-item">
-                        <button type="button" className="viewing-reminder-date-row" onClick={() => onOpenInquiriesCalendar(inquiry.viewingAt ?? undefined)}>
-                          <strong>{dateLabel}</strong>
-                          <span>{time}</span>
-                        </button>
-                        <div className="viewing-reminder-split">
+                <button type="button" className="ll-viewing-link" onClick={() => onOpenInquiriesCalendar()}>Go to inquiries</button>
+              </div>
+              <div className="viewing-reminder-list">
+                {upcomingViewings.length === 0 ? (
+                  <div className="viewing-reminder-empty">No upcoming scheduled viewings at the moment.</div>
+                ) : (
+                  upcomingViewings.map(({ inquiry, unitId, dateLabel, time, location, userId, listingId, listingTitle, avatar, listingImage }) => (
+                    <div key={inquiry.id} className="viewing-reminder-item">
+                      <button type="button" className="viewing-reminder-date-row" onClick={() => onOpenInquiriesCalendar(inquiry.viewingAt ?? undefined)}>
+                        <strong>{dateLabel}</strong>
+                        <span>{time}</span>
+                      </button>
+                      <div className="viewing-reminder-split">
                         <button type="button" className="viewing-reminder-user-card" onClick={() => onOpenInquiryModal(inquiry.id)}>
-                            <img className="viewing-reminder-avatar" src={avatar} alt={inquiry.name} />
-                            <div className="viewing-reminder-card-copy">
-                              <div className="viewing-reminder-name">{inquiry.name}</div>
-                              <div className="viewing-reminder-location">{userId}</div>
-                            </div>
-                          </button>
-                          <button type="button" className="viewing-reminder-listing-card" onClick={() => onOpenListingModal(unitId)}>
-                            <img className="viewing-reminder-thumb" src={listingImage} alt={listingTitle} />
-                            <div className="viewing-reminder-card-copy">
-                              <div className="viewing-reminder-title">{listingTitle}</div>
-                              <div className="viewing-reminder-location">{listingId}</div>
-                              <div className="viewing-reminder-location">{location}</div>
-                            </div>
-                          </button>
-                        </div>
+                          <img className="viewing-reminder-avatar" src={avatar} alt={inquiry.name} />
+                          <div className="viewing-reminder-card-copy">
+                            <div className="viewing-reminder-name">{inquiry.name}</div>
+                            <div className="viewing-reminder-location">{userId}</div>
+                          </div>
+                        </button>
+                        <button type="button" className="viewing-reminder-listing-card" onClick={() => onOpenListingModal(unitId)}>
+                          <img className="viewing-reminder-thumb" src={listingImage} alt={listingTitle} />
+                          <div className="viewing-reminder-card-copy">
+                            <div className="viewing-reminder-title">{listingTitle}</div>
+                            <div className="viewing-reminder-location">{listingId}</div>
+                            <div className="viewing-reminder-location">{location}</div>
+                          </div>
+                        </button>
                       </div>
-                    ))
-                  )}
-                </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
-
           <div className="ll-dashboard-col ll-dashboard-col-right">
             {tasks.length > 0 && (
               <div className="ll-card ll-attn-card">

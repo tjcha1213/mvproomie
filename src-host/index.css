@@ -2592,17 +2592,24 @@ img {
   width: 100%;
   display: grid;
   gap: 10px;
-  padding: 12px;
-  border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--border-light) 72%, var(--primary) 10%);
-  background: color-mix(in srgb, var(--surface-2) 64%, #ffffff);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--border-light);
   text-align: left;
+}
+
+.viewing-reminder-item:last-child {
+  border-bottom: none;
+  padding-bottom: 2px;
 }
 
 .viewing-reminder-date-row {
   display: grid;
   gap: 2px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--border-light) 84%, var(--primary) 16%);
+  background: color-mix(in srgb, var(--primary) 3%, #ffffff);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03);
 }
 
 .viewing-reminder-date-row strong {
@@ -2626,30 +2633,29 @@ img {
 .viewing-reminder-user-card,
 .viewing-reminder-listing-card {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: 8px;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
   align-items: center;
-  padding: 10px;
+  padding: 10px 11px;
   border-radius: 12px;
-  border: 1.5px solid color-mix(in srgb, var(--border-light) 80%, var(--primary) 20%);
-  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--border-light) 82%, var(--primary) 18%);
+  background: color-mix(in srgb, var(--surface) 94%, #ffffff);
   text-align: left;
   min-width: 0;
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
 }
 
 .viewing-reminder-user-card {
-  background: color-mix(in srgb, var(--primary) 5%, #ffffff);
+  background: color-mix(in srgb, var(--primary) 3%, #ffffff);
 }
 
 .viewing-reminder-listing-card {
-  background: color-mix(in srgb, var(--primary) 4%, #ffffff);
+  background: color-mix(in srgb, var(--primary) 2%, #ffffff);
 }
 
 .viewing-reminder-avatar,
 .viewing-reminder-thumb {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 11px;
   object-fit: cover;
   flex-shrink: 0;
@@ -2662,7 +2668,7 @@ img {
 .viewing-reminder-card-copy {
   min-width: 0;
   display: grid;
-  gap: 3px;
+  gap: 4px;
 }
 
 .viewing-reminder-name {
@@ -6597,12 +6603,6 @@ img {
   }
 
   .ll-dashboard-col > .ll-card { margin: 0; }
-  .ll-dashboard-col-left > .ll-viewing-card {
-    margin-top: 18px;
-    background: color-mix(in srgb, var(--surface-2) 76%, #ffffff);
-    border: 1.5px solid color-mix(in srgb, var(--border-light) 82%, var(--primary) 18%);
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-  }
   .bar-chart { height: 140px; }
   .bar-chart-shell {
     grid-template-columns: 38px minmax(0, 1fr) 38px;

@@ -8,6 +8,7 @@ import InquiryChatModal from '../components/InquiryChatModal';
 interface Props {
   inquiries: Inquiry[];
   units: Unit[];
+  onDeleteInquiry: (id: number) => void;
   onSetStatus: (id: number, status: InquiryStatus) => void;
   onSetViewing: (id: number, viewing: { date: string; time: string } | null) => void;
   onAddThreadMessage: (
@@ -217,6 +218,7 @@ function BellOffIcon() {
 export default function InquiriesScreen({
   inquiries,
   units,
+  onDeleteInquiry,
   onSetStatus,
   onSetViewing,
   onAddThreadMessage,
@@ -596,6 +598,7 @@ export default function InquiriesScreen({
       });
       if (openId === id) setOpenId(null);
       if (chatOpenId === id) setChatOpenId(null);
+      onDeleteInquiry(id);
       delete deleteTimersRef.current[id];
     }, 220);
   };

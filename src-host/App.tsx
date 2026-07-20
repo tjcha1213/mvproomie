@@ -128,6 +128,12 @@ function App() {
     );
   }, []);
 
+  const deleteInquiry = useCallback((id: number) => {
+    setInquiries((prev) => prev.filter((inquiry) => inquiry.id !== id));
+    setSharedInquiryId((current) => (current === id ? null : current));
+    setInquiriesStartChatId((current) => (current === id ? null : current));
+  }, []);
+
   const addInquiryThreadMessage = useCallback((
     id: number,
     message: {
@@ -303,12 +309,13 @@ function App() {
             />
           )}
           {tab === 'inquiries' && (
-            <InquiriesScreen
-              inquiries={inquiries}
-              units={units}
-              onSetStatus={setInquiryStatus}
-              onSetViewing={setInquiryViewing}
-              onAddThreadMessage={addInquiryThreadMessage}
+              <InquiriesScreen
+                inquiries={inquiries}
+                units={units}
+                onDeleteInquiry={deleteInquiry}
+                onSetStatus={setInquiryStatus}
+                onSetViewing={setInquiryViewing}
+                onAddThreadMessage={addInquiryThreadMessage}
               onOpenProfile={() => setTab('profile')}
               notifications={notifications}
               onOpenNotification={openNotification}
