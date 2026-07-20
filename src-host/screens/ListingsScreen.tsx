@@ -91,6 +91,7 @@ export default function ListingsScreen({
   const carouselSnapTimerRef = useRef<number | null>(null);
 
   const filtered = filter === 'All' ? units : units.filter(u => u.status === filter);
+  const totalListingCount = units.length;
   const selectedUnit = selectedUnitId === null ? null : units.find((u) => u.id === selectedUnitId) ?? null;
   const selectedUnitGallery = selectedUnit ? (selectedUnit.gallery?.length ? selectedUnit.gallery : [selectedUnit.image]) : [];
   const editUnit = editUnitId === null ? null : units.find((u) => u.id === editUnitId) ?? null;
@@ -278,7 +279,7 @@ export default function ListingsScreen({
 
       <div className="scroll-area">
         <div className="section-header">
-          <span className="section-title">My Listings ({filtered.length})</span>
+          <span className="section-title">My Listings ({totalListingCount})</span>
         </div>
 
         <div className="search-filter-chips">

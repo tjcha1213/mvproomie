@@ -468,7 +468,7 @@ export default function InquiriesScreen({
   }, [viewingEntries]);
 
   const showCalendarView = filter === 'Calendar';
-  const displayedInquiryCount = showCalendarView ? viewingEntries.length : filtered.length;
+  const displayedInquiryCount = showCalendarView ? viewingEntries.length : inquiries.length;
 
   const unitTitle = (id: number) => units.find((u) => u.id === id)?.title ?? '';
   const activeChat = chatOpenId === null ? null : inquiries.find((inquiry) => inquiry.id === chatOpenId) ?? null;
@@ -1140,8 +1140,6 @@ export default function InquiriesScreen({
                   : openAction?.inquiryId === i.id
                     ? openAction.side
                     : null;
-              const isRead = i.unreadCount === 0;
-
               return (
                 <div key={i.id} className={`inquiry-item ${meta.pinned ? 'is-pinned' : ''}`}>
                   <div
@@ -1231,10 +1229,9 @@ export default function InquiriesScreen({
                         <div className="inquiry-unit">{unitTitle(i.unitId)}</div>
                         <div className="inbox-preview">{i.message}</div>
                       </div>
-                      <div className="inbox-meta">
-                        <div className="inbox-time">{i.time}</div>
-                        {isRead && <div className="inbox-read-label">Read</div>}
-                      </div>
+            <div className="inbox-meta">
+              <div className="inbox-time">{i.time}</div>
+            </div>
                     </div>
                   </div>
 
