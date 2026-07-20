@@ -81,6 +81,8 @@ type MessageContextMenuState = {
   width: number;
 };
 
+type ScheduleLaunchSource = 'list' | 'chat';
+
 type MessageReplyTarget = {
   name: string;
   text: string;
@@ -254,6 +256,7 @@ export default function InquiriesScreen({
   const [replyTarget, setReplyTarget] = useState<MessageReplyTarget | null>(null);
   const [messageReactionByInquiryId, setMessageReactionByInquiryId] = useState<Record<number, Record<number, { emoji: string; count: number }>>>({});
   const [scheduleInquiryId, setScheduleInquiryId] = useState<number | null>(null);
+  const [scheduleLaunchSource, setScheduleLaunchSource] = useState<ScheduleLaunchSource>('list');
   const [scheduleMonth, setScheduleMonth] = useState(() => new Date());
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('10:00');
@@ -496,12 +499,13 @@ export default function InquiriesScreen({
     onShowToast(`✉️ Reply sent to ${inquiry.name}`);
   }
 
-  function scheduleViewing(inquiry: Inquiry) {
+  function scheduleViewing(inquiry: Inquiry, source: ScheduleLaunchSource = 'list') {
     const today = new Date();
     const nextMorning = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
     const initialMonth = new Date(nextMorning.getFullYear(), nextMorning.getMonth(), 1);
     const initialDate = `${nextMorning.getFullYear()}-${String(nextMorning.getMonth() + 1).padStart(2, '0')}-${String(nextMorning.getDate()).padStart(2, '0')}`;
     setScheduleInquiryId(inquiry.id);
+    setScheduleLaunchSource(source);
     setScheduleMonth(initialMonth);
     setScheduleDate(initialDate);
     setScheduleTime('10:00');
@@ -953,7 +957,6 @@ export default function InquiriesScreen({
           <div className="calendar-views inquiry-calendar-tab-shell">
             <div className="calendar-nav">
               <div className="calendar-nav-group" aria-label="Calendar month navigation">
-                <span className="calendar-nav-title">Month</span>
                 <div className="calendar-nav-controls">
                   <button
                     type="button"
@@ -979,7 +982,6 @@ export default function InquiriesScreen({
                 </div>
               </div>
               <div className="calendar-nav-group" aria-label="Calendar year navigation">
-                <span className="calendar-nav-title">Year</span>
                 <div className="calendar-nav-controls">
                   <button
                     type="button"
@@ -1281,7 +1283,7 @@ export default function InquiriesScreen({
         <div style={{ height: 16 }} />
       </div>
 
-      {scheduleInquiry && (
+      {scheduleInquiry && scheduleLaunchSource === 'list' && (
         <div
           className="listing-modal-overlay"
           onClick={() => setScheduleInquiryId(null)}
@@ -1309,9 +1311,8 @@ export default function InquiriesScreen({
             </div>
 
             <div className="inquiry-calendar-shell">
-              <div className="listing-history-calendar-head">
-                <strong>{scheduleCalendar.monthLabel}</strong>
-                <div className="calendar-nav-group">
+              <div className="calendar-nav inquiry-calendar-nav">
+                <div className="calendar-nav-group inquiry-calendar-inline-nav" aria-label="Schedule month navigation">
                   <button
                     type="button"
                     className="calendar-arrow-btn"
@@ -1320,11 +1321,31 @@ export default function InquiriesScreen({
                   >
                     ‹
                   </button>
+                  <strong>{scheduleMonth.toLocaleDateString('en-US', { month: 'long' })}</strong>
                   <button
                     type="button"
                     className="calendar-arrow-btn"
                     onClick={() => setScheduleMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
                     aria-label="Next month"
+                  >
+                    ›
+                  </button>
+                </div>
+                <div className="calendar-nav-group inquiry-calendar-inline-nav" aria-label="Schedule year navigation">
+                  <button
+                    type="button"
+                    className="calendar-arrow-btn"
+                    onClick={() => setScheduleMonth((current) => new Date(current.getFullYear() - 1, current.getMonth(), 1))}
+                    aria-label="Previous year"
+                  >
+                    ‹
+                  </button>
+                  <strong>{scheduleMonth.getFullYear()}</strong>
+                  <button
+                    type="button"
+                    className="calendar-arrow-btn"
+                    onClick={() => setScheduleMonth((current) => new Date(current.getFullYear() + 1, current.getMonth(), 1))}
+                    aria-label="Next year"
                   >
                     ›
                   </button>
@@ -1427,7 +1448,7 @@ export default function InquiriesScreen({
                     type="button"
                     className="inquiry-chat-schedule-pill"
                     onClick={() => {
-                      scheduleViewing(activeChat);
+                      scheduleViewing(activeChat, 'chat');
                     }}
                   >
                     Schedule viewing
@@ -1623,6 +1644,129 @@ export default function InquiriesScreen({
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {scheduleInquiry && scheduleLaunchSource === 'chat' && chatOpenId !== null && (
+        <div className="inquiry-chat-schedule-popover-overlay" onClick={() => setScheduleInquiryId(null)}>
+          <div
+            className="inquiry-chat-schedule-popover"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="chat-schedule-viewing-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="listing-modal-head inquiry-chat-schedule-popover-head">
+              <div className="listing-modal-title-block">
+                <h2 id="chat-schedule-viewing-title" className="listing-modal-title">Schedule viewing</h2>
+                <div className="listing-modal-subtitle">{scheduleInquiry.name} · {unitTitle(scheduleInquiry.unitId)}</div>
+              </div>
+              <button
+                type="button"
+                className="listing-modal-close inquiry-chat-schedule-close"
+                onClick={() => setScheduleInquiryId(null)}
+                aria-label="Close schedule viewing popover"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="inquiry-chat-schedule-popover-body">
+              <div className="inquiry-calendar-shell">
+                <div className="calendar-nav inquiry-calendar-nav">
+                  <div className="calendar-nav-group inquiry-calendar-inline-nav" aria-label="Schedule month navigation">
+                    <button
+                      type="button"
+                      className="calendar-arrow-btn"
+                      onClick={() => setScheduleMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
+                      aria-label="Previous month"
+                    >
+                      ‹
+                    </button>
+                    <strong>{scheduleMonth.toLocaleDateString('en-US', { month: 'long' })}</strong>
+                    <button
+                      type="button"
+                      className="calendar-arrow-btn"
+                      onClick={() => setScheduleMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
+                      aria-label="Next month"
+                    >
+                      ›
+                    </button>
+                  </div>
+                  <div className="calendar-nav-group inquiry-calendar-inline-nav" aria-label="Schedule year navigation">
+                    <button
+                      type="button"
+                      className="calendar-arrow-btn"
+                      onClick={() => setScheduleMonth((current) => new Date(current.getFullYear() - 1, current.getMonth(), 1))}
+                      aria-label="Previous year"
+                    >
+                      ‹
+                    </button>
+                    <strong>{scheduleMonth.getFullYear()}</strong>
+                    <button
+                      type="button"
+                      className="calendar-arrow-btn"
+                      onClick={() => setScheduleMonth((current) => new Date(current.getFullYear() + 1, current.getMonth(), 1))}
+                      aria-label="Next year"
+                    >
+                      ›
+                    </button>
+                  </div>
+                </div>
+
+                <div className="listing-history-calendar-weekdays">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                    <span key={day}>{day}</span>
+                  ))}
+                </div>
+
+                <div className="listing-history-calendar-grid">
+                  {scheduleCalendar.cells.map((cell) => {
+                    if (cell.kind === 'blank') {
+                      return <div key={cell.id} className="listing-history-calendar-cell is-empty" aria-hidden="true" />;
+                    }
+
+                    const isSelected = cell.date === scheduleDate;
+                    return (
+                      <button
+                        key={cell.id}
+                        type="button"
+                        className={`listing-history-calendar-cell inquiry-calendar-day ${isSelected ? 'is-selected' : ''}`}
+                        onClick={() => setScheduleDate(cell.date)}
+                      >
+                        <span>{cell.day}</span>
+                        <small>{cell.weekday}</small>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="inquiry-calendar-time-row">
+                <label className="inquiry-reply-label" htmlFor="schedule-time-chat">Select time</label>
+                <input
+                  id="schedule-time-chat"
+                  type="time"
+                  className="inquiry-reply-input inquiry-time-input"
+                  value={scheduleTime}
+                  onChange={(event) => setScheduleTime(event.target.value)}
+                />
+              </div>
+
+              <div className="inquiry-calendar-summary">
+                {selectedScheduleDate ? `Selected: ${selectedScheduleDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${scheduleTime}` : 'Select a date and time to continue.'}
+              </div>
+
+              <div className="inquiry-calendar-actions">
+                <button type="button" className="unit-btn" onClick={() => setScheduleInquiryId(null)}>
+                  Cancel
+                </button>
+                <button type="button" className="unit-btn unit-btn-primary" onClick={confirmScheduleViewing}>
+                  Confirm viewing
+                </button>
               </div>
             </div>
           </div>
