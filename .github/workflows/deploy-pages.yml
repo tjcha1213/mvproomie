@@ -39,6 +39,8 @@ jobs:
       - name: Include static overview and sibling MVP pages
         run: |
           cp -f index.html tenant-surveys.html host-surveys.html survey-admin.html styles.css survey-storage.js demo-layout-1.js dist/
+          cp -f dist/tenant-surveys.html dist/user-surveys.html
+          cp -f dist/host-surveys.html dist/landlord-surveys.html
           mkdir -p dist/mvp1
           mkdir -p dist/assets
           cp -f assets/logo-draft.png assets/mvp1-static.png assets/mvp2-static.png dist/assets/
