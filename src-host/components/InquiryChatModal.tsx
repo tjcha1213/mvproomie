@@ -321,7 +321,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
               <div className="scroll-area inquiry-chat-scroller">
                 <div className="inquiry-chat-thread">
                   {activeChatMessages.map(({ entry: message, meta, reaction }) => {
-                    const isLandlord = message.sender === 'host';
+                    const isHost = message.sender === 'host';
                     const isRead = message.sender === 'host' && message.id === latestReadMessageId;
                     const senderClass = `inquiry-chat-${message.sender}`;
                     return (
@@ -345,7 +345,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
                               openMessageContextMenu(
                                 message.id,
                                 rect,
-                                isLandlord ? 'right' : 'left',
+                                isHost ? 'right' : 'left',
                               );
                             }, 560),
                             startX: event.clientX,

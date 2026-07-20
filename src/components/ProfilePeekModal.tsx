@@ -70,7 +70,7 @@ export default function ProfilePeekModal({
       : ['No uploaded listings in this preview.']
     : ['Listings are shown for host profiles only.'];
   const tenantReviewItems = tenantReviews.length > 0 ? tenantReviews : ['No tenant reviews in this preview.'];
-  const landlordReviewItems = hostReviews.length > 0 ? hostReviews : ['No host reviews in this preview.'];
+  const hostReviewItems = hostReviews.length > 0 ? hostReviews : ['No host reviews in this preview.'];
 
   return createPortal(
     <div
@@ -144,7 +144,7 @@ export default function ProfilePeekModal({
         <div className="profile-peek-section">
           <div className="profile-peek-section-title">Reviews as host</div>
           <div className="profile-peek-review-list">
-            {landlordReviewItems.map((item) => (
+            {hostReviewItems.map((item) => (
               <div key={item} className="profile-peek-review">
                 <span className="profile-peek-review-copy">{item}</span>
               </div>

@@ -17,12 +17,12 @@ export default defineConfig(({ command }) => ({
     rollupOptions: {
       input: {
         index: resolve(__dirname, 'index.html'),
-        landlordsBrokers: resolve(__dirname, 'landlords-brokers.html'),
+        hostsBrokers: resolve(__dirname, 'hosts-brokers.html'),
         userSurveys: resolve(__dirname, 'user-surveys.html'),
         mvp1: resolve(__dirname, 'mvp1/index.html'),
         mvp2: resolve(__dirname, 'mvp2/index.html'),
         mvp3: resolve(__dirname, 'mvp3/index.html'),
-        landlord: resolve(__dirname, 'landlord/index.html'),
+        host: resolve(__dirname, 'host/index.html'),
       },
     },
   },

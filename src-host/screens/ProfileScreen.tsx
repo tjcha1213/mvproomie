@@ -49,7 +49,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
     : chooser === 'host'
       ? [
         { label: 'Host MVP 1', description: 'Open the host dashboard profile tab.', href: 'host/?tab=profile', note: 'MVP 1 links to the live host layout' },
-        { label: 'Host MVP 2', description: 'Open the host broker overview.', href: 'landlords-brokers.html' },
+        { label: 'Host MVP 2', description: 'Open the host broker overview.', href: 'hosts-brokers.html' },
         { label: 'Host MVP 3', description: 'Open the host survey layout.', href: 'host-surveys.html' },
         ]
       : [];
