@@ -86,7 +86,7 @@ body {
   box-shadow: 0 10px 20px rgba(63, 81, 229, 0.18);
 }
 
-/* Child tabs: section nav (MVPs / User Survey) shown under the audience tabs */
+/* Child tabs: section nav (MVPs / Surveys) shown under the audience tabs */
 .subhead-tabs-child {
   padding: 4px;
   gap: 6px;
@@ -851,7 +851,7 @@ h2 {
 .detail-topline,
 .section-row,
 .saved-row,
-.landlord-card,
+.listing-host-card,
 .contact-actions {
   display: flex;
   align-items: center;
@@ -1103,7 +1103,7 @@ h2 {
   font-size: 0.72rem;
 }
 
-.landlord-card,
+.listing-host-card,
 .about-card {
   padding: 14px;
   border: 1px solid #e6ebf5;
@@ -1130,7 +1130,7 @@ h2 {
   display: block;
 }
 
-.landlord-meta {
+.listing-host-meta {
   flex: 1;
   padding: 0 12px;
 }
@@ -1142,12 +1142,12 @@ h2 {
   font-weight: 700;
 }
 
-.landlord-meta h4,
+.listing-host-meta h4,
 .about-card h4 {
   margin: 4px 0;
 }
 
-.landlord-meta p,
+.listing-host-meta p,
 .about-card p,
 .alert-card p {
   margin: 0;

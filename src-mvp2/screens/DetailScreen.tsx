@@ -176,34 +176,34 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
         </div>
 
         {/* Host */}
-        <div className="host-card">
-          <div className="host-left">
+        <div className="listing-host-card">
+          <div className="listing-host-left">
             <button
               type="button"
-              className="host-avatar host-avatar-button"
+              className="listing-host-avatar listing-host-avatar-button"
               onClick={() => setProfilePeekOpen(true)}
               aria-label={`View ${listing.hostName} profile`}
             >
               <img src={listingAvatarFor(listing.id)} alt={listing.hostName} />
             </button>
-            <div className="host-info">
-              <div className="host-name-row">
+            <div className="listing-host-info">
+              <div className="listing-host-name-row">
                 {listing.verified && (
                   <svg className="verified-badge" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="11" fill="currentColor" />
                     <path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
-                <span className="host-name">{listing.verified ? 'Verified Host' : 'Host'}</span>
+                <span className="listing-host-name">{listing.verified ? 'Verified Host' : 'Host'}</span>
               </div>
-              <span className="host-since">{listing.hostName} · Member since {listing.hostSince}</span>
-              <div className="host-rating">
-                <span className="host-rating-star">★</span>
+              <span className="listing-host-since">{listing.hostName} · Member since {listing.hostSince}</span>
+              <div className="listing-host-rating">
+                <span className="listing-host-rating-star">★</span>
                 {listing.hostRating} ({listing.hostReviews} reviews)
               </div>
             </div>
           </div>
-          <div className="host-actions">
+          <div className="listing-host-actions">
             <button className="action-btn-sm btn-message" onClick={() => onOpenChat(listing)}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
