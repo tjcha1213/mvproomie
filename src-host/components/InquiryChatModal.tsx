@@ -349,49 +349,47 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
                   <button type="button" className="inbox-avatar inquiry-chat-avatar inquiry-chat-avatar-button" onClick={() => setProfileOpen(true)} aria-label={`View ${inquiry.name} profile`}>
                     <img src={inquiry.avatar ?? ''} alt={inquiry.name} />
                   </button>
-                <div className="inquiry-chat-title-block">
-                  <span className="listing-modal-type">Inquiry chat</span>
-                  <h2 id="inquiry-chat-title" className="inquiry-chat-title">{inquiry.name}</h2>
-                  <div className="listing-id-row listing-id-row-modal">
-                    <span className="entity-id-tag">{inquiry.userId}</span>
-                    <span className={`roomie-score-chip is-${inquiry.trust.roomieTemperature.toLowerCase()}`}>Roomie {inquiry.trust.roomieScore}</span>
+                  <div className="inquiry-chat-title-block">
+                    <h2 id="inquiry-chat-title" className="inquiry-chat-title">{inquiry.name}</h2>
+                    <div className="listing-id-row listing-id-row-modal">
+                      <span className={`roomie-score-chip is-${inquiry.trust.roomieTemperature.toLowerCase()}`}>Roomie {inquiry.trust.roomieScore}</span>
+                    </div>
+                    <div className="listing-modal-location">{unitTitle}</div>
                   </div>
-                  <div className="listing-modal-location">{unitTitle}</div>
+                </div>
+                <div className="inquiry-chat-header-side">
+                  <button
+                    type="button"
+                    className={`inquiry-chat-schedule-pill ${inquiry.viewingAt ? 'is-scheduled' : ''}`}
+                    onPointerDown={() => {
+                      if (!inquiry.viewingAt) return;
+                      suppressNextScheduleClickRef.current = false;
+                      const timer = window.setTimeout(() => {
+                        suppressNextScheduleClickRef.current = true;
+                        setScheduleCancelOpen(true);
+                      }, 500);
+                      const clear = () => window.clearTimeout(timer);
+                      window.addEventListener('pointerup', clear, { once: true });
+                      window.addEventListener('pointercancel', clear, { once: true });
+                    }}
+                    onClick={() => {
+                      if (inquiry.viewingAt && suppressNextScheduleClickRef.current) {
+                        suppressNextScheduleClickRef.current = false;
+                        return;
+                      }
+                      setScheduleOpen(true);
+                    }}
+                  >
+                    {inquiry.viewingAt ? 'Scheduled' : 'Schedule viewing'}
+                  </button>
+                  <button className="listing-modal-close inquiry-chat-close" onClick={onClose} aria-label="Close chat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
                 </div>
               </div>
-              <div className="inquiry-chat-header-side">
-                <button
-                  type="button"
-                  className={`inquiry-chat-schedule-pill ${inquiry.viewingAt ? 'is-scheduled' : ''}`}
-                  onPointerDown={() => {
-                    if (!inquiry.viewingAt) return;
-                    suppressNextScheduleClickRef.current = false;
-                    const timer = window.setTimeout(() => {
-                      suppressNextScheduleClickRef.current = true;
-                      setScheduleCancelOpen(true);
-                    }, 500);
-                    const clear = () => window.clearTimeout(timer);
-                    window.addEventListener('pointerup', clear, { once: true });
-                    window.addEventListener('pointercancel', clear, { once: true });
-                  }}
-                  onClick={() => {
-                    if (inquiry.viewingAt && suppressNextScheduleClickRef.current) {
-                      suppressNextScheduleClickRef.current = false;
-                      return;
-                    }
-                    setScheduleOpen(true);
-                  }}
-                >
-                  {inquiry.viewingAt ? 'Scheduled' : 'Schedule viewing'}
-                </button>
-                <button className="listing-modal-close inquiry-chat-close" onClick={onClose} aria-label="Close chat">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
-            </div>
 
             <div className="inquiry-chat-body">
               <div className="scroll-area inquiry-chat-scroller">
