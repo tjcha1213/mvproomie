@@ -7,6 +7,8 @@ interface Props {
   conversations: Conversation[];
   activeConversationId: string | null;
   onOpenConversation: (conversationId: string) => void;
+  readConversationIds: Record<string, boolean>;
+  onMarkConversationRead: (conversationId: string) => void;
   onBackToList: () => void;
   onSendMessage: (
     conversationId: string,
@@ -192,6 +194,8 @@ export default function InboxScreen({
   conversations,
   activeConversationId,
   onOpenConversation,
+  readConversationIds,
+  onMarkConversationRead,
   onBackToList,
   onSendMessage,
 }: Props) {
@@ -205,7 +209,6 @@ export default function InboxScreen({
   const [messageDeletedByConversation, setMessageDeletedByConversation] = useState<Record<string, Record<string, boolean>>>({});
   const [replyTarget, setReplyTarget] = useState<MessageReplyTarget | null>(null);
   const [profilePeekConversationId, setProfilePeekConversationId] = useState<string | null>(null);
-  const [conversationReadById, setConversationReadById] = useState<Record<string, boolean>>({});
   const [conversationMutedById, setConversationMutedById] = useState<Record<string, boolean>>({});
   const [conversationActionSheetId, setConversationActionSheetId] = useState<string | null>(null);
   const [messageContextMenu, setMessageContextMenu] = useState<MessageContextMenuState | null>(null);
@@ -611,7 +614,7 @@ export default function InboxScreen({
     if (!conversationActionSheetId) return;
 
     if (action === 'read') {
-      setConversationReadById((prev) => ({ ...prev, [conversationActionSheetId]: true }));
+      onMarkConversationRead(conversationActionSheetId);
     } else if (action === 'mute') {
       setConversationMutedById((prev) => ({
         ...prev,
@@ -624,7 +627,7 @@ export default function InboxScreen({
     }
 
     setConversationActionSheetId(null);
-  }, [conversationActionSheetId, deleteConversation, toggleConversationPin]);
+  }, [conversationActionSheetId, deleteConversation, onMarkConversationRead, toggleConversationPin]);
 
   const currentConversationOffset = useCallback((conversation: Conversation) => {
     if (swipe?.kind === 'conversation' && swipe.id === conversation.id) return clamp(swipe.offset, -MAX_SWIPE, MAX_SWIPE);
@@ -749,8 +752,9 @@ export default function InboxScreen({
     if (listOpenAction && listOpenAction.conversationId !== conversationId) {
       setListOpenAction(null);
     }
+    onMarkConversationRead(conversationId);
     onOpenConversation(conversationId);
-  }, [conversationActionSheetId, listOpenAction, onOpenConversation, setSwipeState]);
+  }, [conversationActionSheetId, listOpenAction, onMarkConversationRead, onOpenConversation, setSwipeState]);
 
   const closeConversationActionSheet = useCallback(() => {
     setConversationActionSheetId(null);
@@ -1097,7 +1101,7 @@ export default function InboxScreen({
             const revealSide = currentConversationSide(conversation);
             const isPinned = Boolean(conversationMetaById[conversation.id]?.pinned);
             const isMuted = Boolean(conversationMutedById[conversation.id]);
-            const unreadCount = conversationReadById[conversation.id] ? 0 : conversation.unreadCount;
+            const unreadCount = readConversationIds[conversation.id] ? 0 : conversation.unreadCount;
 
             return (
               <div

@@ -35,6 +35,7 @@ interface Props {
   onInitialCalendarDateApplied?: () => void;
   initialChatInquiryId?: number | null;
   onInitialChatInquiryIdApplied?: () => void;
+  resetToken?: number;
 }
 
 type Filter = 'All' | InquiryStatus | 'Calendar';
@@ -248,6 +249,7 @@ export default function InquiriesScreen({
   onInitialCalendarDateApplied,
   initialChatInquiryId,
   onInitialChatInquiryIdApplied,
+  resetToken,
 }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [openId, setOpenId] = useState<number | null>(null);
@@ -300,6 +302,20 @@ export default function InquiriesScreen({
     setFilter('All');
     onInitialChatInquiryIdApplied?.();
   }, [initialChatInquiryId, onInitialChatInquiryIdApplied]);
+
+  useEffect(() => {
+    setFilter('All');
+    setOpenId(null);
+    setChatOpenId(null);
+    setProfilePeekInquiryId(null);
+    setConversationActionSheetId(null);
+    setMessageContextMenu(null);
+    setReplyTarget(null);
+    setScheduleInquiryId(null);
+    setScheduleCancelInquiryId(null);
+    setOpenAction(null);
+    setSwipe(null);
+  }, [resetToken]);
 
   useEffect(() => {
     setMetaById((prev) => {

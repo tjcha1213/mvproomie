@@ -61,6 +61,7 @@ function App() {
   const [inquiriesStartFilter, setInquiriesStartFilter] = useState<'Calendar' | null>(null);
   const [inquiriesStartDate, setInquiriesStartDate] = useState<string | null>(null);
   const [inquiriesStartChatId, setInquiriesStartChatId] = useState<number | null>(null);
+  const [inquiriesResetToken, setInquiriesResetToken] = useState(0);
   const [listingsStartUnitId, setListingsStartUnitId] = useState<number | null>(null);
   const [sharedInquiryId, setSharedInquiryId] = useState<number | null>(null);
   const [sharedListingUnitId, setSharedListingUnitId] = useState<number | null>(null);
@@ -260,13 +261,23 @@ function App() {
     showToast(`🔔 ${notification.title}`);
   }, [showToast]);
 
+  const handleTabChange = useCallback((nextTab: Tab) => {
+    if (nextTab === 'inquiries') {
+      setInquiriesStartFilter(null);
+      setInquiriesStartDate(null);
+      setInquiriesStartChatId(null);
+      setInquiriesResetToken((current) => current + 1);
+    }
+    setTab(nextTab);
+  }, []);
+
   return (
     <div className="app-shell">
       <div className="phone-container">
         {/* Desktop-only sidebar; bottom nav takes over on mobile (CSS-switched). */}
           <Sidebar
             activeTab={tab}
-            onTabChange={setTab}
+            onTabChange={handleTabChange}
             inquiryBadge={inquiryMessageCount}
             onAdd={openNewListing}
           />
@@ -325,13 +336,14 @@ function App() {
               onOpenProfile={() => setTab('profile')}
               notifications={notifications}
               onOpenNotification={openNotification}
-              onShowToast={showToast}
-              initialFilter={inquiriesStartFilter}
-              initialCalendarDate={inquiriesStartDate}
-              initialChatInquiryId={inquiriesStartChatId}
-              onInitialFilterApplied={() => setInquiriesStartFilter(null)}
-              onInitialCalendarDateApplied={() => setInquiriesStartDate(null)}
-              onInitialChatInquiryIdApplied={() => setInquiriesStartChatId(null)}
+                onShowToast={showToast}
+                initialFilter={inquiriesStartFilter}
+                initialCalendarDate={inquiriesStartDate}
+                initialChatInquiryId={inquiriesStartChatId}
+                resetToken={inquiriesResetToken}
+                onInitialFilterApplied={() => setInquiriesStartFilter(null)}
+                onInitialCalendarDateApplied={() => setInquiriesStartDate(null)}
+                onInitialChatInquiryIdApplied={() => setInquiriesStartChatId(null)}
             />
           )}
           {tab === 'payments' && (
@@ -369,7 +381,7 @@ function App() {
 
             <HostNav
               activeTab={tab}
-              onTabChange={setTab}
+              onTabChange={handleTabChange}
               inquiryBadge={inquiryMessageCount}
               onAdd={openNewListing}
             />

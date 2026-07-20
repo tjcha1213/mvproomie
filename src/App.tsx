@@ -16,7 +16,6 @@ import ThemePicker from './components/ThemePicker';
 import {
   createInitialConversations,
   openConversationWithPrompt,
-  openConversation,
   sendConversationReply,
   type Conversation,
 } from './chat';
@@ -33,6 +32,7 @@ function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>(initialScreen);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [conversationReadById, setConversationReadById] = useState<Record<string, boolean>>({});
   const [prevScreen, setPrevScreen] = useState<Screen>('home');
   const [toast, setToast] = useState<string | null>(null);
   const [primary, setPrimary] = useState<string>(
@@ -67,7 +67,7 @@ function App() {
     setActiveTab(tab);
     setPrevScreen(currentScreen);
     setCurrentScreen(tab);
-    if (tab !== 'inbox') setActiveConversationId(null);
+    setActiveConversationId(null);
   }, [currentScreen]);
 
   const openInboxThread = useCallback((
@@ -85,12 +85,9 @@ function App() {
   }, [currentScreen]);
 
   const openConversationFromList = useCallback((conversationId: string) => {
-    const listing = listings.find((item) => `listing-${item.id}` === conversationId);
-    if (listing) {
-      setConversations((prev) => openConversation(prev, listing).conversations);
-    }
+    setConversationReadById((prev) => ({ ...prev, [conversationId]: true }));
     setActiveConversationId(conversationId);
-  }, [listings]);
+  }, []);
 
   const sendReply = useCallback((
     conversationId: string,
@@ -120,6 +117,10 @@ function App() {
   }, [selectedListing, showToast]);
 
   const savedListings = listings.filter(l => l.saved);
+  const inboxUnreadCount = conversations.reduce(
+    (sum, conversation) => sum + (conversationReadById[conversation.id] ? 0 : conversation.unreadCount),
+    0,
+  );
 
   const isBack = currentScreen === 'detail';
 
@@ -166,6 +167,8 @@ function App() {
               conversations={conversations}
               activeConversationId={activeConversationId}
               onOpenConversation={openConversationFromList}
+              readConversationIds={conversationReadById}
+              onMarkConversationRead={openConversationFromList}
               onBackToList={() => setActiveConversationId(null)}
               onSendMessage={sendReply}
             />
@@ -177,6 +180,7 @@ function App() {
           activeTab={activeTab}
           onTabChange={handleTabChange}
           savedCount={savedListings.length}
+          inboxCount={inboxUnreadCount}
         />
 
         {toast && <Toast message={toast} />}
