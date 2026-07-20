@@ -1122,6 +1122,7 @@ export default function InquiriesScreen({
 
                 const count = viewingCountsByDate.get(cell.date) ?? 0;
                 const isSelected = cell.date === calendarSelectedDate;
+                const dayEntries = viewingEntries.filter((entry) => entry.date === cell.date);
 
                 return (
                   <button
@@ -1134,6 +1135,28 @@ export default function InquiriesScreen({
                     <div className="calendar-day-fill" />
                     <span className="calendar-day-number">{cell.day}</span>
                     <span className="calendar-day-count">{calendarCountLabel(count)}</span>
+                    <div className="calendar-tooltip" role="tooltip">
+                      <div className="calendar-tooltip-title">
+                        {count === 0
+                          ? 'No scheduled viewings'
+                          : `${count} scheduled viewing${count === 1 ? '' : 's'}`}
+                      </div>
+                      {count === 0 ? (
+                        <div className="calendar-tooltip-empty">No appointments are set for this date.</div>
+                      ) : (
+                        <div className="calendar-tooltip-list">
+                          {dayEntries.slice(0, 4).map(({ inquiry, time }) => (
+                            <div key={`${inquiry.id}-${cell.date}`} className="calendar-tooltip-item">
+                              <span className="calendar-tooltip-time">{time}</span>
+                              <span className="calendar-tooltip-text">{inquiry.name} · {unitTitle(inquiry.unitId)}</span>
+                            </div>
+                          ))}
+                          {dayEntries.length > 4 && (
+                            <div className="calendar-tooltip-empty">+{dayEntries.length - 4} more</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </button>
                 );
               })}
@@ -1465,6 +1488,7 @@ export default function InquiriesScreen({
                   }
 
                   const isSelected = cell.date === scheduleDate;
+                  const dayEntries = viewingEntries.filter((entry) => entry.date === cell.date);
                   return (
                     <button
                       key={cell.id}
@@ -1474,6 +1498,28 @@ export default function InquiriesScreen({
                     >
                       <span>{cell.day}</span>
                       <small>{cell.weekday}</small>
+                      <div className="calendar-tooltip" role="tooltip">
+                        <div className="calendar-tooltip-title">
+                          {dayEntries.length === 0
+                            ? 'No scheduled viewings'
+                            : `${dayEntries.length} scheduled viewing${dayEntries.length === 1 ? '' : 's'}`}
+                        </div>
+                        {dayEntries.length === 0 ? (
+                          <div className="calendar-tooltip-empty">No appointments are set for this date.</div>
+                        ) : (
+                          <div className="calendar-tooltip-list">
+                            {dayEntries.slice(0, 4).map(({ inquiry, time }) => (
+                              <div key={`${inquiry.id}-${cell.date}`} className="calendar-tooltip-item">
+                                <span className="calendar-tooltip-time">{time}</span>
+                                <span className="calendar-tooltip-text">{inquiry.name} · {unitTitle(inquiry.unitId)}</span>
+                              </div>
+                            ))}
+                            {dayEntries.length > 4 && (
+                              <div className="calendar-tooltip-empty">+{dayEntries.length - 4} more</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </button>
                   );
                 })}
