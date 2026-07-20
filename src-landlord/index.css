@@ -930,8 +930,8 @@ img {
   white-space: nowrap;
 }
 
-/* Landlord card */
-.landlord-card {
+/* Host card */
+.host-card {
   background: var(--surface);
   border-radius: var(--radius-lg);
   padding: 14px;
@@ -944,13 +944,13 @@ img {
   border: 1px solid var(--border-light);
 }
 
-.landlord-left {
+.host-left {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.landlord-avatar {
+.host-avatar {
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -964,7 +964,7 @@ img {
   flex-shrink: 0;
 }
 
-.landlord-avatar-button {
+.host-avatar-button {
   padding: 0;
   border: 0;
   background: transparent;
@@ -978,26 +978,26 @@ img {
   touch-action: manipulation;
 }
 
-.landlord-avatar-button img {
+.host-avatar-button img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.landlord-info {
+.host-info {
   display: flex;
   flex-direction: column;
 }
 
-.landlord-name-row {
+.host-name-row {
   display: flex;
   align-items: center;
   gap: 4px;
   margin-bottom: 2px;
 }
 
-.landlord-name {
+.host-name {
   font-size: 13px;
   font-weight: 700;
   color: var(--text);
@@ -1009,12 +1009,12 @@ img {
   color: var(--primary);
 }
 
-.landlord-since {
+.host-since {
   font-size: 11px;
   color: var(--text-muted);
 }
 
-.landlord-rating {
+.host-rating {
   font-size: 11px;
   color: var(--text-muted);
   display: flex;
@@ -1022,12 +1022,12 @@ img {
   gap: 2px;
 }
 
-.landlord-rating-star {
+.host-rating-star {
   color: #F59E0B;
   font-size: 11px;
 }
 
-.landlord-actions {
+.host-actions {
   display: flex;
   gap: 8px;
   border-top: 1px solid var(--border-light);
@@ -2399,7 +2399,7 @@ img {
   opacity: 0.92;
 }
 
-/* ═══════════════ Landlord dashboard ═══════════════ */
+/* ═══════════════ Host dashboard ═══════════════ */
 
 .header-avatar {
   width: 34px;
@@ -3111,16 +3111,16 @@ img {
   color: rgba(255, 255, 255, 0.76);
 }
 
-.landlord-map-card {
+.host-map-card {
   margin-top: 4px;
 }
 
-.landlord-map-shell {
+.host-map-shell {
   display: grid;
   gap: 10px;
 }
 
-.landlord-map-frame {
+.host-map-frame {
   position: relative;
   height: 248px;
   overflow: hidden;
@@ -3128,7 +3128,7 @@ img {
   border: 1px solid var(--border-light);
 }
 
-.landlord-map-legend {
+.host-map-legend {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3136,13 +3136,13 @@ img {
   flex-wrap: wrap;
 }
 
-.landlord-map-legend-row {
+.host-map-legend-row {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.landlord-map-badge {
+.host-map-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3153,37 +3153,37 @@ img {
   font-weight: 800;
 }
 
-.landlord-map-badge.is-active {
+.host-map-badge.is-active {
   background: #dcfce7;
   color: #15803d;
 }
 
-.landlord-map-badge.is-occupied {
+.host-map-badge.is-occupied {
   background: #dbeafe;
   color: #1d4ed8;
 }
 
-.landlord-map-badge.is-draft {
+.host-map-badge.is-draft {
   background: #e5e7eb;
   color: #4b5563;
 }
 
-.landlord-map-focus {
+.host-map-focus {
   display: grid;
   gap: 2px;
 }
 
-.landlord-map-focus strong {
+.host-map-focus strong {
   font-size: 12px;
   color: var(--text);
 }
 
-.landlord-map-focus span {
+.host-map-focus span {
   font-size: 11px;
   color: var(--text-muted);
 }
 
-.landlord-map-pin {
+.host-map-pin {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -3199,7 +3199,7 @@ img {
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.landlord-map-pin::after {
+.host-map-pin::after {
   content: '';
   position: absolute;
   bottom: -5px;
@@ -3210,51 +3210,51 @@ img {
   border-top: 6px solid transparent;
 }
 
-.landlord-map-pin.pin-active {
+.host-map-pin.pin-active {
   background: #dcfce7;
   color: #15803d;
   border-color: #86efac;
 }
 
-.landlord-map-pin.pin-active::after {
+.host-map-pin.pin-active::after {
   border-top-color: #dcfce7;
 }
 
-.landlord-map-pin.pin-occupied {
+.host-map-pin.pin-occupied {
   background: #dbeafe;
   color: #1d4ed8;
   border-color: #93c5fd;
 }
 
-.landlord-map-pin.pin-occupied::after {
+.host-map-pin.pin-occupied::after {
   border-top-color: #dbeafe;
 }
 
-.landlord-map-pin.pin-draft {
+.host-map-pin.pin-draft {
   background: #e5e7eb;
   color: #4b5563;
   border-color: #cbd5e1;
 }
 
-.landlord-map-pin.pin-draft::after {
+.host-map-pin.pin-draft::after {
   border-top-color: #e5e7eb;
 }
 
-.landlord-map-pin.active {
+.host-map-pin.active {
   transform: translate(-50%, -100%) scale(1.12);
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.9), var(--shadow-md);
 }
 
-.landlord-map-tooltip {
+.host-map-tooltip {
   display: grid;
   gap: 2px;
 }
 
-.landlord-map-tooltip strong {
+.host-map-tooltip strong {
   font-size: 12px;
 }
 
-.landlord-map-tooltip span {
+.host-map-tooltip span {
   font-size: 11px;
 }
 
@@ -5042,7 +5042,7 @@ img {
   align-self: flex-start;
 }
 
-.inquiry-chat-message-swipe-row.landlord,
+.inquiry-chat-message-swipe-row.host,
 .inquiry-chat-message-swipe-row.system {
   align-self: flex-end;
 }
@@ -5287,7 +5287,7 @@ img {
   align-self: flex-start;
 }
 
-.inquiry-chat-message.landlord,
+.inquiry-chat-message.host,
 .inquiry-chat-message.system {
   align-self: flex-end;
 }
@@ -5301,7 +5301,7 @@ img {
   transition: transform 0.18s ease, opacity 0.18s ease;
 }
 
-.inquiry-chat-landlord .inquiry-chat-message-main,
+.inquiry-chat-host .inquiry-chat-message-main,
 .inquiry-chat-system .inquiry-chat-message-main {
   display: flex;
   flex-direction: column;
@@ -5332,7 +5332,7 @@ img {
   align-self: flex-start;
 }
 
-.inquiry-chat-landlord,
+.inquiry-chat-host,
 .inquiry-chat-system {
   align-self: flex-end;
 }
@@ -5350,7 +5350,7 @@ img {
   word-break: normal;
 }
 
-.inquiry-chat-landlord .inquiry-chat-bubble,
+.inquiry-chat-host .inquiry-chat-bubble,
 .inquiry-chat-system .inquiry-chat-bubble {
   align-self: flex-end;
 }
@@ -5359,7 +5359,7 @@ img {
   align-self: flex-start;
 }
 
-.inquiry-chat-landlord .inquiry-chat-bubble {
+.inquiry-chat-host .inquiry-chat-bubble {
   background: linear-gradient(135deg, var(--primary-light), var(--primary));
   color: #fff;
 }
@@ -5377,7 +5377,7 @@ img {
   width: 100%;
 }
 
-.inquiry-chat-landlord .inquiry-chat-time,
+.inquiry-chat-host .inquiry-chat-time,
 .inquiry-chat-system .inquiry-chat-time {
   justify-content: flex-end;
 }
@@ -6421,7 +6421,7 @@ img {
   color: var(--text-light);
 }
 
-/* ═══════════════ Landlord desktop layout ═══════════════ */
+/* ═══════════════ Host desktop layout ═══════════════ */
 
 /* On mobile the dash row is transparent — cards stack exactly as before. */
 .ll-dash-row { display: contents; }
@@ -6808,11 +6808,11 @@ img {
     padding-right: 14px;
   }
 
-  .landlord-map-legend {
+  .host-map-legend {
     align-items: flex-start;
   }
 
-  .landlord-map-frame {
+  .host-map-frame {
     height: 220px;
   }
 

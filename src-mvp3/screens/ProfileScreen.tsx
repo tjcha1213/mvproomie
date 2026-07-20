@@ -19,14 +19,14 @@ interface Props {
 }
 
 export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
-  const [chooser, setChooser] = useState<'tenant' | 'landlord' | null>(null);
+  const [chooser, setChooser] = useState<'tenant' | 'host' | null>(null);
 
   const navigateTo = (path: string) => {
     window.location.assign(`${import.meta.env.BASE_URL}${path}`);
   };
 
-  const openChooser = (nextMode: 'Tenant Mode' | 'Landlord Mode') => {
-    setChooser(nextMode === 'Tenant Mode' ? 'tenant' : 'landlord');
+  const openChooser = (nextMode: 'Tenant Mode' | 'Host Mode') => {
+    setChooser(nextMode === 'Tenant Mode' ? 'tenant' : 'host');
   };
 
   const chooserOptions = chooser === 'tenant'
@@ -35,11 +35,11 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
         { label: 'Tenant MVP 2', description: 'Open the MVP 2 profile tab.', href: 'mvp2/?tab=profile' },
         { label: 'Tenant MVP 3', description: 'Open the MVP 3 profile tab.', href: 'mvp3/?tab=profile' },
       ]
-    : chooser === 'landlord'
+    : chooser === 'host'
       ? [
-          { label: 'Landlord MVP 1', description: 'Open the landlord dashboard profile tab.', href: 'landlord/?tab=profile', note: 'MVP 1 links to the live landlord layout' },
-          { label: 'Landlord MVP 2', description: 'Open the landlord broker overview.', href: 'landlords-brokers.html' },
-          { label: 'Landlord MVP 3', description: 'Open the landlord survey layout.', href: 'landlord-surveys.html' },
+        { label: 'Host MVP 1', description: 'Open the host dashboard profile tab.', href: 'host/?tab=profile', note: 'MVP 1 links to the live host layout' },
+        { label: 'Host MVP 2', description: 'Open the host broker overview.', href: 'landlords-brokers.html' },
+        { label: 'Host MVP 3', description: 'Open the host survey layout.', href: 'host-surveys.html' },
         ]
       : [];
 
@@ -67,8 +67,8 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
             <button type="button" className="profile-mode-btn active" onClick={() => openChooser('Tenant Mode')}>
               Tenant Mode
             </button>
-            <button type="button" className="profile-mode-btn" onClick={() => openChooser('Landlord Mode')}>
-              Landlord Mode
+            <button type="button" className="profile-mode-btn" onClick={() => openChooser('Host Mode')}>
+              Host Mode
             </button>
           </div>
         </div>
@@ -112,10 +112,10 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
 
       <ModeSwitchModal
         open={chooser !== null}
-        title={chooser === 'tenant' ? 'Move to a tenant MVP' : 'Move to a landlord MVP'}
+        title={chooser === 'tenant' ? 'Move to a tenant MVP' : 'Move to a host MVP'}
         subtitle={chooser === 'tenant'
           ? 'Pick which tenant profile tab you want to open.'
-          : 'Pick which landlord layout you want to open.'}
+          : 'Pick which host layout you want to open.'}
         options={chooserOptions}
         onClose={() => setChooser(null)}
         onSelect={(option) => {

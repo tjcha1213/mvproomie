@@ -1,5 +1,5 @@
 import Logo from './Logo';
-import type { Tab } from './LandlordNav';
+import type { Tab } from './HostNav';
 
 interface Props {
   activeTab: Tab;
@@ -41,7 +41,7 @@ const ITEMS: { tab: Tab; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-// Desktop-only navigation (hidden on mobile, where LandlordNav takes over).
+// Desktop-only navigation (hidden on mobile, where HostNav takes over).
 export default function Sidebar({ activeTab, onTabChange, inquiryBadge, onAdd }: Props) {
   return (
     <aside className="ll-sidebar">
@@ -131,7 +131,7 @@ export default function Sidebar({ activeTab, onTabChange, inquiryBadge, onAdd }:
         ))}
       </nav>
 
-      <div className="ll-sidebar-foot">Roomie for Landlords · demo</div>
+      <div className="ll-sidebar-foot">Roomie for Hosts · demo</div>
     </aside>
   );
 }

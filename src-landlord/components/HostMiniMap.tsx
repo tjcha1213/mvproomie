@@ -9,9 +9,9 @@ interface Props {
 }
 
 function statusPinClass(status: Unit['status']) {
-  if (status === 'Occupied') return 'landlord-map-pin pin-occupied';
-  if (status === 'Active') return 'landlord-map-pin pin-active';
-  return 'landlord-map-pin pin-draft';
+  if (status === 'Occupied') return 'host-map-pin pin-occupied';
+  if (status === 'Active') return 'host-map-pin pin-active';
+  return 'host-map-pin pin-draft';
 }
 
 function pinIcon(unit: Unit, activeId: number | null): L.DivIcon {
@@ -24,7 +24,7 @@ function pinIcon(unit: Unit, activeId: number | null): L.DivIcon {
   });
 }
 
-export default function LandlordMiniMap({ units }: Props) {
+export default function HostMiniMap({ units }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Record<number, L.Marker>>({});
@@ -75,7 +75,7 @@ export default function LandlordMiniMap({ units }: Props) {
         .on('click', () => setActiveId(unit.id));
 
       marker.bindTooltip(
-        `<div class="landlord-map-tooltip"><strong>${unit.title}</strong><span>${unit.location}</span><span>${unit.status} · ${formatPesoShort(unit.price)}</span></div>`,
+        `<div class="host-map-tooltip"><strong>${unit.title}</strong><span>${unit.location}</span><span>${unit.status} · ${formatPesoShort(unit.price)}</span></div>`,
         { direction: 'top', offset: [0, -16] },
       );
 
@@ -104,18 +104,18 @@ export default function LandlordMiniMap({ units }: Props) {
   const activeUnit = units.find((unit) => unit.id === activeId) ?? units[0] ?? null;
 
   return (
-    <div className="landlord-map-shell">
-      <div className="landlord-map-frame">
+    <div className="host-map-shell">
+      <div className="host-map-frame">
         <div className="home-map" ref={containerRef} />
       </div>
       {activeUnit && (
-        <div className="landlord-map-legend">
-          <div className="landlord-map-legend-row">
-            <span className="landlord-map-badge is-active">Active</span>
-            <span className="landlord-map-badge is-occupied">Occupied</span>
-            <span className="landlord-map-badge is-draft">Draft</span>
+        <div className="host-map-legend">
+          <div className="host-map-legend-row">
+            <span className="host-map-badge is-active">Active</span>
+            <span className="host-map-badge is-occupied">Occupied</span>
+            <span className="host-map-badge is-draft">Draft</span>
           </div>
-          <div className="landlord-map-focus">
+          <div className="host-map-focus">
             <strong>{activeUnit.title}</strong>
             <span>{activeUnit.location}</span>
           </div>

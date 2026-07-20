@@ -36,7 +36,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
   }, [listing.id]);
 
   const imgs = listing.images.length > 0 ? listing.images : [listing.image];
-  const uploadedListings = allListings.filter((item) => item.landlordName === listing.landlordName).map((item) => item.title);
+  const uploadedListings = allListings.filter((item) => item.hostName === listing.hostName).map((item) => item.title);
 
   const handleImageScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
     const el = event.currentTarget;
@@ -175,42 +175,42 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
           )}
         </div>
 
-        {/* Landlord */}
-        <div className="landlord-card">
-          <div className="landlord-left">
+        {/* Host */}
+        <div className="host-card">
+          <div className="host-left">
             <button
               type="button"
-              className="landlord-avatar landlord-avatar-button"
+              className="host-avatar host-avatar-button"
               onClick={() => setProfilePeekOpen(true)}
-              aria-label={`View ${listing.landlordName} profile`}
+              aria-label={`View ${listing.hostName} profile`}
             >
-              <img src={listingAvatarFor(listing.id)} alt={listing.landlordName} />
+              <img src={listingAvatarFor(listing.id)} alt={listing.hostName} />
             </button>
-            <div className="landlord-info">
-              <div className="landlord-name-row">
+            <div className="host-info">
+              <div className="host-name-row">
                 {listing.verified && (
                   <svg className="verified-badge" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="11" fill="currentColor" />
                     <path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
-                <span className="landlord-name">{listing.verified ? 'Verified Landlord' : 'Landlord'}</span>
+                <span className="host-name">{listing.verified ? 'Verified Host' : 'Host'}</span>
               </div>
-              <span className="landlord-since">{listing.landlordName} · Member since {listing.landlordSince}</span>
-              <div className="landlord-rating">
-                <span className="landlord-rating-star">★</span>
-                {listing.landlordRating} ({listing.landlordReviews} reviews)
+              <span className="host-since">{listing.hostName} · Member since {listing.hostSince}</span>
+              <div className="host-rating">
+                <span className="host-rating-star">★</span>
+                {listing.hostRating} ({listing.hostReviews} reviews)
               </div>
             </div>
           </div>
-          <div className="landlord-actions">
+          <div className="host-actions">
             <button className="action-btn-sm btn-message" onClick={() => onOpenChat(listing)}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
               Message
             </button>
-            <button className="action-btn-sm btn-call" onClick={() => onShowToast('Calling landlord...')}>
+            <button className="action-btn-sm btn-call" onClick={() => onShowToast('Calling host...')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l.94-1.94a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
               </svg>
@@ -254,19 +254,19 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
       <ProfilePeekModal
         open={profilePeekOpen}
         avatar={listingAvatarFor(listing.id)}
-        name={listing.landlordName}
-        role={listing.verified ? 'Verified landlord' : 'Landlord'}
+        name={listing.hostName}
+        role={listing.verified ? 'Verified host' : 'Host'}
         userId={listing.verified ? 'VERIFIED' : 'LANDLORD'}
-        memberSince={String(listing.landlordSince)}
-        verificationStatus={listing.verified ? 'Verified landlord' : 'Unverified landlord'}
-        roomieScore={Math.round(listing.landlordRating * 20)}
+        memberSince={String(listing.hostSince)}
+        verificationStatus={listing.verified ? 'Verified host' : 'Unverified host'}
+        roomieScore={Math.round(listing.hostRating * 20)}
         uploadedListings={uploadedListings}
         tenantReviews={['No tenant-side reviews logged in this preview.']}
-        landlordReviews={[
-          `Tenant feedback average: ${listing.landlordRating.toFixed(1)} from ${listing.landlordReviews} reviews.`,
+        hostReviews={[
+          `Tenant feedback average: ${listing.hostRating.toFixed(1)} from ${listing.hostReviews} reviews.`,
           listing.verified ? 'Verified listing with current photos and active replies.' : 'Listing still awaiting verification.',
         ]}
-        subtitle={`★ ${listing.landlordRating} (${listing.landlordReviews} reviews)`}
+        subtitle={`★ ${listing.hostRating} (${listing.hostReviews} reviews)`}
         details={[
           listing.location,
           `${listing.beds} bed • ${listing.baths} bath • ${listing.sqm} sqm`,

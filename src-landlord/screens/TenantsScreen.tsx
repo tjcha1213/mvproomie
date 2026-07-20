@@ -145,7 +145,7 @@ export default function TenantsScreen({ units, payments, onOpenProfile, notifica
         roomieScore={profilePeekPayment?.trust.roomieScore}
         uploadedListings={[]}
         tenantReviews={profilePeekPayment?.tenantReviews ?? []}
-        landlordReviews={profilePeekPayment?.landlordReviews ?? []}
+        hostReviews={profilePeekPayment?.hostReviews ?? []}
         subtitle={profilePeekPayment ? `${profilePeekPayment.method} · ${profilePeekPayment.dueLabel}` : undefined}
         details={profilePeekPayment ? [
           `Unit: ${units.find((unit) => unit.id === profilePeekPayment.unitId)?.title ?? 'Unknown unit'}`,

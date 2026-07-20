@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LANDLORD_PROFILE } from '../data';
+import { HOST_PROFILE } from '../data';
 import type { Unit } from '../data';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
@@ -30,14 +30,14 @@ const MENU_ITEMS = [
 
 export default function ProfileScreen({ units, onOpenListings, onOpenTenants, onOpenTheme, onOpenReviews, notifications, onOpenNotification, onShowToast }: Props) {
   const occupied = units.filter(u => u.status === 'Occupied').length;
-  const [chooser, setChooser] = useState<'tenant' | 'landlord' | null>(null);
+  const [chooser, setChooser] = useState<'tenant' | 'host' | null>(null);
 
   const navigateTo = (path: string) => {
     window.location.assign(`${import.meta.env.BASE_URL}${path}`);
   };
 
-  const openChooser = (nextMode: 'Tenant Mode' | 'Landlord Mode') => {
-    setChooser(nextMode === 'Tenant Mode' ? 'tenant' : 'landlord');
+  const openChooser = (nextMode: 'Tenant Mode' | 'Host Mode') => {
+    setChooser(nextMode === 'Tenant Mode' ? 'tenant' : 'host');
   };
 
   const chooserOptions = chooser === 'tenant'
@@ -46,11 +46,11 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
         { label: 'Tenant MVP 2', description: 'Open the MVP 2 profile tab.', href: 'mvp2/?tab=profile' },
         { label: 'Tenant MVP 3', description: 'Open the MVP 3 profile tab.', href: 'mvp3/?tab=profile' },
       ]
-    : chooser === 'landlord'
+    : chooser === 'host'
       ? [
-          { label: 'Landlord MVP 1', description: 'Open the landlord dashboard profile tab.', href: 'landlord/?tab=profile', note: 'MVP 1 links to the live landlord layout' },
-          { label: 'Landlord MVP 2', description: 'Open the landlord broker overview.', href: 'landlords-brokers.html' },
-          { label: 'Landlord MVP 3', description: 'Open the landlord survey layout.', href: 'landlord-surveys.html' },
+        { label: 'Host MVP 1', description: 'Open the host dashboard profile tab.', href: 'host/?tab=profile', note: 'MVP 1 links to the live host layout' },
+        { label: 'Host MVP 2', description: 'Open the host broker overview.', href: 'landlords-brokers.html' },
+        { label: 'Host MVP 3', description: 'Open the host survey layout.', href: 'host-surveys.html' },
         ]
       : [];
 
@@ -62,20 +62,20 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
         {/* Profile header */}
         <div className="profile-header">
           <div className="profile-avatar">
-            <img src={JUAN_AVATAR} alt={LANDLORD_PROFILE.name} />
+            <img src={JUAN_AVATAR} alt={HOST_PROFILE.name} />
           </div>
           <div className="profile-name-row-ll">
-            <span className="profile-name">{LANDLORD_PROFILE.name}</span>
+            <span className="profile-name">{HOST_PROFILE.name}</span>
             <svg className="verified-badge" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="11" fill="currentColor" />
               <path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <div className="listing-id-row listing-id-row-modal">
-            <span className="entity-id-tag">{LANDLORD_PROFILE.userId}</span>
-            <span className={`roomie-score-chip is-${LANDLORD_PROFILE.roomieTemperature.toLowerCase()}`}>Roomie {LANDLORD_PROFILE.roomieScore}</span>
+            <span className="entity-id-tag">{HOST_PROFILE.userId}</span>
+            <span className={`roomie-score-chip is-${HOST_PROFILE.roomieTemperature.toLowerCase()}`}>Roomie {HOST_PROFILE.roomieScore}</span>
           </div>
-          <div className="profile-email">Verified Landlord · ★ 4.9 (128 reviews)</div>
+          <div className="profile-email">Verified Host · ★ 4.9 (128 reviews)</div>
 
           <div className="profile-stats">
             <button type="button" className="profile-stat profile-stat-btn" onClick={onOpenListings}>
@@ -101,8 +101,8 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
             <button type="button" className="profile-mode-btn" onClick={() => openChooser('Tenant Mode')}>
               Tenant Mode
             </button>
-            <button type="button" className="profile-mode-btn active" onClick={() => openChooser('Landlord Mode')}>
-              Landlord Mode
+            <button type="button" className="profile-mode-btn active" onClick={() => openChooser('Host Mode')}>
+              Host Mode
             </button>
           </div>
         </div>
@@ -157,10 +157,10 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
 
       <ModeSwitchModal
         open={chooser !== null}
-        title={chooser === 'tenant' ? 'Move to a tenant MVP' : 'Move to a landlord MVP'}
+        title={chooser === 'tenant' ? 'Move to a tenant MVP' : 'Move to a host MVP'}
         subtitle={chooser === 'tenant'
           ? 'Pick which tenant profile tab you want to open.'
-          : 'Pick which landlord layout you want to open.'}
+          : 'Pick which host layout you want to open.'}
         options={chooserOptions}
         onClose={() => setChooser(null)}
         onSelect={(option) => {

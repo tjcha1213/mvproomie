@@ -1233,8 +1233,8 @@ img {
   white-space: nowrap;
 }
 
-/* Landlord card */
-.landlord-card {
+/* Host card */
+.host-card {
   background: var(--surface);
   border-radius: var(--radius-lg);
   padding: 14px;
@@ -1247,13 +1247,13 @@ img {
   border: 1px solid var(--border-light);
 }
 
-.landlord-left {
+.host-left {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.landlord-avatar {
+.host-avatar {
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -1267,7 +1267,7 @@ img {
   flex-shrink: 0;
 }
 
-.landlord-avatar-button {
+.host-avatar-button {
   padding: 0;
   border: 0;
   background: transparent;
@@ -1281,26 +1281,26 @@ img {
   touch-action: manipulation;
 }
 
-.landlord-avatar-button img {
+.host-avatar-button img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.landlord-info {
+.host-info {
   display: flex;
   flex-direction: column;
 }
 
-.landlord-name-row {
+.host-name-row {
   display: flex;
   align-items: center;
   gap: 4px;
   margin-bottom: 2px;
 }
 
-.landlord-name {
+.host-name {
   font-size: 13px;
   font-weight: 700;
   color: var(--text);
@@ -1312,12 +1312,12 @@ img {
   color: var(--primary);
 }
 
-.landlord-since {
+.host-since {
   font-size: 11px;
   color: var(--text-muted);
 }
 
-.landlord-rating {
+.host-rating {
   font-size: 11px;
   color: var(--text-muted);
   display: flex;
@@ -1325,12 +1325,12 @@ img {
   gap: 2px;
 }
 
-.landlord-rating-star {
+.host-rating-star {
   color: #F59E0B;
   font-size: 11px;
 }
 
-.landlord-actions {
+.host-actions {
   display: flex;
   gap: 8px;
   border-top: 1px solid var(--border-light);

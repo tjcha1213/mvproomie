@@ -118,7 +118,7 @@ export default function NewListingModal({ open, onClose, onCreate }: Props) {
           <div className="new-listing-head">
             <div>
               <div className="listing-modal-type">New listing</div>
-              <h2 id="new-listing-title" className="listing-modal-title">Create landlord mock listing</h2>
+              <h2 id="new-listing-title" className="listing-modal-title">Create host mock listing</h2>
               <p className="listing-modal-location">This feeds the live demo state across dashboard, listings, and recent activity.</p>
             </div>
             <button className="listing-modal-close" onClick={handleClose} aria-label="Close new listing modal">
@@ -215,7 +215,7 @@ export default function NewListingModal({ open, onClose, onCreate }: Props) {
                 required
                 value={form.description}
                 onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
-                placeholder="Short landlord-facing summary of the listing."
+                placeholder="Short host-facing summary of the listing."
               />
             </label>
 

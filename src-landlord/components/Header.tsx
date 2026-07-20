@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { LANDLORD_PROFILE } from '../data';
-import type { Tab } from './LandlordNav';
+import { HOST_PROFILE } from '../data';
+import type { Tab } from './HostNav';
 import Logo from './Logo';
 
 export interface HeaderNotification {
@@ -78,7 +78,7 @@ export default function Header({ onOpenProfile, notifications, onOpenNotificatio
           </div>
         )}
         <button className="header-avatar" onClick={onOpenProfile} aria-label="Profile">
-          <img src={LANDLORD_PROFILE.avatar} alt={LANDLORD_PROFILE.name} />
+          <img src={HOST_PROFILE.avatar} alt={HOST_PROFILE.name} />
         </button>
       </div>
     </div>

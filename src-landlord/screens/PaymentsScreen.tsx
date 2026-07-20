@@ -276,7 +276,7 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
                 title="Paid logs"
                 lines={[
                   `${paidRate}% of this cycle already settled`,
-                  `${formatPeso(collected)} cleared into landlord accounts`,
+                  `${formatPeso(collected)} cleared into host accounts`,
                 ]}
               />
             </div>
@@ -679,7 +679,7 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
         roomieScore={profilePeekPayment?.trust.roomieScore}
         uploadedListings={[]}
         tenantReviews={profilePeekPayment?.tenantReviews ?? []}
-        landlordReviews={profilePeekPayment?.landlordReviews ?? []}
+        hostReviews={profilePeekPayment?.hostReviews ?? []}
         subtitle={profilePeekPayment ? `${unitTitle(profilePeekPayment.unitId)} · ${profilePeekPayment.status}` : undefined}
         details={profilePeekPayment ? [
           `${formatPeso(profilePeekPayment.amount)} ${profilePeekPayment.dueLabel.toLowerCase()}`,

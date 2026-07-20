@@ -13,7 +13,7 @@ interface Props {
   roomieScore?: number;
   uploadedListings?: string[];
   tenantReviews?: string[];
-  landlordReviews?: string[];
+  hostReviews?: string[];
   subtitle?: string;
   details?: string[];
   onClose: () => void;
@@ -30,7 +30,7 @@ export default function ProfilePeekModal({
   roomieScore,
   uploadedListings = [],
   tenantReviews = [],
-  landlordReviews = [],
+  hostReviews = [],
   subtitle,
   details = [],
   onClose,
@@ -60,17 +60,17 @@ export default function ProfilePeekModal({
 
   if (!open) return null;
 
-  const isLandlordRole = role.toLowerCase().includes('landlord');
+  const isHostRole = role.toLowerCase().includes('host');
   const memberSinceValue = memberSince ?? 'Not available';
   const verificationValue = verificationStatus ?? 'Not available';
   const roomieScoreValue = typeof roomieScore === 'number' ? String(roomieScore) : 'Not available';
-  const uploadedListingLabel = isLandlordRole
+  const uploadedListingLabel = isHostRole
     ? uploadedListings.length > 0
       ? uploadedListings
       : ['No uploaded listings in this preview.']
-    : ['Listings are shown for landlord profiles only.'];
+    : ['Listings are shown for host profiles only.'];
   const tenantReviewItems = tenantReviews.length > 0 ? tenantReviews : ['No tenant reviews in this preview.'];
-  const landlordReviewItems = landlordReviews.length > 0 ? landlordReviews : ['No landlord reviews in this preview.'];
+  const landlordReviewItems = hostReviews.length > 0 ? hostReviews : ['No host reviews in this preview.'];
 
   return createPortal(
     <div
@@ -142,7 +142,7 @@ export default function ProfilePeekModal({
         </div>
 
         <div className="profile-peek-section">
-          <div className="profile-peek-section-title">Reviews as landlord</div>
+          <div className="profile-peek-section-title">Reviews as host</div>
           <div className="profile-peek-review-list">
             {landlordReviewItems.map((item) => (
               <div key={item} className="profile-peek-review">

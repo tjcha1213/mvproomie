@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
-import { UNITS, INQUIRIES, PAYMENTS, ACTIVITY, formatListingId, formatPesoShort, formatPropertyId, LANDLORD_PROFILE } from './data';
+import { UNITS, INQUIRIES, PAYMENTS, ACTIVITY, formatListingId, formatPesoShort, formatPropertyId, HOST_PROFILE } from './data';
 import type { Unit, UnitStatus, Inquiry, Payment, Activity } from './data';
 import { DEFAULT_PRIMARY, THEME_STORAGE_KEY } from './theme';
-import LandlordNav from './components/LandlordNav';
-import type { Tab } from './components/LandlordNav';
+import HostNav from './components/HostNav';
+import type { Tab } from './components/HostNav';
 import Sidebar from './components/Sidebar';
 import type { HeaderNotification } from './components/Header';
 import NewListingModal from './components/NewListingModal';
@@ -131,7 +131,7 @@ function App() {
   const addInquiryThreadMessage = useCallback((
     id: number,
     message: {
-      sender: 'tenant' | 'landlord' | 'system';
+      sender: 'tenant' | 'host' | 'system';
       text: string;
       time: string;
       replyTo?: {
@@ -185,7 +185,7 @@ function App() {
       id: nextId,
       listingId: formatListingId(nextId),
       propertyId: formatPropertyId(nextId),
-      ownerUserId: LANDLORD_PROFILE.userId,
+      ownerUserId: HOST_PROFILE.userId,
       title: draft.title,
       type: draft.type,
       location: draft.location,
@@ -211,7 +211,7 @@ function App() {
           type: 'Lease',
           summary: draft.status === 'Active' ? 'Listing published to marketplace' : 'Draft listing created',
           detail: draft.status === 'Active'
-            ? 'Mock listing was created and published from the landlord dashboard.'
+            ? 'Mock listing was created and published from the host dashboard.'
             : 'Mock listing was created and saved as a draft for later review.',
           status: draft.status === 'Active' ? 'Live' : 'Draft saved',
         },
@@ -354,7 +354,7 @@ function App() {
           )}
         </div>
 
-        <LandlordNav
+        <HostNav
           activeTab={tab}
           onTabChange={setTab}
           inquiryBadge={newInquiryCount}

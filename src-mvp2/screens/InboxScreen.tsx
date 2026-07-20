@@ -770,13 +770,13 @@ export default function InboxScreen({
       open={profilePeekConversation !== null}
       avatar={profilePeekConversation?.participantPhoto ?? ''}
       name={profilePeekConversation?.participantName ?? ''}
-      role={profilePeekConversation?.participantRole ?? 'Landlord'}
+      role={profilePeekConversation?.participantRole ?? 'Host'}
       memberSince={profilePeekConversation?.memberSince}
-      verificationStatus={profilePeekConversation ? (profilePeekConversation.verified ? 'Verified landlord' : 'Unverified landlord') : undefined}
+      verificationStatus={profilePeekConversation ? (profilePeekConversation.verified ? 'Verified host' : 'Unverified host') : undefined}
       roomieScore={profilePeekConversation?.roomieScore}
       uploadedListings={profilePeekConversation?.uploadedListings ?? []}
       tenantReviews={['No tenant-side reviews logged in this preview.']}
-      landlordReviews={profilePeekConversation?.landlordReviews ?? []}
+      hostReviews={profilePeekConversation?.hostReviews ?? []}
       subtitle={profilePeekConversation ? `${profilePeekConversation.listingTitle} · ${profilePeekConversation.listingLocation}` : undefined}
       details={profilePeekConversation ? [
         `${profilePeekConversation.messages.length} messages`,

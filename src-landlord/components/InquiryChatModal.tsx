@@ -13,7 +13,7 @@ interface Props {
   onAddThreadMessage: (
     id: number,
     message: {
-      sender: 'tenant' | 'landlord' | 'system';
+      sender: 'tenant' | 'host' | 'system';
       text: string;
       time: string;
       replyTo?: { name: string; text: string };
@@ -57,7 +57,7 @@ function latestReadInquiryMessageId(inquiry: Inquiry): number | null {
   const thread = inquiry.thread;
   for (let index = thread.length - 1; index >= 0; index -= 1) {
     const message = thread[index];
-    if (message.sender !== 'landlord') continue;
+    if (message.sender !== 'host') continue;
     const hasTenantReplyAfter = thread.slice(index + 1).some((entry) => entry.sender === 'tenant');
     if (hasTenantReplyAfter) return message.id;
   }
@@ -188,7 +188,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
     onAddThreadMessage(
       inquiry.id,
       {
-        sender: 'landlord',
+        sender: 'host',
         text,
         time: 'Just now',
         replyTo: replyTarget ?? undefined,
@@ -238,7 +238,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
     if (action === 'copy') {
       void navigator.clipboard?.writeText(message.text);
     } else if (action === 'reply') {
-      const sender = message.sender === 'landlord' ? 'You' : inquiry.name;
+      const sender = message.sender === 'host' ? 'You' : inquiry.name;
       setReplyTarget({ name: sender, text: message.text });
     } else if (action === 'emoji' && payload) {
       setMessageReaction((prev) => {
@@ -250,7 +250,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
         }
         return { ...prev, [message.id]: { emoji: payload, count: 1 } };
       });
-    } else if (action === 'delete' && message.sender === 'landlord') {
+    } else if (action === 'delete' && message.sender === 'host') {
       setMessageMeta((prev) => ({
         ...prev,
         [message.id]: { ...(prev[message.id] ?? { pinned: false, hidden: false, deleting: false, deleteDirection: null, isDeleted: false }), isDeleted: true },
@@ -321,8 +321,8 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
               <div className="scroll-area inquiry-chat-scroller">
                 <div className="inquiry-chat-thread">
                   {activeChatMessages.map(({ entry: message, meta, reaction }) => {
-                    const isLandlord = message.sender === 'landlord';
-                    const isRead = message.sender === 'landlord' && message.id === latestReadMessageId;
+                    const isLandlord = message.sender === 'host';
+                    const isRead = message.sender === 'host' && message.id === latestReadMessageId;
                     const senderClass = `inquiry-chat-${message.sender}`;
                     return (
                       <div
@@ -401,14 +401,14 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
                             )}
                           </div>
                           {reaction && !meta.isDeleted && (
-                            <div className={`inbox-message-reaction-row ${message.sender === 'landlord' ? 'self' : 'other'}`}>
+                            <div className={`inbox-message-reaction-row ${message.sender === 'host' ? 'self' : 'other'}`}>
                               <div className="inbox-message-reaction" aria-label={`Reaction ${reaction.emoji} ${reaction.count} times`}>
                                 <span className="inbox-message-reaction-emoji">{reaction.emoji}</span>
                                 <span className="inbox-message-reaction-count">{reaction.count}</span>
                               </div>
                             </div>
                           )}
-                          <div className={`inquiry-chat-time ${message.sender === 'landlord' ? 'landlord' : 'tenant'}`}>
+                          <div className={`inquiry-chat-time ${message.sender === 'host' ? 'host' : 'tenant'}`}>
                             <span className="inquiry-message-time">{message.time}</span>
                             {isRead && !meta.isDeleted && (
                               <>
@@ -564,7 +564,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
         verificationStatus={inquiry.verified ? 'Verified' : 'Unverified'}
         roomieScore={inquiry.trust.roomieScore}
         tenantReviews={inquiry.tenantReviews}
-        landlordReviews={inquiry.landlordReviews}
+        hostReviews={inquiry.hostReviews}
         subtitle={unitTitle}
         details={[`Inquiry status: ${inquiry.status}`, inquiry.viewingAt ? `Viewing: ${inquiry.viewingAt} ${inquiry.viewingTime ?? ''}`.trim() : 'No scheduled viewing']}
         onClose={() => setProfileOpen(false)}
@@ -591,7 +591,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
                 <button key={emoji} type="button" className="message-context-emoji" onClick={() => handleMessageLongPressAction('emoji', emoji)}>{emoji}</button>
               ))}
             </div>
-            {inquiry.thread.find((entry) => entry.id === messageContextMenu.messageId)?.sender === 'landlord' && (
+            {inquiry.thread.find((entry) => entry.id === messageContextMenu.messageId)?.sender === 'host' && (
               <button type="button" className="message-context-action is-destructive" onClick={() => handleMessageLongPressAction('delete')}>Delete</button>
             )}
           </div>

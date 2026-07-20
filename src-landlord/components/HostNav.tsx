@@ -7,7 +7,7 @@ interface Props {
   onAdd: () => void;
 }
 
-export default function LandlordNav({ activeTab, onTabChange, inquiryBadge, onAdd }: Props) {
+export default function HostNav({ activeTab, onTabChange, inquiryBadge, onAdd }: Props) {
   return (
     <nav className="bottom-nav">
       <button className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => onTabChange('dashboard')}>

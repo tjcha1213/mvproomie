@@ -616,7 +616,7 @@ export default function ListingsScreen({
               <div>
                 <div className="listing-modal-topline">Edit listing</div>
                 <h3>{editUnit.title}</h3>
-                <p>Update the mock listing details shown across the landlord demo.</p>
+                <p>Update the mock listing details shown across the host demo.</p>
               </div>
               <button className="listing-modal-close" onClick={() => setEditUnitId(null)} aria-label="Close edit listing">
                 ×

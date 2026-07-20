@@ -13,7 +13,7 @@ interface Props {
   onAddThreadMessage: (
     id: number,
     message: {
-      sender: 'tenant' | 'landlord' | 'system';
+      sender: 'tenant' | 'host' | 'system';
       text: string;
       time: string;
       replyTo?: {
@@ -461,7 +461,7 @@ export default function InquiriesScreen({
     onAddThreadMessage(
       inquiry.id,
       {
-        sender: 'landlord',
+        sender: 'host',
         text,
         time: timeStampLabel(),
         replyTo: replyTarget ?? undefined,
@@ -811,7 +811,7 @@ export default function InquiriesScreen({
     if (action === 'copy') {
       void navigator.clipboard?.writeText(message.text);
     } else if (action === 'reply') {
-      const sender = message.sender === 'landlord' ? 'You' : activeChat.name;
+      const sender = message.sender === 'host' ? 'You' : activeChat.name;
       setReplyTarget({ name: sender, text: message.text });
     } else if (action === 'emoji' && payload) {
       const currentReaction = messageReactionByInquiryId[activeChat.id]?.[message.id];
@@ -1658,7 +1658,7 @@ export default function InquiriesScreen({
         roomieScore={profilePeekInquiry?.trust.roomieScore}
         uploadedListings={[]}
         tenantReviews={profilePeekInquiry?.tenantReviews ?? []}
-        landlordReviews={profilePeekInquiry?.landlordReviews ?? []}
+        hostReviews={profilePeekInquiry?.hostReviews ?? []}
         subtitle={profilePeekInquiry ? `${unitTitle(profilePeekInquiry.unitId)} · ${profilePeekInquiry.status}` : undefined}
         details={profilePeekInquiry ? [
           `${profilePeekInquiry.trust.roomieTemperature} Roomie ${profilePeekInquiry.trust.roomieScore}`,

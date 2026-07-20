@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
 import type { Unit, Inquiry, Payment, Activity } from '../data';
 import { WEEK_VIEWS, CALENDAR_VIEWS, formatPesoShort } from '../data';
-import type { Tab } from '../components/LandlordNav';
+import type { Tab } from '../components/HostNav';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
-import LandlordMiniMap from '../components/LandlordMiniMap';
+import HostMiniMap from '../components/HostMiniMap';
 
 interface Props {
   units: Unit[];
@@ -355,8 +355,8 @@ export default function DashboardScreen({
                   </div>
                 </div>
               ) : (
-                <div className="landlord-map-card">
-                  <LandlordMiniMap units={mappableUnits} />
+                <div className="host-map-card">
+                  <HostMiniMap units={mappableUnits} />
                 </div>
               )}
 

@@ -1,11 +1,11 @@
-// Mock data for the landlord dashboard demo. All of it is held in App state so
+// Mock data for the host dashboard demo. All of it is held in App state so
 // actions (reply, mark paid, publish, …) visibly update the KPIs.
 
 import { JUAN_AVATAR, avatarAt } from '../src/avatarPool';
 
 const withBase = (p: string) => `${import.meta.env.BASE_URL}${p}`;
 
-export const LANDLORD_PROFILE = {
+export const HOST_PROFILE = {
   name: 'Juan Dela Cruz',
   userId: 'LL-0001',
   avatar: JUAN_AVATAR,
@@ -77,7 +77,7 @@ export const UNITS: Unit[] = [
     id: 1,
     listingId: formatListingId(1),
     propertyId: formatPropertyId(1),
-    ownerUserId: LANDLORD_PROFILE.userId,
+    ownerUserId: HOST_PROFILE.userId,
     title: 'Cozy Studio Unit',
     type: 'Studio',
     location: 'Katipunan, Quezon City',
@@ -111,7 +111,7 @@ export const UNITS: Unit[] = [
     id: 2,
     listingId: formatListingId(2),
     propertyId: formatPropertyId(2),
-    ownerUserId: LANDLORD_PROFILE.userId,
+    ownerUserId: HOST_PROFILE.userId,
     title: 'Male Bedspace',
     type: 'Bedspace',
     location: 'Espana, Manila',
@@ -145,7 +145,7 @@ export const UNITS: Unit[] = [
     id: 3,
     listingId: formatListingId(3),
     propertyId: formatPropertyId(3),
-    ownerUserId: LANDLORD_PROFILE.userId,
+    ownerUserId: HOST_PROFILE.userId,
     title: '1BR Apartment',
     type: 'Apartment',
     location: 'Cubao, QC',
@@ -179,7 +179,7 @@ export const UNITS: Unit[] = [
     id: 4,
     listingId: formatListingId(4),
     propertyId: formatPropertyId(4),
-    ownerUserId: LANDLORD_PROFILE.userId,
+    ownerUserId: HOST_PROFILE.userId,
     title: 'Modern Studio',
     type: 'Studio',
     location: 'Timog, QC',
@@ -213,7 +213,7 @@ export const UNITS: Unit[] = [
     id: 5,
     listingId: formatListingId(5),
     propertyId: formatPropertyId(5),
-    ownerUserId: LANDLORD_PROFILE.userId,
+    ownerUserId: HOST_PROFILE.userId,
     title: 'Female Bedspace',
     type: 'Bedspace',
     location: 'Sampaloc, Manila',
@@ -247,7 +247,7 @@ export const UNITS: Unit[] = [
     id: 6,
     listingId: formatListingId(6),
     propertyId: formatPropertyId(6),
-    ownerUserId: LANDLORD_PROFILE.userId,
+    ownerUserId: HOST_PROFILE.userId,
     title: '2BR Apartment',
     type: 'Apartment',
     location: 'Ortigas, Pasig',
@@ -290,7 +290,7 @@ export interface Inquiry {
   verified: boolean;
   trust: RoomieTrust;
   tenantReviews: string[];
-  landlordReviews: string[];
+  hostReviews: string[];
   unitId: number;
   message: string;
   time: string;
@@ -299,7 +299,7 @@ export interface Inquiry {
   viewingTime?: string;
   thread: {
     id: number;
-    sender: 'tenant' | 'landlord' | 'system';
+    sender: 'tenant' | 'host' | 'system';
     text: string;
     time: string;
     replyTo?: {
@@ -319,7 +319,7 @@ export const INQUIRIES: Inquiry[] = [
     verified: true,
     trust: { roomieScore: 78, roomieTemperature: 'Warm' },
     tenantReviews: ['Clear and respectful in the first inquiry.', 'Responsive on viewing follow-ups.'],
-    landlordReviews: ['No landlord reviews recorded yet.'],
+    hostReviews: ['No host reviews recorded yet.'],
     unitId: 2,
     message: 'Hi po! Is the bedspace still available? Looking to move in Aug 1 🙂',
     time: '5m ago',
@@ -337,7 +337,7 @@ export const INQUIRIES: Inquiry[] = [
     verified: true,
     trust: { roomieScore: 83, roomieTemperature: 'Cool' },
     tenantReviews: ['Good message etiquette and concise questions.', 'Easy to coordinate scheduling with.'],
-    landlordReviews: ['No landlord reviews recorded yet.'],
+    hostReviews: ['No host reviews recorded yet.'],
     unitId: 3,
     message: 'Can I schedule a viewing this weekend? 😊',
     time: '1h ago',
@@ -355,7 +355,7 @@ export const INQUIRIES: Inquiry[] = [
     verified: false,
     trust: { roomieScore: 74, roomieTemperature: 'Warm' },
     tenantReviews: ['Polite and direct with availability questions.'],
-    landlordReviews: ['No landlord reviews recorded yet.'],
+    hostReviews: ['No host reviews recorded yet.'],
     unitId: 2,
     message: 'Is water included in the rent? 👀',
     time: '3h ago',
@@ -373,7 +373,7 @@ export const INQUIRIES: Inquiry[] = [
     verified: true,
     trust: { roomieScore: 88, roomieTemperature: 'Cool' },
     tenantReviews: ['Reliable during viewing coordination.', 'Sent updates promptly when schedules changed.'],
-    landlordReviews: ['No landlord reviews recorded yet.'],
+    hostReviews: ['No host reviews recorded yet.'],
     unitId: 3,
     message: 'Thank you! See you on Saturday at 2pm.',
     time: 'Yesterday',
@@ -382,7 +382,7 @@ export const INQUIRIES: Inquiry[] = [
     viewingTime: '2:00 PM',
     thread: [
       { id: 41, sender: 'tenant', text: 'Can I schedule a viewing this weekend? 🙂', time: '2d ago' },
-      { id: 42, sender: 'landlord', text: 'Yes, Saturday at 2pm works 👍 Please bring one valid ID.', time: 'Yesterday' },
+      { id: 42, sender: 'host', text: 'Yes, Saturday at 2pm works 👍 Please bring one valid ID.', time: 'Yesterday' },
       { id: 43, sender: 'tenant', text: 'Thank you! See you on Saturday at 2pm 🙌', time: 'Yesterday' },
     ],
   },
@@ -395,14 +395,14 @@ export const INQUIRIES: Inquiry[] = [
     verified: false,
     trust: { roomieScore: 69, roomieTemperature: 'Hot' },
     tenantReviews: ['Straightforward and easy to follow in chat.'],
-    landlordReviews: ['No landlord reviews recorded yet.'],
+    hostReviews: ['No host reviews recorded yet.'],
     unitId: 2,
     message: 'Sure, I will send my requirements tonight.',
     time: 'Mon',
     status: 'Replied',
     thread: [
       { id: 51, sender: 'tenant', text: 'Is the unit still open for July move-in? 🙂', time: 'Mon' },
-      { id: 52, sender: 'landlord', text: 'Yes, it is still available. I can send the requirements list here 👍', time: 'Mon' },
+      { id: 52, sender: 'host', text: 'Yes, it is still available. I can send the requirements list here 👍', time: 'Mon' },
       { id: 53, sender: 'tenant', text: 'Sure, I will send my requirements tonight. 🙏', time: 'Mon' },
     ],
   },
@@ -419,7 +419,7 @@ export interface Payment {
   verified: boolean;
   trust: RoomieTrust;
   tenantReviews: string[];
-  landlordReviews: string[];
+  hostReviews: string[];
   unitId: number;
   amount: number;
   dueLabel: string;
@@ -445,7 +445,7 @@ export const PAYMENTS: Payment[] = [
     verified: true,
     trust: { roomieScore: 93, roomieTemperature: 'Cool' },
     tenantReviews: ['Consistently pays on time and communicates clearly.'],
-    landlordReviews: ['No landlord reviews recorded yet.'],
+    hostReviews: ['No host reviews recorded yet.'],
     unitId: 1,
     amount: 6000,
     dueLabel: 'Paid Jul 1',
@@ -468,7 +468,7 @@ export const PAYMENTS: Payment[] = [
     verified: true,
     trust: { roomieScore: 89, roomieTemperature: 'Cool' },
     tenantReviews: ['Usually settles rent quickly through GCash.'],
-    landlordReviews: ['No landlord reviews recorded yet.'],
+    hostReviews: ['No host reviews recorded yet.'],
     unitId: 4,
     amount: 7000,
     dueLabel: 'Paid Jul 2',
@@ -491,7 +491,7 @@ export const PAYMENTS: Payment[] = [
     verified: true,
     trust: { roomieScore: 85, roomieTemperature: 'Warm' },
     tenantReviews: ['Stable payment history with minimal follow-up needed.'],
-    landlordReviews: ['No landlord reviews recorded yet.'],
+    hostReviews: ['No host reviews recorded yet.'],
     unitId: 5,
     amount: 2500,
     dueLabel: 'Paid Jul 1',
@@ -514,7 +514,7 @@ export const PAYMENTS: Payment[] = [
     verified: true,
     trust: { roomieScore: 72, roomieTemperature: 'Warm' },
     tenantReviews: ['Usually pays on schedule after reminders.'],
-    landlordReviews: ['No landlord reviews recorded yet.'],
+    hostReviews: ['No host reviews recorded yet.'],
     unitId: 5,
     amount: 2500,
     dueLabel: 'Due Jul 15',
@@ -537,7 +537,7 @@ export const PAYMENTS: Payment[] = [
     verified: false,
     trust: { roomieScore: 58, roomieTemperature: 'Hot' },
     tenantReviews: ['Needs a little more follow-up during due dates.'],
-    landlordReviews: ['No landlord reviews recorded yet.'],
+    hostReviews: ['No host reviews recorded yet.'],
     unitId: 5,
     amount: 2500,
     dueLabel: '5 days late',

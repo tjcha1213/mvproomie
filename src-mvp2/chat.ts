@@ -17,13 +17,13 @@ export interface Conversation {
   listingId: number;
   participantName: string;
   participantPhoto: string;
-  participantRole: 'Landlord';
+  participantRole: 'Host';
   memberSince: string;
   verified: boolean;
   roomieScore: number;
   uploadedListings: string[];
   tenantReviews: string[];
-  landlordReviews: string[];
+  hostReviews: string[];
   listingTitle: string;
   listingLocation: string;
   pinned: boolean;
@@ -100,15 +100,15 @@ export function createInitialConversations(listings: Listing[]): Conversation[] 
     return {
       id: conversationId,
       listingId: listing.id,
-      participantName: listing.landlordName,
+      participantName: listing.hostName,
       participantPhoto: PARTICIPANT_PHOTOS[index % PARTICIPANT_PHOTOS.length],
-      participantRole: 'Landlord',
+      participantRole: 'Host',
       memberSince: String(2018 + ((listing.id + index) % 5)),
       verified: listing.verified,
-      roomieScore: Math.min(99, Math.round(listing.landlordRating * 20)),
+      roomieScore: Math.min(99, Math.round(listing.hostRating * 20)),
       uploadedListings: [listing.title],
       tenantReviews: PARTICIPANT_TENANT_REVIEWS.slice(index % 2, (index % 2) + 2),
-      landlordReviews: PARTICIPANT_LANDLORD_REVIEWS.slice(index % 2, (index % 2) + 2),
+      hostReviews: PARTICIPANT_LANDLORD_REVIEWS.slice(index % 2, (index % 2) + 2),
       listingTitle: listing.title,
       listingLocation: listing.location,
       pinned: false,
@@ -127,15 +127,15 @@ function createConversation(listing: Listing, timestamp: number): Conversation {
   return {
     id,
     listingId: listing.id,
-    participantName: listing.landlordName,
+    participantName: listing.hostName,
     participantPhoto: PARTICIPANT_PHOTOS[(listing.id - 1) % PARTICIPANT_PHOTOS.length],
-    participantRole: 'Landlord',
+    participantRole: 'Host',
     memberSince: String(2018 + (listing.id % 5)),
     verified: listing.verified,
-    roomieScore: Math.min(99, Math.round(listing.landlordRating * 20)),
+    roomieScore: Math.min(99, Math.round(listing.hostRating * 20)),
     uploadedListings: [listing.title],
     tenantReviews: ['Reliable and quick to answer availability questions.'],
-    landlordReviews: ['Keeps the unit information current and easy to understand.'],
+    hostReviews: ['Keeps the unit information current and easy to understand.'],
     listingTitle: listing.title,
     listingLocation: listing.location,
     pinned: false,
@@ -144,7 +144,7 @@ function createConversation(listing: Listing, timestamp: number): Conversation {
       message(
         `${id}-welcome`,
         'other',
-        `Hi! I'm ${listing.landlordName}. Feel free to ask anything about ${listing.title}.`,
+        `Hi! I'm ${listing.hostName}. Feel free to ask anything about ${listing.title}.`,
         timestamp - 1000 * 60 * 12
       ),
     ],
@@ -185,8 +185,8 @@ export function openConversationWithPrompt(
   const now = Date.now();
   const outgoingText =
     mode === 'inquiry'
-      ? `Hi ${listing.landlordName.split(' ')[0]}, I'm interested in ${listing.title}. Is it still available?`
-      : `Hi ${listing.landlordName.split(' ')[0]}, I saw your ${listing.title} listing and wanted to ask about availability.`;
+      ? `Hi ${listing.hostName.split(' ')[0]}, I'm interested in ${listing.title}. Is it still available?`
+      : `Hi ${listing.hostName.split(' ')[0]}, I saw your ${listing.title} listing and wanted to ask about availability.`;
   const replyText =
     mode === 'inquiry'
       ? 'Yes, it is. I can share viewing slots and move-in details here.'
