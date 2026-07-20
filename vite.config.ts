@@ -8,6 +8,11 @@ import { resolve } from 'node:path'
 export default defineConfig(({ command }) => ({
   plugins: [react()],
   base: command === 'build' ? '/mvproomie/' : '/',
+  resolve: {
+    alias: {
+      '/src-mvp1': resolve(__dirname, 'src'),
+    },
+  },
   build: {
     rollupOptions: {
       input: {

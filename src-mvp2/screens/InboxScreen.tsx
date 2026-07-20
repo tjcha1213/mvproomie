@@ -702,17 +702,23 @@ export default function InboxScreen({
       setReplyTarget({ name: sender, text: message.text });
     } else if (action === 'emoji' && payload) {
       const currentReaction = messageReactionByConversation[activeConversation.id]?.[message.id];
-      if (currentReaction?.emoji === payload && currentReaction.count === 1) {
-        setMessageContextMenu(null);
-        return;
-      }
-      setMessageReactionByConversation((prev) => ({
-        ...prev,
-        [activeConversation.id]: {
-          ...(prev[activeConversation.id] ?? {}),
-          [message.id]: { emoji: payload, count: 1 },
-        },
-      }));
+      setMessageReactionByConversation((prev) => {
+        const conversationReactions = prev[activeConversation.id] ?? {};
+        if (currentReaction?.emoji === payload) {
+          const { [message.id]: _removed, ...rest } = conversationReactions;
+          return {
+            ...prev,
+            [activeConversation.id]: rest,
+          };
+        }
+        return {
+          ...prev,
+          [activeConversation.id]: {
+            ...conversationReactions,
+            [message.id]: { emoji: payload, count: 1 },
+          },
+        };
+      });
     } else if (action === 'delete') {
       deleteMessage(message.id);
       return;

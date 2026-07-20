@@ -97,7 +97,15 @@ function App() {
 
   const addInquiryThreadMessage = useCallback((
     id: number,
-    message: { sender: 'tenant' | 'landlord' | 'system'; text: string; time: string },
+    message: {
+      sender: 'tenant' | 'landlord' | 'system';
+      text: string;
+      time: string;
+      replyTo?: {
+        name: string;
+        text: string;
+      };
+    },
     status?: Inquiry['status'],
   ) => {
     setInquiries((prev) =>

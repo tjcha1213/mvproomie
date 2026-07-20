@@ -1802,12 +1802,23 @@ img {
 
 .inbox-message-swipe-row {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   overflow: hidden;
   width: 100%;
   border-radius: 18px;
   touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.inbox-message-swipe-row.self {
+  align-self: flex-end;
+}
+
+.inbox-message-swipe-row.other {
+  align-self: flex-start;
 }
 
 .inbox-message-actions {
@@ -1918,6 +1929,8 @@ img {
 
 .inbox-bubble-row {
   display: flex;
+  width: 100%;
+  max-width: none;
   transition: transform 0.18s ease, opacity 0.18s ease;
   will-change: transform, opacity;
   position: relative;
@@ -1926,32 +1939,35 @@ img {
 
 .inbox-bubble-row.self {
   justify-content: flex-end;
+  padding-right: 8px;
+  box-sizing: border-box;
 }
 
 .inbox-bubble-row.other {
   justify-content: flex-start;
+  padding-left: 8px;
+  box-sizing: border-box;
 }
 
 .inbox-bubble {
-  max-width: 82%;
+  max-width: min(78%, 28rem);
   padding: 10px 12px;
-  border-radius: 16px;
-  box-shadow: var(--shadow-sm);
+  border-radius: 14px;
   font-size: 13px;
   line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .inbox-bubble.self {
   background: linear-gradient(135deg, var(--primary-light), var(--primary));
   color: white;
-  border-bottom-right-radius: 6px;
 }
 
 .inbox-bubble.other {
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border-light);
-  border-bottom-left-radius: 6px;
 }
 
 .inbox-bubble-row.is-pinned .inbox-bubble.other,
@@ -2033,15 +2049,19 @@ img {
 
 .inbox-message-reaction-row {
   display: flex;
+  width: 100%;
   margin-top: 4px;
+  box-sizing: border-box;
 }
 
 .inbox-message-reaction-row.self {
   justify-content: flex-end;
+  padding-right: 8px;
 }
 
 .inbox-message-reaction-row.other {
   justify-content: flex-start;
+  padding-left: 8px;
 }
 
 .inbox-message-reaction-row.self .inbox-message-reaction {

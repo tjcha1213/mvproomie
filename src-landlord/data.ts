@@ -298,6 +298,10 @@ export interface Inquiry {
     sender: 'tenant' | 'landlord' | 'system';
     text: string;
     time: string;
+    replyTo?: {
+      name: string;
+      text: string;
+    };
   }[];
 }
 

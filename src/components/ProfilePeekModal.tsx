@@ -65,15 +65,15 @@ export default function ProfilePeekModal({
         </button>
 
         <div className="profile-peek-header">
-          <button type="button" className="profile-peek-avatar" onClick={onClose} aria-label={`Close ${name} profile preview`}>
-            <img
-              src={avatarSrc}
-              alt={name}
-              onError={() => setAvatarSrc(fallbackAvatar)}
-            />
-          </button>
           <div className="profile-peek-copy">
             <div className="profile-peek-name-row">
+              <button type="button" className="profile-peek-avatar" onClick={onClose} aria-label={`Close ${name} profile preview`}>
+                <img
+                  src={avatarSrc}
+                  alt={name}
+                  onError={() => setAvatarSrc(fallbackAvatar)}
+                />
+              </button>
               <h2 className="profile-peek-name">{name}</h2>
               <span className="profile-peek-role">{role}</span>
             </div>
