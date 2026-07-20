@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, type UIEvent } from 'react';
-import { formatListingId, type Listing } from '../data/listings';
+import { listings as allListings, formatListingId, type Listing } from '../data/listings';
 import { MiniListingMap } from '../../src-mvp2/components/ListingMap';
 import PhotoModal from '../components/PhotoModal';
 import ProfilePeekModal from '../components/ProfilePeekModal';
@@ -37,6 +37,7 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
   }, [listing.id]);
 
   const imgs = listing.images.length > 0 ? listing.images : [listing.image];
+  const uploadedListings = allListings.filter((item) => item.landlordName === listing.landlordName).map((item) => item.title);
 
   const handleImageScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
     const el = event.currentTarget;
@@ -257,7 +258,16 @@ export default function DetailScreen({ listing, onBack, onToggleSave, onShowToas
         name={listing.landlordName}
         role={listing.verified ? 'Verified landlord' : 'Landlord'}
         userId={listing.verified ? 'VERIFIED' : 'LANDLORD'}
-        subtitle={`${listing.landlordSince} · ★ ${listing.landlordRating} (${listing.landlordReviews} reviews)`}
+        memberSince={String(listing.landlordSince)}
+        verificationStatus={listing.verified ? 'Verified landlord' : 'Unverified landlord'}
+        roomieScore={Math.round(listing.landlordRating * 20)}
+        uploadedListings={uploadedListings}
+        tenantReviews={['No tenant-side reviews logged in this preview.']}
+        landlordReviews={[
+          `Tenant feedback average: ${listing.landlordRating.toFixed(1)} from ${listing.landlordReviews} reviews.`,
+          listing.verified ? 'Verified listing with current photos and active replies.' : 'Listing still awaiting verification.',
+        ]}
+        subtitle={`★ ${listing.landlordRating} (${listing.landlordReviews} reviews)`}
         details={[
           listing.location,
           `${listing.beds} bed • ${listing.baths} bath • ${listing.sqm} sqm`,

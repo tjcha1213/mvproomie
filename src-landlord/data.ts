@@ -286,7 +286,11 @@ export interface Inquiry {
   userId: string;
   name: string;
   avatar?: string;
+  memberSince: string;
+  verified: boolean;
   trust: RoomieTrust;
+  tenantReviews: string[];
+  landlordReviews: string[];
   unitId: number;
   message: string;
   time: string;
@@ -311,7 +315,11 @@ export const INQUIRIES: Inquiry[] = [
     userId: 'TEN-1001',
     name: 'Carlo Dizon',
     avatar: INQUIRY_AVATARS[0],
+    memberSince: '2023',
+    verified: true,
     trust: { roomieScore: 78, roomieTemperature: 'Warm' },
+    tenantReviews: ['Clear and respectful in the first inquiry.', 'Responsive on viewing follow-ups.'],
+    landlordReviews: ['No landlord reviews recorded yet.'],
     unitId: 2,
     message: 'Hi po! Is the bedspace still available? Looking to move in Aug 1 🙂',
     time: '5m ago',
@@ -325,7 +333,11 @@ export const INQUIRIES: Inquiry[] = [
     userId: 'TEN-1002',
     name: 'Grace Tan',
     avatar: INQUIRY_AVATARS[1],
+    memberSince: '2024',
+    verified: true,
     trust: { roomieScore: 83, roomieTemperature: 'Cool' },
+    tenantReviews: ['Good message etiquette and concise questions.', 'Easy to coordinate scheduling with.'],
+    landlordReviews: ['No landlord reviews recorded yet.'],
     unitId: 3,
     message: 'Can I schedule a viewing this weekend? 😊',
     time: '1h ago',
@@ -339,7 +351,11 @@ export const INQUIRIES: Inquiry[] = [
     userId: 'TEN-1003',
     name: 'Miguel Ramos',
     avatar: INQUIRY_AVATARS[2],
+    memberSince: '2022',
+    verified: false,
     trust: { roomieScore: 74, roomieTemperature: 'Warm' },
+    tenantReviews: ['Polite and direct with availability questions.'],
+    landlordReviews: ['No landlord reviews recorded yet.'],
     unitId: 2,
     message: 'Is water included in the rent? 👀',
     time: '3h ago',
@@ -353,7 +369,11 @@ export const INQUIRIES: Inquiry[] = [
     userId: 'TEN-1004',
     name: 'Bea Aquino',
     avatar: INQUIRY_AVATARS[3],
+    memberSince: '2021',
+    verified: true,
     trust: { roomieScore: 88, roomieTemperature: 'Cool' },
+    tenantReviews: ['Reliable during viewing coordination.', 'Sent updates promptly when schedules changed.'],
+    landlordReviews: ['No landlord reviews recorded yet.'],
     unitId: 3,
     message: 'Thank you! See you on Saturday at 2pm.',
     time: 'Yesterday',
@@ -371,7 +391,11 @@ export const INQUIRIES: Inquiry[] = [
     userId: 'TEN-1005',
     name: 'Leo Garcia',
     avatar: INQUIRY_AVATARS[4],
+    memberSince: '2023',
+    verified: false,
     trust: { roomieScore: 69, roomieTemperature: 'Hot' },
+    tenantReviews: ['Straightforward and easy to follow in chat.'],
+    landlordReviews: ['No landlord reviews recorded yet.'],
     unitId: 2,
     message: 'Sure, I will send my requirements tonight.',
     time: 'Mon',
@@ -391,7 +415,11 @@ export interface Payment {
   tenant: string;
   tenantId: string;
   avatar?: string;
+  memberSince: string;
+  verified: boolean;
   trust: RoomieTrust;
+  tenantReviews: string[];
+  landlordReviews: string[];
   unitId: number;
   amount: number;
   dueLabel: string;
@@ -413,7 +441,11 @@ export const PAYMENTS: Payment[] = [
     tenant: 'Maria Reyes',
     tenantId: 'TEN-2001',
     avatar: PAYMENT_AVATARS[0],
+    memberSince: '2020',
+    verified: true,
     trust: { roomieScore: 93, roomieTemperature: 'Cool' },
+    tenantReviews: ['Consistently pays on time and communicates clearly.'],
+    landlordReviews: ['No landlord reviews recorded yet.'],
     unitId: 1,
     amount: 6000,
     dueLabel: 'Paid Jul 1',
@@ -432,7 +464,11 @@ export const PAYMENTS: Payment[] = [
     tenant: 'Ken Villanueva',
     tenantId: 'TEN-2002',
     avatar: PAYMENT_AVATARS[1],
+    memberSince: '2021',
+    verified: true,
     trust: { roomieScore: 89, roomieTemperature: 'Cool' },
+    tenantReviews: ['Usually settles rent quickly through GCash.'],
+    landlordReviews: ['No landlord reviews recorded yet.'],
     unitId: 4,
     amount: 7000,
     dueLabel: 'Paid Jul 2',
@@ -451,7 +487,11 @@ export const PAYMENTS: Payment[] = [
     tenant: 'Alyssa Cruz',
     tenantId: 'TEN-2003',
     avatar: PAYMENT_AVATARS[2],
+    memberSince: '2022',
+    verified: true,
     trust: { roomieScore: 85, roomieTemperature: 'Warm' },
+    tenantReviews: ['Stable payment history with minimal follow-up needed.'],
+    landlordReviews: ['No landlord reviews recorded yet.'],
     unitId: 5,
     amount: 2500,
     dueLabel: 'Paid Jul 1',
@@ -470,7 +510,11 @@ export const PAYMENTS: Payment[] = [
     tenant: 'Janine Lopez',
     tenantId: 'TEN-2004',
     avatar: PAYMENT_AVATARS[3],
+    memberSince: '2024',
+    verified: true,
     trust: { roomieScore: 72, roomieTemperature: 'Warm' },
+    tenantReviews: ['Usually pays on schedule after reminders.'],
+    landlordReviews: ['No landlord reviews recorded yet.'],
     unitId: 5,
     amount: 2500,
     dueLabel: 'Due Jul 15',
@@ -489,7 +533,11 @@ export const PAYMENTS: Payment[] = [
     tenant: 'Rhea Mendoza',
     tenantId: 'TEN-2005',
     avatar: PAYMENT_AVATARS[4],
+    memberSince: '2019',
+    verified: false,
     trust: { roomieScore: 58, roomieTemperature: 'Hot' },
+    tenantReviews: ['Needs a little more follow-up during due dates.'],
+    landlordReviews: ['No landlord reviews recorded yet.'],
     unitId: 5,
     amount: 2500,
     dueLabel: '5 days late',

@@ -140,6 +140,12 @@ export default function TenantsScreen({ units, payments, onOpenProfile, notifica
         name={profilePeekPayment?.tenant ?? ''}
         role="Tenant"
         userId={profilePeekPayment?.tenantId}
+        memberSince={profilePeekPayment?.memberSince}
+        verificationStatus={profilePeekPayment ? (profilePeekPayment.verified ? 'Verified tenant' : 'Unverified tenant') : undefined}
+        roomieScore={profilePeekPayment?.trust.roomieScore}
+        uploadedListings={[]}
+        tenantReviews={profilePeekPayment?.tenantReviews ?? []}
+        landlordReviews={profilePeekPayment?.landlordReviews ?? []}
         subtitle={profilePeekPayment ? `${profilePeekPayment.method} · ${profilePeekPayment.dueLabel}` : undefined}
         details={profilePeekPayment ? [
           `Unit: ${units.find((unit) => unit.id === profilePeekPayment.unitId)?.title ?? 'Unknown unit'}`,

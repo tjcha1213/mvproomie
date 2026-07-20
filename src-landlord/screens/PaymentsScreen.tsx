@@ -674,6 +674,12 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
         name={profilePeekPayment?.tenant ?? ''}
         role="Tenant"
         userId={profilePeekPayment?.tenantId}
+        memberSince={profilePeekPayment?.memberSince}
+        verificationStatus={profilePeekPayment ? (profilePeekPayment.verified ? 'Verified tenant' : 'Unverified tenant') : undefined}
+        roomieScore={profilePeekPayment?.trust.roomieScore}
+        uploadedListings={[]}
+        tenantReviews={profilePeekPayment?.tenantReviews ?? []}
+        landlordReviews={profilePeekPayment?.landlordReviews ?? []}
         subtitle={profilePeekPayment ? `${unitTitle(profilePeekPayment.unitId)} · ${profilePeekPayment.status}` : undefined}
         details={profilePeekPayment ? [
           `${formatPeso(profilePeekPayment.amount)} ${profilePeekPayment.dueLabel.toLowerCase()}`,

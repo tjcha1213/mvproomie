@@ -18,6 +18,12 @@ export interface Conversation {
   participantName: string;
   participantPhoto: string;
   participantRole: 'Landlord';
+  memberSince: string;
+  verified: boolean;
+  roomieScore: number;
+  uploadedListings: string[];
+  tenantReviews: string[];
+  landlordReviews: string[];
   listingTitle: string;
   listingLocation: string;
   pinned: boolean;
@@ -45,6 +51,16 @@ const STARTER_EXCHANGES = [
 ];
 
 const PARTICIPANT_PHOTOS = Array.from({ length: 5 }, (_, index) => avatarAt(index + 10));
+const PARTICIPANT_TENANT_REVIEWS = [
+  'Clear communication and quick follow-up on availability.',
+  'Listing details matched the in-app chat and photos.',
+  'Friendly and responsive when coordinating a viewing.',
+];
+const PARTICIPANT_LANDLORD_REVIEWS = [
+  'Keeps the listing accurate and the replies timely.',
+  'Helpful with move-in details and questions about the unit.',
+  'Professional and easy to coordinate with.',
+];
 
 
 function message(
@@ -87,6 +103,12 @@ export function createInitialConversations(listings: Listing[]): Conversation[] 
       participantName: listing.landlordName,
       participantPhoto: PARTICIPANT_PHOTOS[index % PARTICIPANT_PHOTOS.length],
       participantRole: 'Landlord',
+      memberSince: String(2018 + ((listing.id + index) % 5)),
+      verified: listing.verified,
+      roomieScore: Math.min(99, Math.round(listing.landlordRating * 20)),
+      uploadedListings: [listing.title],
+      tenantReviews: PARTICIPANT_TENANT_REVIEWS.slice(index % 2, (index % 2) + 2),
+      landlordReviews: PARTICIPANT_LANDLORD_REVIEWS.slice(index % 2, (index % 2) + 2),
       listingTitle: listing.title,
       listingLocation: listing.location,
       pinned: false,
@@ -108,6 +130,12 @@ function createConversation(listing: Listing, timestamp: number): Conversation {
     participantName: listing.landlordName,
     participantPhoto: PARTICIPANT_PHOTOS[(listing.id - 1) % PARTICIPANT_PHOTOS.length],
     participantRole: 'Landlord',
+    memberSince: String(2018 + (listing.id % 5)),
+    verified: listing.verified,
+    roomieScore: Math.min(99, Math.round(listing.landlordRating * 20)),
+    uploadedListings: [listing.title],
+    tenantReviews: ['Reliable and quick to answer availability questions.'],
+    landlordReviews: ['Keeps the unit information current and easy to understand.'],
     listingTitle: listing.title,
     listingLocation: listing.location,
     pinned: false,

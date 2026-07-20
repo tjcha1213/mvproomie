@@ -1729,6 +1729,12 @@ export default function InquiriesScreen({
         name={profilePeekInquiry?.name ?? ''}
         role="Tenant"
         userId={profilePeekInquiry?.userId}
+        memberSince={profilePeekInquiry?.memberSince}
+        verificationStatus={profilePeekInquiry ? (profilePeekInquiry.verified ? 'Verified tenant' : 'Unverified tenant') : undefined}
+        roomieScore={profilePeekInquiry?.trust.roomieScore}
+        uploadedListings={[]}
+        tenantReviews={profilePeekInquiry?.tenantReviews ?? []}
+        landlordReviews={profilePeekInquiry?.landlordReviews ?? []}
         subtitle={profilePeekInquiry ? `${unitTitle(profilePeekInquiry.unitId)} · ${profilePeekInquiry.status}` : undefined}
         details={profilePeekInquiry ? [
           `${profilePeekInquiry.trust.roomieTemperature} Roomie ${profilePeekInquiry.trust.roomieScore}`,
