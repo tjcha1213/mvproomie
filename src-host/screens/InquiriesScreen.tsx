@@ -48,13 +48,17 @@ const FILTERS: Array<{ value: Filter; label: string }> = [
   { value: 'Calendar', label: 'Calendar' },
 ];
 
-const FILTER_TITLE: Record<Filter, string> = {
+const FILTER_TITLE: Record<Exclude<Filter, 'Replied'>, string> = {
   All: 'All Inquiries',
   New: 'New Inquiries',
-  Replied: 'Replied Inquiries',
   Viewing: 'Scheduled Inquiries',
   Calendar: 'Scheduled Calendar',
 };
+
+function getInquiryTitle(filter: Filter) {
+  if (filter === 'Replied') return 'All Inquiries';
+  return FILTER_TITLE[filter];
+}
 const ACTION_WIDTH = 92;
 const REVEAL_THRESHOLD = 10;
 const COMMIT_THRESHOLD = 48;
@@ -489,7 +493,7 @@ export default function InquiriesScreen({
 
   const showCalendarView = filter === 'Calendar';
   const displayedInquiryCount = showCalendarView ? viewingEntries.length : filtered.length;
-  const inquiryTitle = FILTER_TITLE[filter];
+  const inquiryTitle = getInquiryTitle(filter);
 
   const unitTitle = (id: number) => units.find((u) => u.id === id)?.title ?? '';
   const activeChat = chatOpenId === null ? null : inquiries.find((inquiry) => inquiry.id === chatOpenId) ?? null;
