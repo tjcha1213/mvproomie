@@ -2805,6 +2805,8 @@ img {
   background: var(--surface);
   text-align: left;
   overflow: visible;
+  isolation: isolate;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
 }
 
 .calendar-day-empty {
@@ -2882,6 +2884,12 @@ img {
   color: #fff;
 }
 
+.calendar-day.is-selected {
+  border-color: color-mix(in srgb, var(--primary) 72%, var(--border-light));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 28%, transparent);
+  transform: translateY(-1px);
+}
+
 .calendar-day:hover .calendar-tooltip,
 .calendar-day:focus-visible .calendar-tooltip {
   opacity: 1;
@@ -2894,8 +2902,63 @@ img {
 }
 
 .calendar-tooltip {
+  position: absolute;
+  left: 50%;
+  min-width: 180px;
+  max-width: 230px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.96);
+  color: #fff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(6px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
   bottom: calc(100% + 8px);
-  z-index: 8;
+  z-index: 40;
+}
+
+.calendar-tooltip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 10px;
+  height: 10px;
+  background: rgba(15, 23, 42, 0.96);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.calendar-tooltip-title {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.calendar-tooltip-list {
+  display: grid;
+  gap: 4px;
+}
+
+.calendar-tooltip-item {
+  display: grid;
+  gap: 1px;
+}
+
+.calendar-tooltip-time {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.calendar-tooltip-text,
+.calendar-tooltip-empty {
+  font-size: 10px;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.76);
 }
 
 .landlord-map-card {
@@ -3224,9 +3287,9 @@ img {
 .st-active   { background: #DCFCE7; color: #15803D; }
 .st-occupied { background: var(--primary-bg); color: var(--primary-dark); }
 .st-draft    { background: var(--surface-2); color: var(--text-muted); }
-.st-new      { background: #FEE2E2; color: #DC2626; }
+.st-new      { background: var(--primary-bg); color: var(--primary-dark); }
 .st-replied  { background: var(--surface-2); color: var(--text-muted); }
-.st-viewing  { background: var(--primary-bg); color: var(--primary-dark); }
+.st-viewing  { background: #FEE2E2; color: #DC2626; }
 .st-paid     { background: #DCFCE7; color: #15803D; }
 .st-due      { background: #FEF3C7; color: #B45309; }
 .st-overdue  { background: #FEE2E2; color: #DC2626; }
@@ -4069,6 +4132,7 @@ img {
 }
 
 .listing-history-calendar-cell {
+  position: relative;
   min-height: 48px;
   border-radius: 12px;
   border: 1px solid var(--border-light);
@@ -4081,6 +4145,7 @@ img {
   font-size: 11px;
   font-weight: 700;
   color: var(--text);
+  overflow: visible;
 }
 
 .listing-history-calendar-cell small {
@@ -4096,6 +4161,7 @@ img {
 .listing-history-calendar-cell.is-selected {
   background: linear-gradient(135deg, var(--primary-light), var(--primary));
   color: #fff;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 28%, transparent);
 }
 
 .listing-history-calendar-cell.is-selected small {
@@ -4675,6 +4741,11 @@ img {
   white-space: nowrap;
 }
 
+.inquiry-chat-schedule-pill.is-scheduled {
+  background: color-mix(in srgb, #10b981 16%, #ffffff);
+  color: #047857;
+}
+
 .inquiry-chat-schedule-pill:active {
   transform: translateY(1px);
 }
@@ -4719,6 +4790,29 @@ img {
 .inquiry-chat-schedule-popover-body {
   display: grid;
   gap: 10px;
+}
+
+.inquiry-chat-cancel-popover {
+  width: min(94vw, 360px);
+  border-radius: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-xl);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.inquiry-chat-cancel-copy {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.unit-btn.unit-btn-primary.is-destructive {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: #fff;
 }
 
 .inquiry-chat-title-block {
@@ -4978,10 +5072,15 @@ img {
 }
 
 .inquiry-calendar-summary {
-  font-size: 10px;
-  color: var(--text-light);
-  line-height: 1.35;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.45;
   margin-top: 0;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--primary) 6%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, var(--border-light));
 }
 
 .inquiry-calendar-actions {
