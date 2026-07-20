@@ -331,14 +331,24 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
 
   return createPortal(
     <>
-      <div className="listing-modal-overlay" onClick={onClose}>
-        <div className="listing-modal inquiry-chat-modal" role="dialog" aria-modal="true" aria-labelledby="inquiry-chat-title" onClick={(event) => event.stopPropagation()}>
-          <div className="inquiry-chat-shell">
-            <div className="inquiry-chat-header">
-              <div className="inquiry-chat-header-main">
-                <button type="button" className="inbox-avatar inquiry-chat-avatar inquiry-chat-avatar-button" onClick={() => setProfileOpen(true)} aria-label={`View ${inquiry.name} profile`}>
-                  <img src={inquiry.avatar ?? ''} alt={inquiry.name} />
+        <div className="listing-modal-overlay" onClick={onClose}>
+          <div className="listing-modal inquiry-chat-modal" role="dialog" aria-modal="true" aria-labelledby="inquiry-chat-title" onClick={(event) => event.stopPropagation()}>
+            <div className="inquiry-chat-shell">
+              <div className="inquiry-chat-header">
+                <button
+                  type="button"
+                  className="inquiry-chat-back"
+                  onClick={onClose}
+                  aria-label="Back to inquiries"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
                 </button>
+                <div className="inquiry-chat-header-main">
+                  <button type="button" className="inbox-avatar inquiry-chat-avatar inquiry-chat-avatar-button" onClick={() => setProfileOpen(true)} aria-label={`View ${inquiry.name} profile`}>
+                    <img src={inquiry.avatar ?? ''} alt={inquiry.name} />
+                  </button>
                 <div className="inquiry-chat-title-block">
                   <span className="listing-modal-type">Inquiry chat</span>
                   <h2 id="inquiry-chat-title" className="inquiry-chat-title">{inquiry.name}</h2>
