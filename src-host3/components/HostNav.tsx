@@ -4,10 +4,9 @@ interface Props {
   activeTab: Tab;
   onTabChange: (t: Tab) => void;
   inquiryBadge: number;
-  onAdd: () => void;
 }
 
-export default function HostNav({ activeTab, onTabChange, inquiryBadge, onAdd }: Props) {
+export default function HostNav({ activeTab, onTabChange, inquiryBadge }: Props) {
   return (
     <nav className="bottom-nav">
       <button className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => onTabChange('dashboard')}>
@@ -47,15 +46,6 @@ export default function HostNav({ activeTab, onTabChange, inquiryBadge, onAdd }:
           <path d="M12.5 20v-1a4.8 4.8 0 0 1 7-4.2"/>
         </svg>
         Tenants
-      </button>
-
-      <button className="nav-add-btn" onClick={onAdd} aria-label="Add listing">
-        <div className="nav-add-circle">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-        </div>
       </button>
 
       <button className={`bottom-nav-item ${activeTab === 'inquiries' ? 'active' : ''}`} onClick={() => onTabChange('inquiries')} style={{ position: 'relative' }}>

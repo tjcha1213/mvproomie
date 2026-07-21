@@ -16,6 +16,7 @@ interface Props {
   onShowToast: (msg: string) => void;
   initialSelectedUnitId?: number | null;
   onInitialSelectedUnitApplied?: () => void;
+  onAdd?: () => void;
 }
 
 type Filter = 'All' | UnitStatus;
@@ -66,6 +67,7 @@ export default function ListingsScreen({
   onShowToast,
   initialSelectedUnitId,
   onInitialSelectedUnitApplied,
+  onAdd,
 }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
@@ -281,7 +283,7 @@ export default function ListingsScreen({
 
   return (
     <>
-      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
+      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} onAdd={onAdd} />
 
       <div className="scroll-area">
         <div className="section-header">

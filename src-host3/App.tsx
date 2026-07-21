@@ -351,6 +351,7 @@ function App() {
               onShowToast={showToast}
               initialSelectedUnitId={listingsStartUnitId}
               onInitialSelectedUnitApplied={() => setListingsStartUnitId(null)}
+              onAdd={openNewListing}
             />
           )}
           {tab === 'tenants' && (
@@ -420,7 +421,6 @@ function App() {
               activeTab={tab}
               onTabChange={handleTabChange}
               inquiryBadge={inquiryMessageCount}
-              onAdd={openNewListing}
             />
 
         {toast && <Toast message={toast} />}
