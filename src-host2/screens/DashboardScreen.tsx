@@ -5,7 +5,6 @@ import type { Tab } from '../components/HostNav';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
 import HostMiniMap from '../components/HostMiniMap';
-import ProfilePeekModal from '../../src/components/ProfilePeekModal';
 
 interface Props {
   units: Unit[];
@@ -144,11 +143,9 @@ export default function DashboardScreen({
   const [viewMode, setViewMode] = useState<'weekly' | 'calendar' | 'map'>('weekly');
   const [weekStartDate, setWeekStartDate] = useState(() => new Date(2026, 6, 6));
   const [calendarMonth, setCalendarMonth] = useState(() => new Date(2026, 6, 1));
-  const [profilePeekPaymentId, setProfilePeekPaymentId] = useState<number | null>(null);
   const published = units.filter(u => u.status !== 'Draft');
   const mappableUnits = units.filter((unit) => Number.isFinite(unit.lat) && Number.isFinite(unit.lng));
   const occupied = units.filter(u => u.status === 'Occupied');
-  const occupiedUnits = units.filter((unit) => unit.status === 'Occupied');
   const occupancy = published.length > 0 ? Math.round((occupied.length / published.length) * 100) : 0;
   const collected = payments.filter(p => p.status === 'Paid').reduce((s, p) => s + p.amount, 0);
   const expected = payments.reduce((s, p) => s + p.amount, 0);
@@ -156,21 +153,6 @@ export default function DashboardScreen({
   const overdue = payments.filter(p => p.status === 'Overdue');
   const unverified = units.filter(u => u.status !== 'Draft' && !u.verified);
   const drafts = units.filter(u => u.status === 'Draft');
-  const tenantGroups = useMemo(() => {
-    return occupiedUnits
-      .map((unit) => {
-        const unitPayments = payments.filter((payment) => payment.unitId === unit.id).sort(sortPaymentsForDisplay);
-        return {
-          unit,
-          payments: unitPayments,
-          activeCount: unitPayments.length,
-          overdueCount: unitPayments.filter((payment) => payment.status === 'Overdue').length,
-          dueCount: unitPayments.filter((payment) => payment.status === 'Due').length,
-        };
-      })
-      .filter((group) => group.payments.length > 0);
-  }, [occupiedUnits, payments]);
-  const profilePeekPaymentIdResolved = profilePeekPaymentId === null ? null : payments.find((payment) => payment.id === profilePeekPaymentId) ?? null;
 
   const weeklyData = useMemo(() => buildWeeklyWindow(weekStartDate), [weekStartDate]);
   const previousWeeklyData = useMemo(
@@ -493,27 +475,6 @@ export default function DashboardScreen({
         <div style={{ height: 16 }} />
       </div>
 
-      <ProfilePeekModal
-        open={profilePeekPaymentIdResolved !== null}
-        avatar={profilePeekPaymentIdResolved?.avatar ?? ''}
-        name={profilePeekPaymentIdResolved?.tenant ?? ''}
-        role="Tenant"
-        userId={profilePeekPaymentIdResolved?.tenantId}
-        memberSince={profilePeekPaymentIdResolved?.memberSince}
-        verificationStatus={profilePeekPaymentIdResolved ? (profilePeekPaymentIdResolved.verified ? 'Verified tenant' : 'Unverified tenant') : undefined}
-        roomieScore={profilePeekPaymentIdResolved?.trust.roomieScore}
-        uploadedListings={[]}
-        tenantReviews={profilePeekPaymentIdResolved?.tenantReviews ?? []}
-        hostReviews={profilePeekPaymentIdResolved?.hostReviews ?? []}
-        subtitle={profilePeekPaymentIdResolved ? `${profilePeekPaymentIdResolved.method} · ${profilePeekPaymentIdResolved.dueLabel}` : undefined}
-        details={profilePeekPaymentIdResolved ? [
-          `Unit: ${units.find((unit) => unit.id === profilePeekPaymentIdResolved.unitId)?.title ?? 'Unknown unit'}`,
-          `Status: ${statusLabel(profilePeekPaymentIdResolved.status)}`,
-          `Amount: ${profilePeekPaymentIdResolved.amount.toLocaleString('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 })}`,
-          `Notes: ${profilePeekPaymentIdResolved.notes}`,
-        ] : []}
-        onClose={() => setProfilePeekPaymentId(null)}
-      />
     </>
   );
 }
