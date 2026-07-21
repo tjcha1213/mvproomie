@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import { UNITS, INQUIRIES, PAYMENTS, ACTIVITY, formatListingId, formatPesoShort, formatPropertyId, HOST_PROFILE } from './data';
 import type { Unit, UnitStatus, Inquiry, Payment, Activity } from './data';
 import { DEFAULT_PRIMARY, THEME_STORAGE_KEY } from './theme';
@@ -46,6 +47,22 @@ function resolveLocationCoords(location: string, seed: number) {
 }
 
 function App() {
+  const setInquiryCalendarRoute = useCallback((date?: string | null) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', 'inquiries');
+    url.searchParams.set('inquiriesMode', 'calendar');
+    if (date) url.searchParams.set('inquiriesDate', date);
+    else url.searchParams.delete('inquiriesDate');
+    window.history.replaceState({}, '', url);
+  }, []);
+
+  const clearInquiryCalendarRoute = useCallback(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('inquiriesMode');
+    url.searchParams.delete('inquiriesDate');
+    window.history.replaceState({}, '', url);
+  }, []);
+
   const initialTab = (() => {
     const tab = new URL(window.location.href).searchParams.get('tab');
     return tab === 'dashboard' || tab === 'listings' || tab === 'tenants' || tab === 'inquiries' || tab === 'payments' || tab === 'profile' || tab === 'reviews' ? tab : 'dashboard';
@@ -58,6 +75,7 @@ function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [themeOpen, setThemeOpen] = useState(false);
   const [newListingOpen, setNewListingOpen] = useState(false);
+  const [inquiriesEntryMode, setInquiriesEntryMode] = useState<'normal' | 'calendar'>('normal');
   const [inquiriesStartFilter, setInquiriesStartFilter] = useState<'Calendar' | null>(null);
   const [inquiriesStartDate, setInquiriesStartDate] = useState<string | null>(null);
   const [inquiriesStartChatId, setInquiriesStartChatId] = useState<number | null>(null);
@@ -263,13 +281,29 @@ function App() {
 
   const handleTabChange = useCallback((nextTab: Tab) => {
     if (nextTab === 'inquiries') {
+      const hasPendingInquiryLanding =
+        inquiriesEntryMode === 'calendar' ||
+        inquiriesStartFilter !== null ||
+        inquiriesStartDate !== null ||
+        inquiriesStartChatId !== null;
+
+      if (!hasPendingInquiryLanding) {
+        clearInquiryCalendarRoute();
+        setInquiriesStartFilter(null);
+        setInquiriesStartDate(null);
+        setInquiriesStartChatId(null);
+        setInquiriesResetToken((current) => current + 1);
+      }
+    }
+    if (nextTab !== 'inquiries') {
+      clearInquiryCalendarRoute();
+      setInquiriesEntryMode('normal');
       setInquiriesStartFilter(null);
       setInquiriesStartDate(null);
       setInquiriesStartChatId(null);
-      setInquiriesResetToken((current) => current + 1);
     }
     setTab(nextTab);
-  }, []);
+  }, [clearInquiryCalendarRoute, inquiriesEntryMode, inquiriesStartChatId, inquiriesStartDate, inquiriesStartFilter]);
 
   return (
     <div className="app-shell">
@@ -290,9 +324,13 @@ function App() {
               activities={activities}
               onGoTo={setTab}
               onOpenInquiriesCalendar={(date) => {
-                setInquiriesStartFilter('Calendar');
-                setInquiriesStartDate(date ?? null);
-                setTab('inquiries');
+                setInquiryCalendarRoute(date ?? null);
+                flushSync(() => {
+                  setInquiriesEntryMode('calendar');
+                  setInquiriesStartFilter('Calendar');
+                  setInquiriesStartDate(date ?? null);
+                  setTab('inquiries');
+                });
               }}
               onOpenInquiryModal={(inquiryId) => setSharedInquiryId(inquiryId)}
               onOpenListingModal={(unitId) => setSharedListingUnitId(unitId)}
@@ -337,12 +375,11 @@ function App() {
               notifications={notifications}
               onOpenNotification={openNotification}
                 onShowToast={showToast}
+                initialEntryMode={inquiriesEntryMode}
                 initialFilter={inquiriesStartFilter}
                 initialCalendarDate={inquiriesStartDate}
                 initialChatInquiryId={inquiriesStartChatId}
                 resetToken={inquiriesResetToken}
-                onInitialFilterApplied={() => setInquiriesStartFilter(null)}
-                onInitialCalendarDateApplied={() => setInquiriesStartDate(null)}
                 onInitialChatInquiryIdApplied={() => setInquiriesStartChatId(null)}
             />
           )}

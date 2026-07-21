@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Inquiry, InquiryStatus, Unit } from '../data';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
@@ -29,10 +29,9 @@ interface Props {
   notifications: HeaderNotification[];
   onOpenNotification: (notification: HeaderNotification) => void;
   onShowToast: (msg: string) => void;
+  initialEntryMode?: 'normal' | 'calendar';
   initialFilter?: Filter | null;
-  onInitialFilterApplied?: () => void;
   initialCalendarDate?: string | null;
-  onInitialCalendarDateApplied?: () => void;
   initialChatInquiryId?: number | null;
   onInitialChatInquiryIdApplied?: () => void;
   resetToken?: number;
@@ -255,15 +254,18 @@ export default function InquiriesScreen({
   notifications,
   onOpenNotification,
   onShowToast,
+  initialEntryMode = 'normal',
   initialFilter,
-  onInitialFilterApplied,
   initialCalendarDate,
-  onInitialCalendarDateApplied,
   initialChatInquiryId,
   onInitialChatInquiryIdApplied,
   resetToken,
 }: Props) {
-  const [filter, setFilter] = useState<Filter>('All');
+  const routeSearch = typeof window !== 'undefined' ? new URL(window.location.href).searchParams : null;
+  const routeEntryMode = routeSearch?.get('inquiriesMode') === 'calendar' ? 'calendar' : 'normal';
+  const routeCalendarDate = routeSearch?.get('inquiriesDate') ?? '';
+  const [filter, setFilter] = useState<Filter>(() => initialFilter ?? (initialCalendarDate || routeEntryMode === 'calendar' ? 'Calendar' : 'All'));
+  const [landingFilter, setLandingFilter] = useState<Filter | null>(() => initialFilter ?? (initialCalendarDate || routeEntryMode === 'calendar' ? 'Calendar' : null));
   const [openId, setOpenId] = useState<number | null>(null);
   const [chatOpenId, setChatOpenId] = useState<number | null>(null);
   const [draftReplies, setDraftReplies] = useState<Record<number, string>>({});
@@ -282,40 +284,58 @@ export default function InquiriesScreen({
   const [scheduleMonth, setScheduleMonth] = useState(() => new Date());
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('10:00');
-  const [calendarMonth, setCalendarMonth] = useState(() => new Date());
-  const [calendarSelectedDate, setCalendarSelectedDate] = useState('');
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const initialDate = initialCalendarDate || routeCalendarDate;
+    if (initialDate) {
+      const selected = new Date(`${initialDate}T12:00:00`);
+      if (!Number.isNaN(selected.getTime())) {
+        return new Date(selected.getFullYear(), selected.getMonth(), 1);
+      }
+    }
+    return new Date();
+  });
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState(() => initialCalendarDate ?? routeCalendarDate ?? '');
   const [viewingByInquiryId, setViewingByInquiryId] = useState<Record<number, ViewingAppointment>>({});
   const deleteTimersRef = useRef<Record<string, number>>({});
   const suppressNextInquiryClickRef = useRef<number | null>(null);
   const conversationLongPressRef = useRef<{ inquiryId: number; timer: number | null; startX: number; startY: number; triggered: boolean } | null>(null);
   const inquiryScrollerRef = useRef<HTMLDivElement | null>(null);
   const inquiryScrollAnchorRef = useRef<HTMLDivElement | null>(null);
+  const didMountRef = useRef(false);
 
-  useEffect(() => {
-    if (!initialFilter) return;
+  useLayoutEffect(() => {
+    if (initialEntryMode !== 'calendar' || !initialFilter) return;
+    setLandingFilter(initialFilter);
     setFilter(initialFilter);
-    onInitialFilterApplied?.();
-  }, [initialFilter, onInitialFilterApplied]);
+  }, [initialEntryMode, initialFilter]);
 
-  useEffect(() => {
-    if (!initialCalendarDate) return;
+  useLayoutEffect(() => {
+    const initialDate = initialCalendarDate || routeCalendarDate;
+    if (initialEntryMode !== 'calendar' || !initialDate) return;
+    setLandingFilter('Calendar');
     setFilter('Calendar');
-    setCalendarSelectedDate(initialCalendarDate);
-    const selected = new Date(`${initialCalendarDate}T12:00:00`);
+    setCalendarSelectedDate(initialDate);
+    const selected = new Date(`${initialDate}T12:00:00`);
     if (!Number.isNaN(selected.getTime())) {
       setCalendarMonth(new Date(selected.getFullYear(), selected.getMonth(), 1));
     }
-    onInitialCalendarDateApplied?.();
-  }, [initialCalendarDate, onInitialCalendarDateApplied]);
+  }, [initialCalendarDate, initialEntryMode, routeCalendarDate]);
 
   useEffect(() => {
     if (initialChatInquiryId === null || initialChatInquiryId === undefined) return;
     setChatOpenId(initialChatInquiryId);
+    setLandingFilter(null);
     setFilter('All');
     onInitialChatInquiryIdApplied?.();
   }, [initialChatInquiryId, onInitialChatInquiryIdApplied]);
 
   useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+
+    setLandingFilter(null);
     setFilter('All');
     setOpenId(null);
     setChatOpenId(null);
@@ -420,11 +440,12 @@ export default function InquiriesScreen({
   }, [chatOpenId, inquiries, replyTarget?.text, latestChatMessageId]);
 
   const filtered = useMemo(() => {
-    const base = filter === 'All' || filter === 'Calendar'
+    const activeFilter = landingFilter ?? filter;
+    const base = activeFilter === 'All' || activeFilter === 'Calendar'
       ? inquiries
-      : filter === 'New'
+      : activeFilter === 'New'
         ? inquiries.filter((i) => i.unreadCount > 0)
-        : inquiries.filter((i) => i.status === filter);
+        : inquiries.filter((i) => i.status === activeFilter);
 
     return base
       .map((inquiry, index) => ({
@@ -442,7 +463,7 @@ export default function InquiriesScreen({
         if (a.meta.pinned !== b.meta.pinned) return a.meta.pinned ? -1 : 1;
         return a.index - b.index;
       });
-  }, [filter, inquiries, metaById]);
+  }, [filter, landingFilter, inquiries, metaById]);
 
   const viewingEntries = useMemo(() => {
     return inquiries
@@ -491,9 +512,10 @@ export default function InquiriesScreen({
     return counts;
   }, [viewingEntries]);
 
-  const showCalendarView = filter === 'Calendar';
+  const activeFilter = landingFilter ?? filter;
+  const showCalendarView = activeFilter === 'Calendar' || Boolean(initialCalendarDate);
   const displayedInquiryCount = showCalendarView ? viewingEntries.length : filtered.length;
-  const inquiryTitle = getInquiryTitle(filter);
+  const inquiryTitle = getInquiryTitle(activeFilter);
 
   const unitTitle = (id: number) => units.find((u) => u.id === id)?.title ?? '';
   const activeChat = chatOpenId === null ? null : inquiries.find((inquiry) => inquiry.id === chatOpenId) ?? null;
@@ -942,7 +964,14 @@ export default function InquiriesScreen({
 
         <div className="search-filter-chips">
           {FILTERS.map(({ value, label }) => (
-            <button key={value} className={`filter-chip ${filter === value ? 'active' : ''}`} onClick={() => setFilter(value)}>
+            <button
+              key={value}
+              className={`filter-chip ${activeFilter === value ? 'active' : ''}`}
+              onClick={() => {
+                setLandingFilter(null);
+                setFilter(value);
+              }}
+            >
               {label}
             </button>
           ))}
