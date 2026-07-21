@@ -491,6 +491,78 @@ h2 {
   margin-top: 14px;
 }
 
+.layout-preview-pair {
+  justify-self: end;
+  width: 100%;
+  max-width: 780px;
+  display: grid;
+  grid-template-columns: 2.1fr 0.52fr;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.layout-preview-desktop,
+.layout-preview-phone {
+  min-width: 0;
+}
+
+.layout-preview-desktop {
+  align-self: center;
+}
+
+.preview-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(63, 81, 229, 0.12);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.desktop-screen {
+  min-height: 430px;
+  padding: 14px;
+  border-radius: 24px;
+}
+
+.desktop-screen .static-layout-empty {
+  min-height: 398px;
+  border-radius: 20px;
+  aspect-ratio: 16 / 8.45;
+}
+
+.preview-empty-desktop {
+  font-size: 13px;
+}
+
+.preview-empty-phone {
+  font-size: 12px;
+}
+
+.layout-preview-phone {
+  max-width: 228px;
+  justify-self: end;
+}
+
+.layout-preview-phone .phone-frame {
+  max-width: 228px;
+}
+
+.layout-preview-phone .phone-screen {
+  min-height: 410px;
+}
+
+.layout-preview-phone .static-layout-empty {
+  min-height: 398px;
+  aspect-ratio: 790 / 1688;
+}
+
 .phone-frame {
   justify-self: end;
   width: 100%;
@@ -1329,6 +1401,35 @@ h2 {
     max-width: none;
   }
 
+  .layout-preview-pair {
+    justify-self: stretch;
+    max-width: none;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .desktop-screen {
+    min-height: 240px;
+  }
+
+  .desktop-screen .static-layout-empty {
+    min-height: 212px;
+  }
+
+  .layout-preview-phone,
+  .layout-preview-phone .phone-frame {
+    max-width: none;
+    justify-self: stretch;
+  }
+
+  .layout-preview-phone .phone-screen {
+    min-height: 420px;
+  }
+
+  .layout-preview-phone .static-layout-empty {
+    min-height: 398px;
+  }
+
   .demo-header {
     flex-direction: column;
     align-items: flex-start;
@@ -1376,5 +1477,9 @@ h2 {
 
   .phone-screen {
     min-height: 560px;
+  }
+
+  .desktop-screen {
+    padding: 12px;
   }
 }
