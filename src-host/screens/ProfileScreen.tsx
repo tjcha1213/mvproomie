@@ -56,7 +56,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
 
   return (
     <>
-      <Header onOpenProfile={() => {}} notifications={notifications} onOpenNotification={onOpenNotification} />
+      <Header onOpenProfile={() => {}} notifications={notifications} onOpenNotification={onOpenNotification} showAddButton={false} />
 
       <div className="scroll-area">
         {/* Profile header */}

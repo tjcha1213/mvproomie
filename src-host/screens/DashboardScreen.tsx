@@ -5,6 +5,7 @@ import type { Tab } from '../components/HostNav';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
 import HostMiniMap from '../components/HostMiniMap';
+import ProfilePeekModal from '../../src/components/ProfilePeekModal';
 
 interface Props {
   units: Unit[];
@@ -109,6 +110,21 @@ function calculatePercentDelta(currentValue: number, previousValue: number) {
   return Math.round(((currentValue - previousValue) / previousValue) * 100);
 }
 
+function sortPaymentsForDisplay(a: Payment, b: Payment) {
+  const statusRank: Record<Payment['status'], number> = {
+    Overdue: 0,
+    Due: 1,
+    Paid: 2,
+  };
+  const statusDelta = statusRank[a.status] - statusRank[b.status];
+  if (statusDelta !== 0) return statusDelta;
+  return a.tenant.localeCompare(b.tenant);
+}
+
+function statusLabel(status: Payment['status']) {
+  return status === 'Overdue' ? 'Overdue' : status === 'Due' ? 'Due soon' : 'Paid';
+}
+
 export default function DashboardScreen({
   units,
   inquiries,
@@ -126,9 +142,11 @@ export default function DashboardScreen({
   const [viewMode, setViewMode] = useState<'weekly' | 'calendar' | 'map'>('weekly');
   const [weekStartDate, setWeekStartDate] = useState(() => new Date(2026, 6, 6));
   const [calendarMonth, setCalendarMonth] = useState(() => new Date(2026, 6, 1));
+  const [profilePeekPaymentId, setProfilePeekPaymentId] = useState<number | null>(null);
   const published = units.filter(u => u.status !== 'Draft');
   const mappableUnits = units.filter((unit) => Number.isFinite(unit.lat) && Number.isFinite(unit.lng));
   const occupied = units.filter(u => u.status === 'Occupied');
+  const occupiedUnits = occupied;
   const occupancy = published.length > 0 ? Math.round((occupied.length / published.length) * 100) : 0;
   const collected = payments.filter(p => p.status === 'Paid').reduce((s, p) => s + p.amount, 0);
   const expected = payments.reduce((s, p) => s + p.amount, 0);
@@ -136,6 +154,21 @@ export default function DashboardScreen({
   const overdue = payments.filter(p => p.status === 'Overdue');
   const unverified = units.filter(u => u.status !== 'Draft' && !u.verified);
   const drafts = units.filter(u => u.status === 'Draft');
+  const tenantGroups = useMemo(() => {
+    return occupiedUnits
+      .map((unit) => {
+        const unitPayments = payments.filter((payment) => payment.unitId === unit.id).sort(sortPaymentsForDisplay);
+        return {
+          unit,
+          payments: unitPayments,
+          activeCount: unitPayments.length,
+          overdueCount: unitPayments.filter((payment) => payment.status === 'Overdue').length,
+          dueCount: unitPayments.filter((payment) => payment.status === 'Due').length,
+        };
+      })
+      .filter((group) => group.payments.length > 0);
+  }, [occupiedUnits, payments]);
+  const profilePeekPayment = profilePeekPaymentId === null ? null : payments.find((payment) => payment.id === profilePeekPaymentId) ?? null;
 
   const weeklyData = useMemo(() => buildWeeklyWindow(weekStartDate), [weekStartDate]);
   const previousWeeklyData = useMemo(
@@ -205,7 +238,7 @@ export default function DashboardScreen({
 
   return (
     <>
-      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
+      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} showAddButton={false} />
 
       <div className="scroll-area">
         <div className="ll-greeting">
@@ -455,8 +488,93 @@ export default function DashboardScreen({
           </div>
         </div>
 
+        <div className="ll-card ll-tenant-card">
+          <div className="ll-card-head">
+            <div className="ll-card-head-copy">
+              <span className="ll-card-title">Tenants</span>
+              <span className="ll-card-meta">
+                <span>{tenantGroups.reduce((sum, group) => sum + group.payments.length, 0)} active tenants</span>
+                <span className="ll-meta-dot" aria-hidden="true" />
+                <span>{tenantGroups.filter((group) => group.payments.length > 1).length} shared listings</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="tenant-overview-list">
+            {tenantGroups.map(({ unit, payments: unitPayments, activeCount, overdueCount, dueCount }) => (
+              <div key={unit.id} className="tenant-overview-group">
+                <div className="tenant-overview-group-head">
+                  <div className="tenant-overview-group-copy">
+                    <span className="tenant-overview-group-title">{unit.title}</span>
+                    <span className="tenant-overview-group-meta">
+                      <span>{activeCount} tenant{activeCount === 1 ? '' : 's'}</span>
+                      <span className="ll-meta-dot" aria-hidden="true" />
+                      <span>{overdueCount} overdue</span>
+                    </span>
+                  </div>
+                  <span className="roomie-score-chip is-cool">Occupied</span>
+                </div>
+                <div className="tenant-overview-list">
+                  {unitPayments.map((payment) => (
+                    <div key={payment.id} className="tenant-overview-item">
+                      <button
+                        type="button"
+                        className="tenant-overview-avatar tenant-overview-avatar-button"
+                        onClick={() => setProfilePeekPaymentId(payment.id)}
+                        aria-label={`View ${payment.tenant} profile`}
+                      >
+                        <img src={payment.avatar ?? ''} alt={payment.tenant} />
+                      </button>
+                      <div className="tenant-overview-copy">
+                        <div className="tenant-overview-name-row">
+                          <span className="tenant-overview-name">{payment.tenant}</span>
+                          <span className={`tenant-overview-status is-${payment.status.toLowerCase()}`}>{statusLabel(payment.status)}</span>
+                        </div>
+                        <div className="tenant-overview-meta">
+                          <span>{payment.tenantId}</span>
+                          <span className="ll-meta-dot" aria-hidden="true" />
+                          <span>{payment.method}</span>
+                          <span className="ll-meta-dot" aria-hidden="true" />
+                          <span>{payment.dueLabel}</span>
+                        </div>
+                        <div className="tenant-overview-detail">{payment.notes}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="tenant-overview-footer">
+                  <span>{dueCount} due soon</span>
+                  <span>{unitPayments.reduce((sum, payment) => sum + payment.amount, 0).toLocaleString('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 })} monthly at risk</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div style={{ height: 16 }} />
       </div>
+
+      <ProfilePeekModal
+        open={profilePeekPayment !== null}
+        avatar={profilePeekPayment?.avatar ?? ''}
+        name={profilePeekPayment?.tenant ?? ''}
+        role="Tenant"
+        userId={profilePeekPayment?.tenantId}
+        memberSince={profilePeekPayment?.memberSince}
+        verificationStatus={profilePeekPayment ? (profilePeekPayment.verified ? 'Verified tenant' : 'Unverified tenant') : undefined}
+        roomieScore={profilePeekPayment?.trust.roomieScore}
+        uploadedListings={[]}
+        tenantReviews={profilePeekPayment?.tenantReviews ?? []}
+        hostReviews={profilePeekPayment?.hostReviews ?? []}
+        subtitle={profilePeekPayment ? `${profilePeekPayment.method} · ${profilePeekPayment.dueLabel}` : undefined}
+        details={profilePeekPayment ? [
+          `Unit: ${units.find((unit) => unit.id === profilePeekPayment.unitId)?.title ?? 'Unknown unit'}`,
+          `Status: ${statusLabel(profilePeekPayment.status)}`,
+          `Amount: ${profilePeekPayment.amount.toLocaleString('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 })}`,
+          `Notes: ${profilePeekPayment.notes}`,
+        ] : []}
+        onClose={() => setProfilePeekPaymentId(null)}
+      />
     </>
   );
 }

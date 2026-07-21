@@ -15,6 +15,7 @@ interface Props {
   notifications: HeaderNotification[];
   onOpenNotification: (notification: HeaderNotification) => void;
   onShowToast: (msg: string) => void;
+  onAdd?: () => void;
 }
 
 type Filter = 'All' | PaymentStatus;
@@ -172,7 +173,7 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
 
   return (
     <>
-      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
+      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} onAdd={onAdd} />
 
       <div className="scroll-area">
         {/* Month summary */}

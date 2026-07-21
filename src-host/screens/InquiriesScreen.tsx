@@ -953,7 +953,7 @@ export default function InquiriesScreen({
 
   return (
     <>
-      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
+      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} showAddButton={false} />
 
       <div className="scroll-area">
         <div className="section-header">

@@ -14,11 +14,13 @@ interface Props {
   onOpenProfile: () => void;
   notifications: HeaderNotification[];
   onOpenNotification: (notification: HeaderNotification) => void;
+  onAdd?: () => void;
+  showAddButton?: boolean;
 }
 
 // Shared app header: wordmark on the left, notifications + profile avatar on
 // the right (the avatar replaces the tenant app's hamburger menu).
-export default function Header({ onOpenProfile, notifications, onOpenNotification }: Props) {
+export default function Header({ onOpenProfile, notifications, onOpenNotification, onAdd, showAddButton = false }: Props) {
   const [open, setOpen] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
 
@@ -44,6 +46,15 @@ export default function Header({ onOpenProfile, notifications, onOpenNotificatio
           </svg>
           {notifications.length > 0 && <span className="notif-dot" />}
         </button>
+        {showAddButton && onAdd && (
+          <button className="header-add-btn" onClick={onAdd} type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>+ New listing</span>
+          </button>
+        )}
         {open && (
           <div className="header-notif-menu">
             <div className="header-notif-head">

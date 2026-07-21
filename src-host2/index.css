@@ -190,12 +190,13 @@ img {
   position: relative;
   z-index: 30;
   /* Clear the home indicator on full-screen phones (0 elsewhere). */
-  padding: 4px 6px calc(6px + env(safe-area-inset-bottom));
+  padding: 4px 10px calc(6px + env(safe-area-inset-bottom));
   box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
 }
 
 .bottom-nav-item {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -322,8 +323,37 @@ img {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   position: relative;
+}
+
+.header-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--border-light));
+  border-radius: 999px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary-light) 20%, white), rgba(255, 255, 255, 0.98));
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.header-add-btn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 901px) {
+  .header-add-btn {
+    display: none;
+  }
 }
 
 .icon-btn {

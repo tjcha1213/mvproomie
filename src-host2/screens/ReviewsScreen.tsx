@@ -6,13 +6,14 @@ interface Props {
   onOpenProfile: () => void;
   notifications: HeaderNotification[];
   onOpenNotification: (notification: HeaderNotification) => void;
+  onAdd?: () => void;
 }
 
 function ScoreChip({ score, temperature }: { score: number; temperature: 'Cool' | 'Warm' | 'Hot' }) {
   return <span className={`roomie-score-chip is-${temperature.toLowerCase()}`}>Roomie {score}</span>;
 }
 
-export default function ReviewsScreen({ onOpenProfile, notifications, onOpenNotification }: Props) {
+export default function ReviewsScreen({ onOpenProfile, notifications, onOpenNotification, onAdd }: Props) {
   const trustSnapshots = [
     { label: 'Host account', name: HOST_PROFILE.name, userId: HOST_PROFILE.userId, score: HOST_PROFILE.roomieScore, temperature: HOST_PROFILE.roomieTemperature },
     { label: 'Broker verification desk', name: PLATFORM_CONTACTS.broker.name, userId: PLATFORM_CONTACTS.broker.userId, score: PLATFORM_CONTACTS.broker.roomieScore, temperature: PLATFORM_CONTACTS.broker.roomieTemperature },
@@ -23,7 +24,7 @@ export default function ReviewsScreen({ onOpenProfile, notifications, onOpenNoti
 
   return (
     <>
-      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
+      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} onAdd={onAdd} />
 
       <div className="scroll-area">
         <div className="section-header">

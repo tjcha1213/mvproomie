@@ -172,7 +172,7 @@ export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, 
 
   return (
     <>
-      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
+      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} showAddButton={false} />
 
       <div className="scroll-area">
         {/* Month summary */}

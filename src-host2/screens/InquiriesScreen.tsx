@@ -35,6 +35,7 @@ interface Props {
   initialChatInquiryId?: number | null;
   onInitialChatInquiryIdApplied?: () => void;
   resetToken?: number;
+  onAdd?: () => void;
 }
 
 type Filter = 'All' | InquiryStatus | 'Calendar';
@@ -953,7 +954,7 @@ export default function InquiriesScreen({
 
   return (
     <>
-      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
+      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} onAdd={onAdd} />
 
       <div className="scroll-area">
         <div className="section-header">

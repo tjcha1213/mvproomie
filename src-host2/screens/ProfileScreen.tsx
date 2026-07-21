@@ -16,6 +16,7 @@ interface Props {
   notifications: HeaderNotification[];
   onOpenNotification: (notification: HeaderNotification) => void;
   onShowToast: (msg: string) => void;
+  onAdd?: () => void;
 }
 
 const MENU_ITEMS = [
@@ -28,7 +29,7 @@ const MENU_ITEMS = [
   { key: 'support', label: 'Help & Support', icon: PROFILE_MENU_ICONS.support },
 ];
 
-export default function ProfileScreen({ units, onOpenListings, onOpenTenants, onOpenTheme, onOpenReviews, notifications, onOpenNotification, onShowToast }: Props) {
+export default function ProfileScreen({ units, onOpenListings, onOpenTenants, onOpenTheme, onOpenReviews, notifications, onOpenNotification, onShowToast, onAdd }: Props) {
   const occupied = units.filter(u => u.status === 'Occupied').length;
   const [chooser, setChooser] = useState<'tenant' | 'host' | null>(null);
 
@@ -56,7 +57,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
 
   return (
     <>
-      <Header onOpenProfile={() => {}} notifications={notifications} onOpenNotification={onOpenNotification} />
+      <Header onOpenProfile={() => {}} notifications={notifications} onOpenNotification={onOpenNotification} onAdd={onAdd} />
 
       <div className="scroll-area">
         {/* Profile header */}

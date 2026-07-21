@@ -338,6 +338,7 @@ function App() {
               notifications={notifications}
               onOpenNotification={openNotification}
               onShowToast={showToast}
+              onAdd={openNewListing}
             />
           )}
           {tab === 'listings' && (
@@ -351,6 +352,7 @@ function App() {
               onShowToast={showToast}
               initialSelectedUnitId={listingsStartUnitId}
               onInitialSelectedUnitApplied={() => setListingsStartUnitId(null)}
+              onAdd={openNewListing}
             />
           )}
           {tab === 'tenants' && (
@@ -360,6 +362,7 @@ function App() {
               onOpenProfile={() => setTab('profile')}
               notifications={notifications}
               onOpenNotification={openNotification}
+              onAdd={openNewListing}
             />
           )}
           {tab === 'inquiries' && (
@@ -373,7 +376,7 @@ function App() {
                 onAddThreadMessage={addInquiryThreadMessage}
               onOpenProfile={() => setTab('profile')}
               notifications={notifications}
-              onOpenNotification={openNotification}
+                onOpenNotification={openNotification}
                 onShowToast={showToast}
                 initialEntryMode={inquiriesEntryMode}
                 initialFilter={inquiriesStartFilter}
@@ -381,6 +384,7 @@ function App() {
                 initialChatInquiryId={inquiriesStartChatId}
                 resetToken={inquiriesResetToken}
                 onInitialChatInquiryIdApplied={() => setInquiriesStartChatId(null)}
+                onAdd={openNewListing}
             />
           )}
           {tab === 'payments' && (
@@ -393,6 +397,7 @@ function App() {
               notifications={notifications}
               onOpenNotification={openNotification}
               onShowToast={showToast}
+              onAdd={openNewListing}
             />
           )}
           {tab === 'profile' && (
@@ -405,6 +410,7 @@ function App() {
               notifications={notifications}
               onOpenNotification={openNotification}
               onShowToast={showToast}
+              onAdd={openNewListing}
             />
           )}
           {tab === 'reviews' && (
@@ -412,6 +418,7 @@ function App() {
               onOpenProfile={() => setTab('profile')}
               notifications={notifications}
               onOpenNotification={openNotification}
+              onAdd={openNewListing}
             />
           )}
         </div>
@@ -420,7 +427,6 @@ function App() {
               activeTab={tab}
               onTabChange={handleTabChange}
               inquiryBadge={inquiryMessageCount}
-              onAdd={openNewListing}
             />
 
         {toast && <Toast message={toast} />}

@@ -370,17 +370,17 @@ function App() {
                 onMarkInquiryRead={markInquiryRead}
                 onSetStatus={setInquiryStatus}
                 onSetViewing={setInquiryViewing}
-                onAddThreadMessage={addInquiryThreadMessage}
+              onAddThreadMessage={addInquiryThreadMessage}
               onOpenProfile={() => setTab('profile')}
               notifications={notifications}
               onOpenNotification={openNotification}
-                onShowToast={showToast}
-                initialEntryMode={inquiriesEntryMode}
-                initialFilter={inquiriesStartFilter}
-                initialCalendarDate={inquiriesStartDate}
-                initialChatInquiryId={inquiriesStartChatId}
-                resetToken={inquiriesResetToken}
-                onInitialChatInquiryIdApplied={() => setInquiriesStartChatId(null)}
+              onShowToast={showToast}
+              initialEntryMode={inquiriesEntryMode}
+              initialFilter={inquiriesStartFilter}
+              initialCalendarDate={inquiriesStartDate}
+              initialChatInquiryId={inquiriesStartChatId}
+              resetToken={inquiriesResetToken}
+              onInitialChatInquiryIdApplied={() => setInquiriesStartChatId(null)}
             />
           )}
           {tab === 'payments' && (

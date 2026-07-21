@@ -10,6 +10,7 @@ interface Props {
   onOpenProfile: () => void;
   notifications: HeaderNotification[];
   onOpenNotification: (notification: HeaderNotification) => void;
+  onAdd?: () => void;
 }
 
 function sortPaymentsForDisplay(a: Payment, b: Payment) {
@@ -53,7 +54,7 @@ export default function TenantsScreen({ units, payments, onOpenProfile, notifica
 
   return (
     <>
-      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
+      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} onAdd={onAdd} />
 
       <div className="scroll-area">
         <div className="section-header">
