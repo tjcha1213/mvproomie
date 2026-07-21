@@ -49,17 +49,21 @@ export default function ListingMap({ listings, selectedId, onSelect }: Props) {
       .addAttribution('© OpenStreetMap · © CARTO')
       .addTo(map);
 
-    listings.forEach((l) => {
-      const marker = L.marker([l.lat, l.lng], {
-        icon: pinIcon(l, l.id === selectedId),
-      })
-        .addTo(map)
-        .on('click', () => onSelectRef.current(l.id));
-      markersRef.current[l.id] = marker;
-    });
+    if (listings.length > 0) {
+      listings.forEach((l) => {
+        const marker = L.marker([l.lat, l.lng], {
+          icon: pinIcon(l, l.id === selectedId),
+        })
+          .addTo(map)
+          .on('click', () => onSelectRef.current(l.id));
+        markersRef.current[l.id] = marker;
+      });
 
-    const bounds = L.latLngBounds(listings.map((l) => [l.lat, l.lng] as [number, number]));
-    map.fitBounds(bounds, { padding: [48, 48] });
+      const bounds = L.latLngBounds(listings.map((l) => [l.lat, l.lng] as [number, number]));
+      map.fitBounds(bounds, { padding: [48, 48] });
+    } else {
+      map.setView([14.5995, 120.9842], 12);
+    }
 
     // The container is laid out via flexbox; make sure Leaflet measures it.
     requestAnimationFrame(() => map.invalidateSize());
@@ -77,6 +81,7 @@ export default function ListingMap({ listings, selectedId, onSelect }: Props) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+    if (listings.length === 0) return;
     listings.forEach((l) => {
       const marker = markersRef.current[l.id];
       if (!marker) return;

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import type { ListingType } from '../data/listings';
 import type { Filters } from '../filters';
 import { PRICE_MIN, PRICE_MAX, PRICE_STEP, defaultFilters } from '../filters';
+import './FilterSheet.css';
 
 interface Props {
   open: boolean;

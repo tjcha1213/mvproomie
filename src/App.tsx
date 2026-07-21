@@ -134,7 +134,6 @@ function App() {
               listings={listings}
               onSelectListing={(l) => navigate('detail', l)}
               onToggleSave={toggleSave}
-              onOpenSearch={() => handleTabChange('search')}
             />
           )}
           {currentScreen === 'search' && (
