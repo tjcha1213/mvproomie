@@ -354,6 +354,11 @@ body {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(242, 247, 255, 0.96));
 }
 
+.host-mvp2-layout,
+.host-mvp3-layout {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(243, 246, 255, 0.95));
+}
+
 .eyebrow {
   margin: 0 0 12px;
   color: var(--accent);
@@ -494,6 +499,31 @@ h2 {
 
 .section-copy-wrap .demo-button {
   margin-top: 14px;
+}
+
+.shared-component-note {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(63, 81, 229, 0.16);
+  border-radius: 18px;
+  background: rgba(236, 241, 255, 0.82);
+}
+
+.shared-component-note span {
+  display: inline-block;
+  margin-bottom: 6px;
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.shared-component-note p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.55;
 }
 
 .layout-preview-pair {
@@ -736,6 +766,16 @@ h2 {
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+}
+
+.preview-empty-split {
+  padding: 20px;
+  text-align: center;
+  line-height: 1.55;
+}
+
+.preview-empty-split span {
+  max-width: 20ch;
 }
 
 .app-topbar,
