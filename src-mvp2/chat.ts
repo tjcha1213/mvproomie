@@ -1,5 +1,5 @@
 import type { Listing } from './data/listings';
-import { avatarAt } from '../src/avatarPool';
+import { listingAvatarFor } from '../src/avatarPool';
 
 export interface ChatMessage {
   id: string;
@@ -50,7 +50,6 @@ const STARTER_EXCHANGES = [
   },
 ];
 
-const PARTICIPANT_PHOTOS = Array.from({ length: 5 }, (_, index) => avatarAt(index + 10));
 const PARTICIPANT_TENANT_REVIEWS = [
   'Clear communication and quick follow-up on availability.',
   'Listing details matched the in-app chat and photos.',
@@ -140,7 +139,7 @@ export function createInitialConversations(listings: Listing[]): Conversation[] 
       id: conversationId,
       listingId: listing.id,
       participantName: listing.hostName,
-      participantPhoto: PARTICIPANT_PHOTOS[index % PARTICIPANT_PHOTOS.length],
+      participantPhoto: listingAvatarFor(listing.id),
       participantRole: 'Host',
       memberSince: String(2018 + ((listing.id + index) % 5)),
       verified: listing.verified,
@@ -164,7 +163,7 @@ function createConversation(listing: Listing, timestamp: number): Conversation {
     id,
     listingId: listing.id,
     participantName: listing.hostName,
-    participantPhoto: PARTICIPANT_PHOTOS[(listing.id - 1) % PARTICIPANT_PHOTOS.length],
+    participantPhoto: listingAvatarFor(listing.id),
     participantRole: 'Host',
     memberSince: String(2018 + (listing.id % 5)),
     verified: listing.verified,
@@ -197,7 +196,17 @@ export function openConversation(
   if (existing) {
     return {
       conversationId: id,
-      conversations: orderConversations(conversations),
+      conversations: orderConversations(
+        conversations.map((conversation) =>
+          conversation.id === id
+            ? {
+                ...conversation,
+                participantName: listing.hostName,
+                participantPhoto: listingAvatarFor(listing.id),
+              }
+            : conversation
+        ),
+      ),
     };
   }
 
