@@ -7029,21 +7029,25 @@ img {
     margin: 0;
   }
 
+  .listing-modal-overlay.inquiry-chat-overlay .inquiry-chat-modal.is-keyboard-open {
+    height: calc(100dvh - var(--inquiry-chat-keyboard-inset, 0px) - 36px);
+  }
+
   .inquiry-chat-modal.is-keyboard-open .inquiry-chat-footer {
-    padding-top: 8px;
-    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    padding-top: 4px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
   }
 
   .inquiry-chat-modal.is-keyboard-open .inbox-reply-banner {
-    margin-bottom: 6px;
+    margin-bottom: 2px;
   }
 
   .inquiry-chat-modal.is-keyboard-open .inquiry-chat-composer {
-    gap: 6px;
+    gap: 2px;
   }
 
   .inquiry-chat-modal.is-keyboard-open .inquiry-chat-input {
-    min-height: 60px;
+    min-height: 42px;
   }
 
   .inquiry-chat-modal.is-keyboard-open .inquiry-chat-composer-actions {
