@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import AppLogo from '../components/AppLogo';
-import type { Conversation } from '../chat';
+import type { Conversation, ViewingRequestNote } from '../chat';
 import ProfilePeekModal from '../../src/components/ProfilePeekModal';
 
 interface Props {
@@ -63,12 +63,6 @@ type MessageReplyTarget = {
 };
 
 type ViewingRequestStatus = 'pending' | 'accepted' | 'declined';
-type ViewingRequestNote = {
-  text: string;
-  time: string;
-  status: ViewingRequestStatus;
-};
-
 const ACTION_WIDTH = 92;
 const REVEAL_THRESHOLD = 10;
 const COMMIT_THRESHOLD = 48;
@@ -225,6 +219,9 @@ export default function InboxScreen({
     () => conversations.find((conversation) => conversation.id === activeConversationId) ?? null,
     [activeConversationId, conversations]
   );
+  const activeViewingRequestNote = activeConversation
+    ? requestViewingNoticeByConversation[activeConversation.id] ?? activeConversation.viewingRequest ?? null
+    : null;
   const requestViewingText = useCallback(() => {
     if (!activeConversation) return '';
     return `Hi ${activeConversation.participantName.split(' ')[0]}, I’d like to request a viewing for ${activeConversation.listingTitle}. Is there an available slot?`;
@@ -249,6 +246,29 @@ export default function InboxScreen({
   useEffect(() => {
     activeConversationIdRef.current = activeConversationId;
   }, [activeConversationId]);
+
+  useEffect(() => {
+    setRequestViewingNoticeByConversation((prev) => {
+      let changed = false;
+      const next = { ...prev };
+
+      for (const conversation of conversations) {
+        if (!conversation.viewingRequest) continue;
+        const existing = next[conversation.id];
+        if (
+          !existing ||
+          existing.text !== conversation.viewingRequest.text ||
+          existing.time !== conversation.viewingRequest.time ||
+          existing.status !== conversation.viewingRequest.status
+        ) {
+          next[conversation.id] = conversation.viewingRequest;
+          changed = true;
+        }
+      }
+
+      return changed ? next : prev;
+    });
+  }, [conversations]);
 
   const setSwipeState = useCallback((next: SwipeSession | null) => {
     swipeRef.current = next;
@@ -997,14 +1017,14 @@ export default function InboxScreen({
                     </div>
                     );
                   })}
-                  {activeConversation && requestViewingNoticeByConversation[activeConversation.id] && (
+                  {activeConversation && activeViewingRequestNote && (
                     <div className="inbox-request-thread-note">
                       <div className="inbox-request-thread-note-label">Viewing Request Sent</div>
                       <div className="inbox-request-thread-note-text">
-                        {requestViewingNoticeByConversation[activeConversation.id].text}
+                        {activeViewingRequestNote.text}
                       </div>
                       <div className="inbox-request-thread-note-time">
-                        {requestViewingNoticeByConversation[activeConversation.id].time}
+                        {activeViewingRequestNote.time}
                       </div>
                     </div>
                   )}

@@ -12,6 +12,12 @@ export interface ChatMessage {
   };
 }
 
+export interface ViewingRequestNote {
+  text: string;
+  time: string;
+  status: 'pending' | 'accepted' | 'declined';
+}
+
 export interface Conversation {
   id: string;
   listingId: number;
@@ -29,6 +35,7 @@ export interface Conversation {
   pinned: boolean;
   unreadCount: number;
   messages: ChatMessage[];
+  viewingRequest?: ViewingRequestNote;
 }
 
 const STARTER_EXCHANGES = [
@@ -243,7 +250,20 @@ export function openConversationWithPrompt(
           message(`${id}-self-${now}`, 'self', outgoingText, now),
           message(`${id}-other-${now}`, 'other', replyText, now + 1000),
         ];
-        return { ...conversation, unreadCount: 0, messages: nextMessages };
+        return {
+          ...conversation,
+          unreadCount: 0,
+          messages: nextMessages,
+          ...(mode === 'inquiry'
+            ? {
+                viewingRequest: {
+                  text: 'Viewing request sent. Waiting for the host to respond.',
+                  time: 'Now',
+                  status: 'pending' as const,
+                },
+              }
+            : {}),
+        };
       })
     ),
   };
