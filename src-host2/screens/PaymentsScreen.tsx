@@ -102,7 +102,7 @@ function buildCollectionSummarySeries(monthlySeries: ReturnType<typeof buildMont
   });
 }
 
-export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, onOpenProfile, notifications, onOpenNotification, onShowToast }: Props) {
+export default function PaymentsScreen({ payments, units, onMarkPaid, onRemind, onOpenProfile, notifications, onOpenNotification, onShowToast, onAdd }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
   const [profilePeekPaymentId, setProfilePeekPaymentId] = useState<number | null>(null);

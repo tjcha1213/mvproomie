@@ -261,6 +261,7 @@ export default function InquiriesScreen({
   initialChatInquiryId,
   onInitialChatInquiryIdApplied,
   resetToken,
+  onAdd,
 }: Props) {
   const routeSearch = typeof window !== 'undefined' ? new URL(window.location.href).searchParams : null;
   const routeEntryMode = routeSearch?.get('inquiriesMode') === 'calendar' ? 'calendar' : 'normal';

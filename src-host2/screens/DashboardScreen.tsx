@@ -139,6 +139,7 @@ export default function DashboardScreen({
   notifications,
   onOpenNotification,
   onShowToast,
+  onAdd,
 }: Props) {
   const [viewMode, setViewMode] = useState<'weekly' | 'calendar' | 'map'>('weekly');
   const [weekStartDate, setWeekStartDate] = useState(() => new Date(2026, 6, 6));

@@ -28,7 +28,7 @@ function statusLabel(status: Payment['status']) {
   return status === 'Overdue' ? 'Overdue' : status === 'Due' ? 'Due soon' : 'Paid';
 }
 
-export default function TenantsScreen({ units, payments, onOpenProfile, notifications, onOpenNotification }: Props) {
+export default function TenantsScreen({ units, payments, onOpenProfile, notifications, onOpenNotification, onAdd }: Props) {
   const occupiedUnits = units.filter((unit) => unit.status === 'Occupied');
   const [profilePeekPaymentId, setProfilePeekPaymentId] = useState<number | null>(null);
 
