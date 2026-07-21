@@ -520,6 +520,10 @@ img {
   padding: 16px 16px 10px;
 }
 
+.listings-page-header {
+  gap: 12px;
+}
+
 .section-title {
   font-size: 16px;
   font-weight: 700;
@@ -531,6 +535,30 @@ img {
   font-weight: 600;
   color: var(--primary);
   cursor: pointer;
+}
+
+.listings-page-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--border-light));
+  border-radius: 999px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary-light) 20%, white), rgba(255, 255, 255, 0.98));
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--primary) 10%, transparent);
+  flex-shrink: 0;
+}
+
+.listings-page-add-btn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }
 
 /* ─── Listing Grid ─── */

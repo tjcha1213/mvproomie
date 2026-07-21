@@ -283,11 +283,20 @@ export default function ListingsScreen({
 
   return (
     <>
-      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} onAdd={onAdd} />
+      <Header onOpenProfile={onOpenProfile} notifications={notifications} onOpenNotification={onOpenNotification} />
 
       <div className="scroll-area">
-        <div className="section-header">
+        <div className="section-header listings-page-header">
           <span className="section-title">{activeListingTitle} ({filtered.length})</span>
+          {onAdd && (
+            <button className="listings-page-add-btn" onClick={onAdd} type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>+ New listing</span>
+            </button>
+          )}
         </div>
 
         <div className="search-filter-chips">
