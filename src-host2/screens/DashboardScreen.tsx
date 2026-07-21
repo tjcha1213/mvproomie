@@ -490,60 +490,6 @@ export default function DashboardScreen({
           </div>
         </div>
 
-        <div className="ll-card ll-tenant-card">
-          <div className="ll-card-head">
-            <div className="ll-card-head-copy">
-              <span className="ll-card-title">Tenants</span>
-              <span className="ll-card-meta">
-                <span>{tenantGroups.reduce((sum, group) => sum + group.payments.length, 0)} active tenants</span>
-                <span className="ll-meta-dot" aria-hidden="true" />
-                <span>{tenantGroups.filter((group) => group.payments.length > 1).length} shared listings</span>
-              </span>
-            </div>
-          </div>
-
-          <div className="tenant-overview-list">
-            {tenantGroups.map(({ unit, payments: unitPayments, activeCount, overdueCount, dueCount }) => (
-              <div key={unit.id} className="tenant-overview-group">
-                <div className="tenant-overview-group-head">
-                  <span className="tenant-overview-group-title">{unit.title}</span>
-                  <span className="roomie-score-chip is-cool">Occupied</span>
-                </div>
-                {unitPayments.map((payment) => (
-                  <div key={payment.id} className="tenant-overview-item">
-                    <button
-                      type="button"
-                      className="tenant-overview-avatar tenant-overview-avatar-button"
-                      onClick={() => setProfilePeekPaymentId(payment.id)}
-                      aria-label={`View ${payment.tenant} profile`}
-                    >
-                      <img src={payment.avatar ?? ''} alt={payment.tenant} />
-                    </button>
-                    <div className="tenant-overview-copy">
-                      <div className="tenant-overview-name-row">
-                        <span className="tenant-overview-name">{payment.tenant}</span>
-                        <span className={`tenant-overview-status is-${payment.status.toLowerCase()}`}>{statusLabel(payment.status)}</span>
-                      </div>
-                      <div className="tenant-overview-meta">
-                        <span>{payment.tenantId}</span>
-                        <span className="ll-meta-dot" aria-hidden="true" />
-                        <span>{payment.method}</span>
-                        <span className="ll-meta-dot" aria-hidden="true" />
-                        <span>{payment.dueLabel}</span>
-                      </div>
-                      <div className="tenant-overview-detail">{payment.notes}</div>
-                    </div>
-                  </div>
-                ))}
-                <div className="tenant-overview-footer">
-                  <span>{dueCount} due soon</span>
-                  <span>{unitPayments.reduce((sum, payment) => sum + payment.amount, 0).toLocaleString('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 })} monthly at risk</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         <div style={{ height: 16 }} />
       </div>
 
