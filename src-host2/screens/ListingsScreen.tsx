@@ -67,6 +67,7 @@ export default function ListingsScreen({
   onShowToast,
   initialSelectedUnitId,
   onInitialSelectedUnitApplied,
+  onAdd,
 }: Props) {
   const [filter, setFilter] = useState<Filter>('All');
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
