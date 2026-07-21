@@ -38,6 +38,16 @@ export default function HostNav({ activeTab, onTabChange, inquiryBadge }: Props)
         Listings
       </button>
 
+      <button className={`bottom-nav-item ${activeTab === 'tenants' ? 'active' : ''}`} onClick={() => onTabChange('tenants')}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 11a4 4 0 1 0-0.001-8.001A4 4 0 0 0 8 11Z" />
+          <path d="M16.5 12.5a3.5 3.5 0 1 0-.001-7.001A3.5 3.5 0 0 0 16.5 12.5Z" />
+          <path d="M3.5 20v-1.1a5.9 5.9 0 0 1 9.2-4.9" />
+          <path d="M12.5 20v-1a4.8 4.8 0 0 1 7-4.2" />
+        </svg>
+        Tenants
+      </button>
+
       <button className={`bottom-nav-item ${activeTab === 'inquiries' ? 'active' : ''}`} onClick={() => onTabChange('inquiries')} style={{ position: 'relative' }}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
           <path
