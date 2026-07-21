@@ -595,12 +595,44 @@ h2 {
 }
 
 .host-mvp1-preview .layout-preview-phone .phone-frame {
+  position: relative;
   max-width: none;
   width: 100%;
-  padding: 0;
-  border-radius: 20px;
+  padding: 6px 6px 36px;
+  border-radius: 30px;
+  background: linear-gradient(180deg, #0b0f16 0%, #03060a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
   box-shadow:
-    0 8px 18px rgba(12, 17, 26, 0.12);
+    0 18px 34px rgba(12, 17, 26, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.host-mvp1-preview .layout-preview-phone .phone-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-style: solid;
+  border-color: #05070b;
+  border-width: 5px 5px 30px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.host-mvp1-preview .layout-preview-phone .phone-frame::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  height: 18px;
+  border-radius: 0 0 20px 20px;
+  background: linear-gradient(180deg, #10161f 0%, #05070b 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  z-index: 3;
+  pointer-events: none;
 }
 
 .layout-preview-phone .phone-screen {
@@ -608,11 +640,14 @@ h2 {
 }
 
 .host-mvp1-preview .layout-preview-phone .phone-screen {
-  min-height: 920px;
-  padding: 0;
-  border-radius: 20px;
+  min-height: 0;
+  aspect-ratio: 1260 / 2355;
+  padding: 8px 8px 44px;
+  border-radius: 24px;
   border: 0;
-  background: transparent;
+  background: #05070b;
+  position: relative;
+  z-index: 1;
 }
 
 .layout-preview-phone .static-layout-empty {
@@ -681,7 +716,7 @@ h2 {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  object-position: top center;
+  object-position: center center;
   background: #ffffff;
   border-radius: 20px;
 }
