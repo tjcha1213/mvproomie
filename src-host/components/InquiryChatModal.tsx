@@ -390,7 +390,13 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
           style={{ '--inquiry-chat-keyboard-inset': `${keyboardInset}px` } as CSSProperties}
           onClick={onClose}
         >
-          <div className="listing-modal inquiry-chat-modal" role="dialog" aria-modal="true" aria-labelledby="inquiry-chat-title" onClick={(event) => event.stopPropagation()}>
+          <div
+            className={`listing-modal inquiry-chat-modal ${keyboardInset > 0 ? 'is-keyboard-open' : ''}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="inquiry-chat-title"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="inquiry-chat-shell">
               <div className="inquiry-chat-header">
                 <button
