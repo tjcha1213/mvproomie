@@ -118,6 +118,7 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
   const [scheduleMonth, setScheduleMonth] = useState(() => new Date());
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('10:00');
+  const [keyboardInset, setKeyboardInset] = useState(0);
   const [messageMeta, setMessageMeta] = useState<Record<number, ThreadMessageMeta>>({});
   const [messageReaction, setMessageReaction] = useState<Record<number, { emoji: string; count: number }>>({});
   const [messageContextMenu, setMessageContextMenu] = useState<MessageContextMenuState | null>(null);
@@ -205,6 +206,35 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
       }
     }
   }, [inquiry, open]);
+
+  useEffect(() => {
+    if (!open) {
+      setKeyboardInset(0);
+      return;
+    }
+
+    const updateKeyboardInset = () => {
+      const viewport = window.visualViewport;
+      if (!viewport) {
+        setKeyboardInset(0);
+        return;
+      }
+
+      const inset = Math.max(0, Math.round(window.innerHeight - viewport.height - viewport.offsetTop));
+      setKeyboardInset(inset > 24 ? inset : 0);
+    };
+
+    updateKeyboardInset();
+    window.addEventListener('resize', updateKeyboardInset);
+    window.visualViewport?.addEventListener('resize', updateKeyboardInset);
+    window.visualViewport?.addEventListener('scroll', updateKeyboardInset);
+
+    return () => {
+      window.removeEventListener('resize', updateKeyboardInset);
+      window.visualViewport?.removeEventListener('resize', updateKeyboardInset);
+      window.visualViewport?.removeEventListener('scroll', updateKeyboardInset);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open || !inquiry) return;
@@ -355,7 +385,11 @@ export default function InquiryChatModal({ open, inquiry, units, onClose, onSetS
 
   return createPortal(
     <>
-        <div className="listing-modal-overlay inquiry-chat-overlay" onClick={onClose}>
+        <div
+          className="listing-modal-overlay inquiry-chat-overlay"
+          style={{ '--inquiry-chat-keyboard-inset': `${keyboardInset}px` } as CSSProperties}
+          onClick={onClose}
+        >
           <div className="listing-modal inquiry-chat-modal" role="dialog" aria-modal="true" aria-labelledby="inquiry-chat-title" onClick={(event) => event.stopPropagation()}>
             <div className="inquiry-chat-shell">
               <div className="inquiry-chat-header">

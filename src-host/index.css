@@ -7025,7 +7025,7 @@ img {
 
   .listing-modal-overlay.inquiry-chat-overlay .inquiry-chat-modal {
     width: 100dvw;
-    height: 100dvh;
+    height: calc(100dvh - var(--inquiry-chat-keyboard-inset, 0px));
     margin: 0;
   }
 
