@@ -13,20 +13,43 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="page">
-      <section class="hero">
-        <a href="/bahaytrust/">
-          <img
-            class="survey-logo"
-            src="assets/logo-draft.png"
-            alt="Roomie logo"
-          />
-        </a>
-        <h1>User Test Surveys</h1>
-        <p class="copy intro-copy">Placeholder for tenant survey overview.</p>
-      </section>
+    <main class="page survey-app-shell">
+      <header class="survey-app-header">
+        <div class="survey-app-brand">
+          <a href="/bahaytrust/">
+            <img
+              class="survey-logo"
+              src="assets/logo-draft.png"
+              alt="Roomie logo"
+            />
+          </a>
+          <div class="survey-app-copy">
+            <h1>User Test Surveys</h1>
+            <p class="copy intro-copy">A built-in in-app survey feature for tenant research sessions.</p>
+          </div>
+        </div>
+        <span class="survey-app-chip">In-app feature</span>
+      </header>
+      <div class="survey-feature-shell">
+        <div class="survey-status-bar" aria-hidden="true">
+          <span class="survey-status-time">9:41</span>
+          <div class="survey-status-icons">
+            <span class="survey-status-dot"></span>
+            <span class="survey-status-signal"></span>
+            <span class="survey-status-battery"></span>
+          </div>
+        </div>
+        <div class="survey-scroll-area">
+          <nav class="subhead-tabs survey-section-tabs" aria-label="Survey sections">
+        <a class="subhead-tab active" href="#metadata">Session</a>
+        <a class="subhead-tab" href="#recommendation">Rating</a>
+        <a class="subhead-tab" href="#usability">Usability</a>
+        <a class="subhead-tab" href="#branding">Brand</a>
+        <a class="subhead-tab" href="#responses">Save</a>
+      </nav>
 
-      <section class="survey-section">
+      <div class="survey-feature-body">
+        <section class="survey-section" id="metadata">
         <div class="survey-header">
           <p class="eyebrow">Survey Setup</p>
           <h2>Session metadata</h2>
@@ -82,7 +105,7 @@
         </form>
       </section>
 
-      <section class="survey-section">
+        <section class="survey-section" id="recommendation">
         <div class="survey-header">
           <p class="eyebrow">Recommendation</p>
           <h2>Likelihood to recommend</h2>
@@ -111,7 +134,7 @@
         </form>
       </section>
 
-      <section class="survey-section">
+        <section class="survey-section" id="usability">
         <div class="survey-header">
           <p class="eyebrow">System Usability Scale</p>
           <h2>Ten-item usability assessment</h2>
@@ -221,7 +244,7 @@
         </form>
       </section>
 
-      <section class="survey-section">
+        <section class="survey-section" id="branding">
         <div class="survey-header">
           <p class="eyebrow">Brand Preferences</p>
           <h2>Logo, color, naming, and domain feedback</h2>
@@ -329,7 +352,7 @@
         </form>
       </section>
 
-      <section class="survey-section">
+        <section class="survey-section" id="responses">
         <div class="survey-header">
           <p class="eyebrow">Response Logging</p>
           <h2>Save and export-ready storage</h2>
@@ -345,6 +368,8 @@
           Responses are stored locally in this browser and can be downloaded later as CSV or JSON.
         </p>
       </section>
+        </div>
+      </div>
     </main>
     <script type="module" src="./survey-storage.js"></script>
   </body>
