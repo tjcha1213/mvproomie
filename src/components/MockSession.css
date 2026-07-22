@@ -66,16 +66,7 @@
 }
 
 .mock-auth-customize-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.mock-auth-customize-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text);
+  display: block;
 }
 
 .mock-auth-customize-btn {
@@ -83,12 +74,27 @@
   border-radius: 14px;
   padding-inline: 14px;
   white-space: nowrap;
+  width: 100%;
+  justify-content: center;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--primary) 24%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 28%, #ffffff);
 }
 
-.mock-auth-preview-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.mock-auth-customize-btn:hover {
+  filter: brightness(1.02);
+}
+
+.mock-auth-customize-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.mock-auth-preview-stack {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+  padding-top: 2px;
 }
 
 .mock-auth-preview-avatar {
@@ -110,6 +116,7 @@
 .mock-auth-preview-copy {
   display: grid;
   gap: 2px;
+  justify-items: center;
 }
 
 .mock-auth-preview-copy strong {

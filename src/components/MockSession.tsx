@@ -322,13 +322,13 @@ export function MockLoginGate({
               <div className="mock-auth-customize-head">
                 <button
                   type="button"
-                  className="mock-auth-btn secondary mock-auth-customize-btn"
+                  className="mock-auth-btn primary mock-auth-customize-btn"
                   onClick={() => setCustomizeOpen(true)}
                 >
-                  Avatar and Color Theme
+                  Select Avatar & Color Theme
                 </button>
               </div>
-              <div className="mock-auth-preview-row">
+              <div className="mock-auth-preview-stack">
                 <div className="mock-auth-preview-avatar">
                   <img src={avatar} alt="Selected avatar preview" />
                 </div>
