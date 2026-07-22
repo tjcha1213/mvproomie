@@ -1,0 +1,54 @@
+.profile-section-page {
+  margin-top: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.profile-section-shell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 22px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+}
+
+.profile-section-back {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--primary) 8%, #ffffff);
+  color: var(--primary);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.profile-section-back svg {
+  width: 20px;
+  height: 20px;
+}
+
+.profile-section-copy {
+  min-width: 0;
+}
+
+.profile-section-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.profile-section-subtitle {
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.profile-section-body {
+  display: grid;
+  gap: 14px;
+}

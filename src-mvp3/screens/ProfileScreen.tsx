@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import AppLogo from '../components/AppLogo';
 import ModeSwitchModal from '../../src/components/ModeSwitchModal';
+import ProfileSectionPage from '../../src/components/ProfileSectionPage';
 import ServicePreferencesCard from '../../src/components/ServicePreferencesCard';
 import { JUAN_AVATAR } from '../../src/avatarPool';
 import { PROFILE_MENU_ICONS } from '../../src/components/ProfileMenuIcons';
@@ -9,6 +10,7 @@ import { formatMockRole, useMockSession } from '../../src/components/MockSession
 const MENU_ITEMS = [
   { label: 'Account Settings', icon: PROFILE_MENU_ICONS.settings },
   { label: 'Personal Details', icon: PROFILE_MENU_ICONS.personal },
+  { label: 'Other Services', icon: PROFILE_MENU_ICONS.services },
   { label: 'Login & Security', icon: PROFILE_MENU_ICONS.security },
   { label: 'Verification', icon: PROFILE_MENU_ICONS.verification },
   { label: 'Payment Methods', icon: PROFILE_MENU_ICONS.payment },
@@ -22,6 +24,7 @@ interface Props {
 
 export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
   const [chooser, setChooser] = useState<'tenant' | 'host' | null>(null);
+  const [page, setPage] = useState<'main' | 'personal' | 'services'>('main');
   const { profile } = useMockSession();
   const displayProfile = profile ?? {
     name: 'Juan Dela Cruz',
@@ -68,69 +71,107 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
           <div className="profile-email">{displayProfile.contact}</div>
         </div>
 
-        <div className="profile-details-card">
-          <div className="profile-details-title">Personal Details</div>
-          <div className="profile-details-grid">
-            <div className="profile-details-item">
-              <span className="profile-details-label">Role</span>
-              <span className="profile-details-value">{formatMockRole(displayProfile.role)}</span>
-            </div>
-            <div className="profile-details-item">
-              <span className="profile-details-label">Bio</span>
-              <span className="profile-details-value">{displayProfile.bio}</span>
-            </div>
-          </div>
-        </div>
-
-        <ServicePreferencesCard />
-
-        <div className="profile-mode-card">
-          <div className="profile-mode-copy">
-            <div className="profile-mode-title">Account mode</div>
-          </div>
-          <div className="profile-mode-toggle" role="tablist" aria-label="Account mode">
-            <button type="button" className="profile-mode-btn active" onClick={() => openChooser('Tenant Mode')}>
-              Tenant Mode
-            </button>
-            <button type="button" className="profile-mode-btn" onClick={() => openChooser('Host Mode')}>
-              Host Mode
-            </button>
-          </div>
-        </div>
-
-        <div className="section-header">
-          <span className="section-title">Account Settings</span>
-        </div>
-
-        {/* Menu */}
-        <div className="profile-menu" style={{ marginTop: 12 }}>
-          {MENU_ITEMS.map((item, i) => (
-            <button key={i} type="button" className="profile-menu-item" onClick={() => onShowToast(`${item.label} — coming soon`)}>
-              <div className="profile-menu-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                  {item.icon}
-                </svg>
+        {page === 'main' ? (
+          <>
+            <div className="profile-mode-card">
+              <div className="profile-mode-copy">
+                <div className="profile-mode-title">Account mode</div>
               </div>
-              <span className="profile-menu-label">{item.label}</span>
-              <span className="profile-menu-arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="9 18 15 12 9 6"/>
-                </svg>
-              </span>
-            </button>
-          ))}
-          <button type="button" className="profile-menu-item" onClick={onOpenTheme}>
-            <div className="profile-menu-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                {PROFILE_MENU_ICONS.themeBlock}
-              </svg>
+              <div className="profile-mode-toggle" role="tablist" aria-label="Account mode">
+                <button type="button" className="profile-mode-btn active" onClick={() => openChooser('Tenant Mode')}>
+                  Tenant Mode
+                </button>
+                <button type="button" className="profile-mode-btn" onClick={() => openChooser('Host Mode')}>
+                  Host Mode
+                </button>
+              </div>
             </div>
-            <span className="profile-menu-label">Theme color</span>
-            <span className="profile-menu-arrow">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{PROFILE_MENU_ICONS.chevron}</svg>
-            </span>
-          </button>
-        </div>
+
+            <div className="section-header">
+              <span className="section-title">Account Settings</span>
+            </div>
+
+            {/* Menu */}
+            <div className="profile-menu" style={{ marginTop: 12 }}>
+              {MENU_ITEMS.map((item, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className="profile-menu-item"
+                  onClick={() => {
+                    if (item.label === 'Personal Details') {
+                      setPage('personal');
+                      return;
+                    }
+                    if (item.label === 'Other Services') {
+                      setPage('services');
+                      return;
+                    }
+                    onShowToast(`${item.label} — coming soon`);
+                  }}
+                >
+                  <div className="profile-menu-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                      {item.icon}
+                    </svg>
+                  </div>
+                  <span className="profile-menu-label">{item.label}</span>
+                  <span className="profile-menu-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </span>
+                </button>
+              ))}
+              <button type="button" className="profile-menu-item" onClick={onOpenTheme}>
+                <div className="profile-menu-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                    {PROFILE_MENU_ICONS.themeBlock}
+                  </svg>
+                </div>
+                <span className="profile-menu-label">Theme color</span>
+                <span className="profile-menu-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{PROFILE_MENU_ICONS.chevron}</svg>
+                </span>
+              </button>
+            </div>
+          </>
+        ) : page === 'personal' ? (
+          <ProfileSectionPage
+            title="Personal Details"
+            subtitle="Your account information and profile summary."
+            onBack={() => setPage('main')}
+          >
+            <div className="profile-details-card">
+              <div className="profile-details-grid">
+                <div className="profile-details-item">
+                  <span className="profile-details-label">Name</span>
+                  <span className="profile-details-value">{displayProfile.name}</span>
+                </div>
+                <div className="profile-details-item">
+                  <span className="profile-details-label">Contact</span>
+                  <span className="profile-details-value">{displayProfile.contact}</span>
+                </div>
+                <div className="profile-details-item">
+                  <span className="profile-details-label">Role</span>
+                  <span className="profile-details-value">{formatMockRole(displayProfile.role)}</span>
+                </div>
+                <div className="profile-details-item">
+                  <span className="profile-details-label">Bio</span>
+                  <span className="profile-details-value">{displayProfile.bio}</span>
+                </div>
+              </div>
+            </div>
+          </ProfileSectionPage>
+        ) : (
+          <ProfileSectionPage
+            title="Other Services"
+            subtitle="Rank the services you use most often."
+            onBack={() => setPage('main')}
+          >
+            <ServicePreferencesCard />
+          </ProfileSectionPage>
+        )}
 
         <div style={{ height: 32 }} />
       </div>

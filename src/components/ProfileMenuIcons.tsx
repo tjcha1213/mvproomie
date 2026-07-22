@@ -26,6 +26,14 @@ export const PROFILE_MENU_ICONS = {
       <line x1="2" y1="10" x2="22" y2="10" />
     </>
   ),
+  services: (
+    <>
+      <rect x="4" y="4" width="7" height="7" rx="1.8" />
+      <rect x="13" y="4" width="7" height="7" rx="1.8" />
+      <rect x="4" y="13" width="7" height="7" rx="1.8" />
+      <rect x="13" y="13" width="7" height="7" rx="1.8" />
+    </>
+  ),
   support: (
     <>
       <circle cx="12" cy="12" r="10" />
