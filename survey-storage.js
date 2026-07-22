@@ -5,7 +5,9 @@ const SESSION_METADATA_FIELDS = {
   contact: "contact",
   bio: "bio",
   participant_id: "participant_id",
+  participant_role_detail: "participant_role_detail",
   participant_role: "participant_role",
+  mvp_route: "mvp_route",
 };
 
 const SURVEY_FIELDS = [
@@ -15,8 +17,10 @@ const SURVEY_FIELDS = [
   "contact",
   "bio",
   "participant_id",
+  "participant_role_detail",
   "tested_route",
   "participant_role",
+  "mvp_route",
   "occupation",
   "session_notes",
   "recommendation",
@@ -72,11 +76,15 @@ function getSessionMetadata(profile) {
 
   const participantId = typeof profile.participantId === "string" ? profile.participantId.trim() : "";
   const role = typeof profile.role === "string" ? profile.role.trim() : "";
+  const roleDetail = typeof profile.participantRoleDetail === "string"
+    ? profile.participantRoleDetail.trim()
+    : role;
   const name = typeof profile.name === "string" ? profile.name.trim() : "";
   const contact = typeof profile.contact === "string" ? profile.contact.trim() : "";
   const bio = typeof profile.bio === "string" ? profile.bio.trim() : "";
+  const mvpRoute = typeof profile.mvpRoute === "string" ? profile.mvpRoute.trim() : "";
 
-  if (!participantId && !role && !name && !contact && !bio) {
+  if (!participantId && !role && !roleDetail && !mvpRoute && !name && !contact && !bio) {
     return null;
   }
 
@@ -85,7 +93,9 @@ function getSessionMetadata(profile) {
     [SESSION_METADATA_FIELDS.contact]: contact,
     [SESSION_METADATA_FIELDS.bio]: bio,
     [SESSION_METADATA_FIELDS.participant_id]: participantId,
+    [SESSION_METADATA_FIELDS.participant_role_detail]: roleDetail,
     [SESSION_METADATA_FIELDS.participant_role]: role,
+    [SESSION_METADATA_FIELDS.mvp_route]: mvpRoute,
   };
 }
 
@@ -219,7 +229,9 @@ function renderAdminTable(responses) {
         <td>${response.submitted_at || ""}</td>
         <td>${response.name || ""}</td>
         <td>${response.participant_id || ""}</td>
+        <td>${response.participant_role_detail || ""}</td>
         <td>${response.tested_route || ""}</td>
+        <td>${response.mvp_route || ""}</td>
         <td>${response.participant_role || ""}</td>
         <td>${response.recommendation || ""}</td>
       `;

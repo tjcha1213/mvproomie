@@ -14,6 +14,8 @@ export interface MockUserProfile {
   name: string;
   contact: string;
   role: MockRole;
+  participantRoleDetail: string;
+  mvpRoute: string;
   bio: string;
   servicePreferences: string[];
 }
@@ -32,6 +34,8 @@ const DEFAULT_PROFILE: MockUserProfile = {
   name: 'Juan Dela Cruz',
   contact: 'juan@roomie.ph',
   role: 'tenant',
+  participantRoleDetail: 'Tenant',
+  mvpRoute: 'Tenant MVP 1',
   bio: 'Mock user profile ready for demo testing.',
   servicePreferences: [],
 };
@@ -69,6 +73,8 @@ function readStoredProfile(): MockUserProfile | null {
         name: parsed.name,
         contact: parsed.contact,
         role: parsed.role,
+        participantRoleDetail: typeof parsed.participantRoleDetail === 'string' ? parsed.participantRoleDetail : formatMockRole(parsed.role),
+        mvpRoute: typeof parsed.mvpRoute === 'string' ? parsed.mvpRoute : 'Tenant MVP 1',
         bio: parsed.bio,
         servicePreferences,
       };
@@ -187,9 +193,11 @@ function RoleCard({
 export function MockLoginGate({
   children,
   variant,
+  mvpRoute,
 }: {
   children: ReactNode;
   variant: 'tenant' | 'host';
+  mvpRoute: string;
 }) {
   const { authenticated, profile } = useMockSession();
   const [mode, setMode] = useState<'landing' | 'signup'>('landing');
@@ -225,6 +233,8 @@ export function MockLoginGate({
       name: name.trim() || DEFAULT_PROFILE.name,
       contact: contact.trim() || DEFAULT_PROFILE.contact,
       role,
+      participantRoleDetail: formatMockRole(role),
+      mvpRoute,
       bio: bio.trim() || 'No bio provided yet.',
       servicePreferences: [],
     });

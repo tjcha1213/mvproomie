@@ -5,9 +5,9 @@ import App from './App.tsx';
 import { MockLoginGate } from '../src/components/MockSession';
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <MockLoginGate variant="host">
+    <StrictMode>
+    <MockLoginGate variant="host" mvpRoute="Host MVP 3">
       <App />
     </MockLoginGate>
-  </StrictMode>
+    </StrictMode>
 );

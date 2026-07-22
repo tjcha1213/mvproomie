@@ -33,6 +33,8 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
     name: 'Juan Dela Cruz',
     contact: 'juan@roomie.ph',
     role: 'tenant' as const,
+    participantRoleDetail: 'Tenant',
+    mvpRoute: 'Tenant MVP 3',
     bio: 'Mock user profile ready for demo testing.',
   };
 
@@ -166,6 +168,14 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
                 <div className="profile-details-item">
                   <span className="profile-details-label">Role</span>
                   <span className="profile-details-value">{formatMockRole(displayProfile.role)}</span>
+                </div>
+                <div className="profile-details-item">
+                  <span className="profile-details-label">Participant role detail</span>
+                  <span className="profile-details-value">{displayProfile.participantRoleDetail}</span>
+                </div>
+                <div className="profile-details-item">
+                  <span className="profile-details-label">MVP route</span>
+                  <span className="profile-details-value">{displayProfile.mvpRoute}</span>
                 </div>
                 <div className="profile-details-item">
                   <span className="profile-details-label">Bio</span>

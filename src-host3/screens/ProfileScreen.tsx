@@ -44,6 +44,8 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
     name: HOST_PROFILE.name,
     contact: 'juan@roomie.ph',
     role: 'host' as const,
+    participantRoleDetail: 'Host',
+    mvpRoute: 'Host MVP 3',
     bio: 'Mock host profile ready for demo testing.',
   };
 
@@ -203,6 +205,14 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
                 <div className="profile-details-item">
                   <span className="profile-details-label">Role</span>
                   <span className="profile-details-value">{formatMockRole(displayProfile.role)}</span>
+                </div>
+                <div className="profile-details-item">
+                  <span className="profile-details-label">Participant role detail</span>
+                  <span className="profile-details-value">{displayProfile.participantRoleDetail}</span>
+                </div>
+                <div className="profile-details-item">
+                  <span className="profile-details-label">MVP route</span>
+                  <span className="profile-details-value">{displayProfile.mvpRoute}</span>
                 </div>
                 <div className="profile-details-item">
                   <span className="profile-details-label">Bio</span>
