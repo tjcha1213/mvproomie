@@ -1,9 +1,9 @@
 .mock-auth-shell {
-  min-height: 100dvh;
+  height: 100dvh;
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 28px 24px 88px;
   background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 8%, #ffffff) 0%, #f8fafc 100%);
 }
@@ -16,6 +16,11 @@
   padding: 26px;
   border: 1px solid rgba(15, 23, 42, 0.06);
   margin: 0 auto 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .mock-auth-shell.signup-mode {
@@ -24,6 +29,7 @@
 
 .mock-auth-shell.signup-mode .mock-auth-card {
   margin-bottom: 40px;
+  max-height: calc(100dvh - 56px);
 }
 
 .mock-auth-brand {
@@ -314,8 +320,9 @@
 .mock-auth-avatar-option {
   border: 2px solid transparent;
   border-radius: 18px;
-  padding: 4px;
-  background: #fff;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
 }
 
 .mock-auth-avatar-option.selected {
@@ -327,7 +334,7 @@
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  border-radius: 14px;
+  border-radius: 18px;
   display: block;
 }
 
@@ -389,13 +396,14 @@
 
 @media (max-width: 480px) {
   .mock-auth-shell {
-    padding: 20px 16px 104px;
+    padding: 20px 16px 88px;
   }
 
   .mock-auth-card {
     padding: 22px;
     border-radius: 24px;
     width: min(100%, 460px);
+    max-height: calc(100dvh - 40px);
   }
 
   .mock-auth-logo {
@@ -404,19 +412,11 @@
 
   .mock-auth-shell.signup-mode .mock-auth-card {
     margin-bottom: 52px;
+    max-height: calc(100dvh - 40px);
   }
 
   .mock-auth-avatar-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
-  }
-
-  .mock-auth-avatar-option {
-    padding: 3px;
-    border-radius: 16px;
-  }
-
-  .mock-auth-avatar-option img {
-    border-radius: 13px;
   }
 }
