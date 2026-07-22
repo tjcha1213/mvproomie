@@ -407,6 +407,16 @@
   }
 
   .mock-auth-avatar-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .mock-auth-avatar-option {
+    padding: 3px;
+    border-radius: 16px;
+  }
+
+  .mock-auth-avatar-option img {
+    border-radius: 13px;
   }
 }
