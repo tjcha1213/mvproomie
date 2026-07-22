@@ -41,6 +41,14 @@ export const PROFILE_MENU_ICONS = {
       <circle cx="12" cy="17.4" r="0.7" />
     </>
   ),
+  smile: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none" />
+      <path d="M8.5 14.2c1.1 1.4 2.4 2.1 3.5 2.1s2.4-.7 3.5-2.1" />
+    </>
+  ),
   themeBlock: (
     <>
       <circle cx="12" cy="12" r="10" />

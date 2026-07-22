@@ -1,11 +1,16 @@
 import { useState, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 import Logo from './Logo';
+import { AVATARS, JUAN_AVATAR } from '../avatarPool';
+import { DEFAULT_PRIMARY, THEME_STORAGE_KEY, THEMES } from '../theme';
 import './MockSession.css';
 
 export type MockRole = 'tenant' | 'host' | 'broker';
 
 export interface MockUserProfile {
+  participantId: string;
+  avatar?: string;
+  themeColor?: string;
   name: string;
   contact: string;
   role: MockRole;
@@ -21,6 +26,9 @@ type SessionState = {
 const STORAGE_KEY = 'roomie.mock-user-profile';
 
 const DEFAULT_PROFILE: MockUserProfile = {
+  participantId: 'PT-DEMO-0001',
+  avatar: JUAN_AVATAR,
+  themeColor: DEFAULT_PRIMARY,
   name: 'Juan Dela Cruz',
   contact: 'juan@roomie.ph',
   role: 'tenant',
@@ -30,6 +38,13 @@ const DEFAULT_PROFILE: MockUserProfile = {
 
 function isRole(value: unknown): value is MockRole {
   return value === 'tenant' || value === 'host' || value === 'broker';
+}
+
+function generateParticipantId() {
+  const random = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID().slice(0, 8).toUpperCase()
+    : Math.random().toString(36).slice(2, 10).toUpperCase();
+  return `PT-${random}`;
 }
 
 function readStoredProfile(): MockUserProfile | null {
@@ -48,6 +63,9 @@ function readStoredProfile(): MockUserProfile | null {
         ? (parsed as { servicePreferences?: unknown[] }).servicePreferences!.filter((item): item is string => typeof item === 'string')
         : [];
       return {
+        participantId: typeof parsed.participantId === 'string' ? parsed.participantId : generateParticipantId(),
+        avatar: typeof parsed.avatar === 'string' ? parsed.avatar : JUAN_AVATAR,
+        themeColor: typeof parsed.themeColor === 'string' ? parsed.themeColor : DEFAULT_PRIMARY,
         name: parsed.name,
         contact: parsed.contact,
         role: parsed.role,
@@ -101,10 +119,11 @@ export function loginToDemo() {
   emit();
 }
 
-export function signUpToDemo(profile: MockUserProfile) {
+export function signUpToDemo(profile: Omit<MockUserProfile, 'participantId'>) {
   const normalizedProfile: MockUserProfile = {
     ...DEFAULT_PROFILE,
     ...profile,
+    participantId: generateParticipantId(),
     servicePreferences: profile.servicePreferences ?? [],
   };
   if (typeof window !== 'undefined') {
@@ -174,17 +193,28 @@ export function MockLoginGate({
 }) {
   const { authenticated, profile } = useMockSession();
   const [mode, setMode] = useState<'landing' | 'signup'>('landing');
-  const [account, setAccount] = useState(profile?.contact ?? '');
+  const [account, setAccount] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState(profile?.name ?? '');
   const [contact, setContact] = useState(profile?.contact ?? '');
   const [role, setRole] = useState<MockRole>(profile?.role ?? (variant === 'host' ? 'host' : 'tenant'));
   const [bio, setBio] = useState(profile?.bio ?? '');
+  const [avatar, setAvatar] = useState(profile?.avatar ?? JUAN_AVATAR);
+  const [themeColor, setThemeColor] = useState(profile?.themeColor ?? DEFAULT_PRIMARY);
+  const [customizeOpen, setCustomizeOpen] = useState(false);
 
   if (authenticated) return <>{children}</>;
 
+  const applyThemeColor = (nextTheme: string) => {
+    setThemeColor(nextTheme);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+      window.document.documentElement.style.setProperty('--primary', nextTheme);
+    }
+  };
+
   return (
-    <div className="mock-auth-shell">
+    <div className={`mock-auth-shell ${mode === 'signup' ? 'signup-mode' : ''}`}>
       <div className="mock-auth-card">
         <div className="mock-auth-brand">
           <div className="mock-auth-logo" aria-hidden="true">
@@ -234,6 +264,8 @@ export function MockLoginGate({
             onSubmit={(event) => {
               event.preventDefault();
               signUpToDemo({
+                avatar,
+                themeColor,
                 name: name.trim() || DEFAULT_PROFILE.name,
                 contact: contact.trim() || DEFAULT_PROFILE.contact,
                 role,
@@ -286,6 +318,27 @@ export function MockLoginGate({
                 rows={4}
               />
             </label>
+            <div className="mock-auth-customize">
+              <div className="mock-auth-customize-head">
+                <div className="mock-auth-customize-title">Avatar & theme</div>
+                <button
+                  type="button"
+                  className="mock-auth-btn secondary mock-auth-customize-btn"
+                  onClick={() => setCustomizeOpen(true)}
+                >
+                  Choose avatar & theme
+                </button>
+              </div>
+              <div className="mock-auth-preview-row">
+                <div className="mock-auth-preview-avatar">
+                  <img src={avatar} alt="Selected avatar preview" />
+                </div>
+                <div className="mock-auth-preview-copy">
+                  <strong>Selected theme</strong>
+                  <span>{THEMES.find((item) => item.color.toLowerCase() === themeColor.toLowerCase())?.name ?? 'Custom theme'}</span>
+                </div>
+              </div>
+            </div>
             <div className="mock-auth-actions">
               <button type="submit" className="mock-auth-btn primary">Create account</button>
               <button type="button" className="mock-auth-btn secondary" onClick={() => setMode('landing')}>
@@ -295,6 +348,67 @@ export function MockLoginGate({
           </form>
         )}
       </div>
+
+      {mode === 'signup' && customizeOpen && (
+        <div className="mock-auth-modal-overlay" role="presentation" onClick={() => setCustomizeOpen(false)}>
+          <div className="mock-auth-modal" role="dialog" aria-modal="true" aria-label="Customize avatar and theme" onClick={(event) => event.stopPropagation()}>
+            <div className="mock-auth-modal-header">
+              <div>
+                <div className="mock-auth-modal-title">Choose avatar & theme</div>
+                <div className="mock-auth-modal-subtitle">Pick a profile image and color accent for this account.</div>
+              </div>
+              <button type="button" className="mock-auth-modal-close" onClick={() => setCustomizeOpen(false)} aria-label="Close customization">
+                ×
+              </button>
+            </div>
+
+            <div className="mock-auth-modal-section">
+              <div className="mock-auth-modal-label">Avatar</div>
+              <div className="mock-auth-avatar-grid">
+                {AVATARS.map((item, index) => {
+                  const selected = item === avatar;
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      className={`mock-auth-avatar-option ${selected ? 'selected' : ''}`}
+                      onClick={() => setAvatar(item)}
+                    >
+                      <img src={item} alt={`Avatar option ${index + 1}`} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mock-auth-modal-section">
+              <div className="mock-auth-modal-label">Theme color</div>
+              <div className="mock-auth-theme-grid">
+                {THEMES.map((theme) => {
+                  const selected = theme.color.toLowerCase() === themeColor.toLowerCase();
+                  return (
+                    <button
+                      key={theme.color}
+                      type="button"
+                      className={`mock-auth-theme-option ${selected ? 'selected' : ''}`}
+                      onClick={() => applyThemeColor(theme.color)}
+                    >
+                      <span className="mock-auth-theme-swatch" style={{ background: theme.color }} />
+                      <span className="mock-auth-theme-name">{theme.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mock-auth-modal-actions">
+              <button type="button" className="mock-auth-btn primary" onClick={() => setCustomizeOpen(false)}>
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

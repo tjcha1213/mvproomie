@@ -26,6 +26,7 @@ const MENU_ITEMS = [
   { key: 'settings', label: 'Account Settings', icon: PROFILE_MENU_ICONS.settings },
   { key: 'personal', label: 'Personal Details', icon: PROFILE_MENU_ICONS.personal },
   { key: 'services', label: 'Other Services', icon: PROFILE_MENU_ICONS.services },
+  { key: 'survey', label: 'User Testing Survey', icon: PROFILE_MENU_ICONS.smile },
   { key: 'security', label: 'Login & Security', icon: PROFILE_MENU_ICONS.security },
   { key: 'verification', label: 'Verification', icon: PROFILE_MENU_ICONS.verification },
   { key: 'reviews', label: 'Reviews', icon: PROFILE_MENU_ICONS.reviews },
@@ -39,6 +40,8 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
   const [page, setPage] = useState<'main' | 'personal' | 'services'>('main');
   const { profile } = useMockSession();
   const displayProfile = profile ?? {
+    participantId: 'PT-DEMO-2002',
+    avatar: JUAN_AVATAR,
     name: HOST_PROFILE.name,
     contact: 'juan@roomie.ph',
     role: 'host' as const,
@@ -75,7 +78,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
         {/* Profile header */}
         <div className="profile-header">
           <div className="profile-avatar">
-            <img src={JUAN_AVATAR} alt={displayProfile.name} />
+            <img src={displayProfile.avatar ?? JUAN_AVATAR} alt={displayProfile.name} />
           </div>
           <div className="profile-name-row-ll">
             <span className="profile-name">{displayProfile.name}</span>
@@ -89,20 +92,6 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
             <span className={`roomie-score-chip is-${HOST_PROFILE.roomieTemperature.toLowerCase()}`}>Roomie {HOST_PROFILE.roomieScore}</span>
           </div>
           <div className="profile-email">{displayProfile.contact}</div>
-
-          <div className="profile-details-card">
-            <div className="profile-details-title">Personal Details</div>
-            <div className="profile-details-grid">
-              <div className="profile-details-item">
-                <span className="profile-details-label">Role</span>
-                <span className="profile-details-value">{formatMockRole(displayProfile.role)}</span>
-              </div>
-              <div className="profile-details-item">
-                <span className="profile-details-label">Bio</span>
-                <span className="profile-details-value">{displayProfile.bio}</span>
-              </div>
-            </div>
-          </div>
 
           <div className="profile-stats">
             <button type="button" className="profile-stat profile-stat-btn" onClick={onOpenListings}>
@@ -155,6 +144,10 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
                       setPage('services');
                       return;
                     }
+                    if (item.key === 'survey') {
+                      window.location.assign(`${import.meta.env.BASE_URL}host-surveys.html`);
+                      return;
+                    }
                     if (item.key === 'reviews') {
                       onOpenReviews();
                       return;
@@ -203,6 +196,10 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
                 <div className="profile-details-item">
                   <span className="profile-details-label">Contact</span>
                   <span className="profile-details-value">{displayProfile.contact}</span>
+                </div>
+                <div className="profile-details-item">
+                  <span className="profile-details-label">Participant ID</span>
+                  <span className="profile-details-value">{displayProfile.participantId}</span>
                 </div>
                 <div className="profile-details-item">
                   <span className="profile-details-label">Role</span>

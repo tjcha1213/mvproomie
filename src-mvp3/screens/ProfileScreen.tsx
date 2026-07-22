@@ -11,6 +11,7 @@ const MENU_ITEMS = [
   { label: 'Account Settings', icon: PROFILE_MENU_ICONS.settings },
   { label: 'Personal Details', icon: PROFILE_MENU_ICONS.personal },
   { label: 'Other Services', icon: PROFILE_MENU_ICONS.services },
+  { label: 'User Testing Survey', icon: PROFILE_MENU_ICONS.smile },
   { label: 'Login & Security', icon: PROFILE_MENU_ICONS.security },
   { label: 'Verification', icon: PROFILE_MENU_ICONS.verification },
   { label: 'Payment Methods', icon: PROFILE_MENU_ICONS.payment },
@@ -27,6 +28,8 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
   const [page, setPage] = useState<'main' | 'personal' | 'services'>('main');
   const { profile } = useMockSession();
   const displayProfile = profile ?? {
+    participantId: 'PT-DEMO-1003',
+    avatar: JUAN_AVATAR,
     name: 'Juan Dela Cruz',
     contact: 'juan@roomie.ph',
     role: 'tenant' as const,
@@ -65,7 +68,7 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
         {/* Profile header */}
         <div className="profile-header">
           <div className="profile-avatar">
-            <img src={JUAN_AVATAR} alt={displayProfile.name} />
+            <img src={displayProfile.avatar ?? JUAN_AVATAR} alt={displayProfile.name} />
           </div>
           <div className="profile-name">{displayProfile.name}</div>
           <div className="profile-email">{displayProfile.contact}</div>
@@ -105,6 +108,10 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
                     }
                     if (item.label === 'Other Services') {
                       setPage('services');
+                      return;
+                    }
+                    if (item.label === 'User Testing Survey') {
+                      window.location.assign(`${import.meta.env.BASE_URL}tenant-surveys.html`);
                       return;
                     }
                     onShowToast(`${item.label} — coming soon`);
@@ -151,6 +158,10 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
                 <div className="profile-details-item">
                   <span className="profile-details-label">Contact</span>
                   <span className="profile-details-value">{displayProfile.contact}</span>
+                </div>
+                <div className="profile-details-item">
+                  <span className="profile-details-label">Participant ID</span>
+                  <span className="profile-details-value">{displayProfile.participantId}</span>
                 </div>
                 <div className="profile-details-item">
                   <span className="profile-details-label">Role</span>
