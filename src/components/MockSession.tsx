@@ -1,5 +1,5 @@
 import { useState, useSyncExternalStore } from 'react';
-import type { ReactNode } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import Logo from './Logo';
 import { AVATARS, JUAN_AVATAR } from '../avatarPool';
 import { DEFAULT_PRIMARY, THEME_STORAGE_KEY, THEMES } from '../theme';
@@ -205,6 +205,33 @@ export function MockLoginGate({
 
   if (authenticated) return <>{children}</>;
 
+  const resetSignupFields = () => {
+    setAccount('');
+    setPassword('');
+    setName('');
+    setContact('');
+    setRole(variant === 'host' ? 'host' : 'tenant');
+    setBio('');
+    setAvatar(JUAN_AVATAR);
+    setThemeColor(DEFAULT_PRIMARY);
+    setCustomizeOpen(false);
+  };
+
+  const handleSignupSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    signUpToDemo({
+      avatar,
+      themeColor,
+      name: name.trim() || DEFAULT_PROFILE.name,
+      contact: contact.trim() || DEFAULT_PROFILE.contact,
+      role,
+      bio: bio.trim() || 'No bio provided yet.',
+      servicePreferences: [],
+    });
+    resetSignupFields();
+    setMode('landing');
+  };
+
   const applyThemeColor = (nextTheme: string) => {
     setThemeColor(nextTheme);
     if (typeof window !== 'undefined') {
@@ -261,18 +288,7 @@ export function MockLoginGate({
         ) : (
           <form
             className="mock-auth-form"
-            onSubmit={(event) => {
-              event.preventDefault();
-              signUpToDemo({
-                avatar,
-                themeColor,
-                name: name.trim() || DEFAULT_PROFILE.name,
-                contact: contact.trim() || DEFAULT_PROFILE.contact,
-                role,
-                bio: bio.trim() || 'No bio provided yet.',
-                servicePreferences: [],
-              });
-            }}
+            onSubmit={handleSignupSubmit}
           >
             <label className="mock-auth-field">
               <span>Account</span>
