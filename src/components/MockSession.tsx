@@ -1,5 +1,6 @@
 import { useMemo, useState, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
+import Logo from './Logo';
 import './MockSession.css';
 
 export type MockRole = 'tenant' | 'host' | 'broker';
@@ -161,17 +162,17 @@ export function MockLoginGate({
 
   if (authenticated) return <>{children}</>;
 
-  const title = variant === 'host' ? 'Host demo access' : 'Tenant demo access';
+  const title = variant === 'host' ? 'Host access' : 'Tenant access';
   const subtitle = variant === 'host'
-    ? 'Log in or create an account to enter the host MVPs.'
-    : 'Log in or create an account to enter the tenant MVPs.';
+    ? 'Log in or create an account to enter the host app.'
+    : 'Log in or create an account to enter the tenant app.';
 
   return (
     <div className="mock-auth-shell">
       <div className="mock-auth-card">
         <div className="mock-auth-brand">
           <div className="mock-auth-logo" aria-hidden="true">
-            <span className="mock-auth-logo-house">⌂</span>
+            <Logo />
           </div>
           <div className="mock-auth-brand-copy">
             <strong>Roomie</strong>

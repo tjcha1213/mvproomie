@@ -23,14 +23,21 @@
 }
 
 .mock-auth-logo {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
+  width: 124px;
+  height: 32px;
+  border-radius: 0;
   display: grid;
   place-items: center;
-  background: color-mix(in srgb, var(--primary) 14%, #ffffff);
-  color: var(--primary);
-  font-size: 28px;
+  background: transparent;
+}
+
+.mock-auth-logo .logo {
+  width: 100%;
+}
+
+.mock-auth-logo .logo-img {
+  width: 124px;
+  height: 30px;
 }
 
 .mock-auth-brand-copy {
