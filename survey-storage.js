@@ -1,4 +1,12 @@
 const SURVEY_STORAGE_KEY = "roomie-survey-responses-v1";
+const MOCK_PROFILE_STORAGE_KEY = "roomie.mock-user-profile";
+const SESSION_METADATA_FIELDS = {
+  name: "name",
+  contact: "contact",
+  bio: "bio",
+  participant_id: "participant_id",
+  participant_role: "participant_role",
+};
 
 const SURVEY_FIELDS = [
   "response_id",
@@ -47,7 +55,41 @@ function setStoredResponses(responses) {
   localStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify(responses));
 }
 
-function buildSurveyPayload(root = document) {
+function readMockProfile() {
+  try {
+    const raw = localStorage.getItem(MOCK_PROFILE_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function getSessionMetadata(profile) {
+  if (!profile || typeof profile !== "object") return null;
+
+  const participantId = typeof profile.participantId === "string" ? profile.participantId.trim() : "";
+  const role = typeof profile.role === "string" ? profile.role.trim() : "";
+  const name = typeof profile.name === "string" ? profile.name.trim() : "";
+  const contact = typeof profile.contact === "string" ? profile.contact.trim() : "";
+  const bio = typeof profile.bio === "string" ? profile.bio.trim() : "";
+
+  if (!participantId && !role && !name && !contact && !bio) {
+    return null;
+  }
+
+  return {
+    [SESSION_METADATA_FIELDS.name]: name,
+    [SESSION_METADATA_FIELDS.contact]: contact,
+    [SESSION_METADATA_FIELDS.bio]: bio,
+    [SESSION_METADATA_FIELDS.participant_id]: participantId,
+    [SESSION_METADATA_FIELDS.participant_role]: role,
+  };
+}
+
+function buildSurveyPayload(root = document, lockedValues = null) {
   const payload = {
     response_id: `resp-${Date.now()}`,
     submitted_at: new Date().toISOString(),
@@ -81,6 +123,10 @@ function buildSurveyPayload(root = document) {
     payload[field] = "";
   }
 
+  if (lockedValues) {
+    Object.assign(payload, lockedValues);
+  }
+
   return payload;
 }
 
@@ -91,6 +137,28 @@ function validateSurveyPayload(payload) {
   if (!payload.tested_route) missing.push("tested route");
   if (!payload.recommendation) missing.push("recommendation score");
   return missing;
+}
+
+function applyLockedSessionMetadata(profile) {
+  const lockedValues = getSessionMetadata(profile);
+  if (!lockedValues) return null;
+
+  for (const [fieldName, value] of Object.entries(lockedValues)) {
+    const elements = document.querySelectorAll(`[name="${fieldName}"]`);
+    elements.forEach((element) => {
+      if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+        element.value = value;
+        element.readOnly = true;
+        element.dataset.locked = "true";
+      } else if (element instanceof HTMLSelectElement) {
+        element.value = value;
+        element.disabled = true;
+        element.dataset.locked = "true";
+      }
+    });
+  }
+
+  return lockedValues;
 }
 
 function escapeCsvValue(value) {
@@ -164,8 +232,10 @@ function initSurveyPage() {
   const statusNode = document.querySelector("[data-save-status]");
   if (!saveButton || !statusNode) return;
 
+  const lockedValues = applyLockedSessionMetadata(readMockProfile());
+
   saveButton.addEventListener("click", () => {
-    const payload = buildSurveyPayload(document);
+    const payload = buildSurveyPayload(document, lockedValues);
     const missing = validateSurveyPayload(payload);
 
     if (missing.length) {
