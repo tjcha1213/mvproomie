@@ -16,7 +16,13 @@ const SERVICES: ServiceItem[] = [
     label: 'Cleaning',
     description: 'Home upkeep',
     icon: (
-      <path d="M7 21l3-3m0 0l7-7 3 3-7 7H7v-3zm2-9l2-2 6 6-2 2-6-6zm7-7l3 3" />
+      <>
+        <path d="M12 2.6v8.8" />
+        <path d="M10.2 9.9h3.6l1.1 1.3v1H9.1v-1l1.1-1.3Z" />
+        <path d="M8.6 12.6h6.8l1.2 8.4H7.4l1.2-8.4Z" />
+        <path d="M10.8 15.2v3.8" />
+        <path d="M13.2 15.2v3.8" />
+      </>
     ),
   },
   {
@@ -73,9 +79,7 @@ const SERVICES: ServiceItem[] = [
     description: 'Bills & setup',
     icon: (
       <>
-        <path d="M12 3l4 8H8l4-8Z" />
-        <path d="M7 12h10l-1 9H8l-1-9Z" />
-        <path d="M10 15h4" />
+        <path d="M13.8 3.8 7.2 13.1h4.3L10 20.2 16.8 10.4h-4.1l1.1-6.6Z" />
       </>
     ),
   },
@@ -102,7 +106,7 @@ export default function ServicePreferencesCard() {
       <div className="service-pref-header">
         <div>
           <div className="service-pref-title">Service preferences</div>
-          <div className="service-pref-subtitle">Tap services in your preferred order to rank them.</div>
+          <div className="service-pref-subtitle">Rank the services you prefer.</div>
         </div>
         <div className="service-pref-count">{selected.length} selected</div>
       </div>

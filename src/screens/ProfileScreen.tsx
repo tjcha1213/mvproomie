@@ -166,7 +166,7 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
         ) : (
           <ProfileSectionPage
             title="Other Services"
-            subtitle="Rank the services you use most often."
+            subtitle="Rank the services you would like on Roomie."
             onBack={() => setPage('main')}
           >
             <ServicePreferencesCard />
