@@ -147,6 +147,8 @@ export function MockLoginGate({
 }) {
   const { authenticated, profile } = useMockSession();
   const [mode, setMode] = useState<'landing' | 'signup'>('landing');
+  const [account, setAccount] = useState(profile?.contact ?? '');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState(profile?.name ?? '');
   const [contact, setContact] = useState(profile?.contact ?? '');
   const [role, setRole] = useState<MockRole>(profile?.role ?? (variant === 'host' ? 'host' : 'tenant'));
@@ -161,8 +163,8 @@ export function MockLoginGate({
 
   const title = variant === 'host' ? 'Host demo access' : 'Tenant demo access';
   const subtitle = variant === 'host'
-    ? 'Log in or create a mock account to enter the host MVPs.'
-    : 'Log in or create a mock account to enter the tenant MVPs.';
+    ? 'Log in or create an account to enter the host MVPs.'
+    : 'Log in or create an account to enter the tenant MVPs.';
 
   return (
     <div className="mock-auth-shell">
@@ -178,7 +180,7 @@ export function MockLoginGate({
         </div>
 
         <div className="mock-auth-copy">
-          <h1>Mock login</h1>
+          <h1>Log in to Roomie</h1>
           <p>{subtitle}</p>
           {existingProfileCopy && (
             <div className="mock-auth-saved">
@@ -189,14 +191,41 @@ export function MockLoginGate({
         </div>
 
         {mode === 'landing' ? (
-          <div className="mock-auth-actions">
-            <button type="button" className="mock-auth-btn primary" onClick={loginToDemo}>
-              Log in
-            </button>
-            <button type="button" className="mock-auth-btn secondary" onClick={() => setMode('signup')}>
-              Sign up / New account
-            </button>
-          </div>
+          <form
+            className="mock-auth-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              loginToDemo();
+            }}
+          >
+            <label className="mock-auth-field">
+              <span>Account</span>
+              <input
+                value={account}
+                onChange={(event) => setAccount(event.target.value)}
+                placeholder="Email or username"
+                autoComplete="username"
+              />
+            </label>
+            <label className="mock-auth-field">
+              <span>Password</span>
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Enter your password"
+                autoComplete="current-password"
+              />
+            </label>
+            <div className="mock-auth-actions">
+              <button type="submit" className="mock-auth-btn primary">
+                Log in
+              </button>
+              <button type="button" className="mock-auth-btn secondary" onClick={() => setMode('signup')}>
+                Create new account
+              </button>
+            </div>
+          </form>
         ) : (
           <form
             className="mock-auth-form"
@@ -210,6 +239,25 @@ export function MockLoginGate({
               });
             }}
           >
+            <label className="mock-auth-field">
+              <span>Account</span>
+              <input
+                value={account}
+                onChange={(event) => setAccount(event.target.value)}
+                placeholder="Email or username"
+                autoComplete="username"
+              />
+            </label>
+            <label className="mock-auth-field">
+              <span>Password</span>
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Create a password"
+                autoComplete="new-password"
+              />
+            </label>
             <label className="mock-auth-field">
               <span>Name</span>
               <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Your full name" />
