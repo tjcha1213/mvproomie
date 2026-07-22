@@ -1,4 +1,4 @@
-import { useMemo, useState, useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 import Logo from './Logo';
 import './MockSession.css';
@@ -155,17 +155,7 @@ export function MockLoginGate({
   const [role, setRole] = useState<MockRole>(profile?.role ?? (variant === 'host' ? 'host' : 'tenant'));
   const [bio, setBio] = useState(profile?.bio ?? '');
 
-  const existingProfileCopy = useMemo(() => {
-    if (!profile) return null;
-    return `${profile.name} · ${profile.role === 'broker' ? 'Broker' : profile.role === 'host' ? 'Host' : 'Tenant'}`;
-  }, [profile]);
-
   if (authenticated) return <>{children}</>;
-
-  const title = variant === 'host' ? 'Host access' : 'Tenant access';
-  const subtitle = variant === 'host'
-    ? 'Log in or create an account to enter the host app.'
-    : 'Log in or create an account to enter the tenant app.';
 
   return (
     <div className="mock-auth-shell">
@@ -174,21 +164,6 @@ export function MockLoginGate({
           <div className="mock-auth-logo" aria-hidden="true">
             <Logo />
           </div>
-          <div className="mock-auth-brand-copy">
-            <strong>Roomie</strong>
-            <span>{title}</span>
-          </div>
-        </div>
-
-        <div className="mock-auth-copy">
-          <h1>Log in to Roomie</h1>
-          <p>{subtitle}</p>
-          {existingProfileCopy && (
-            <div className="mock-auth-saved">
-              <span className="mock-auth-saved-label">Saved profile</span>
-              <strong>{existingProfileCopy}</strong>
-            </div>
-          )}
         </div>
 
         {mode === 'landing' ? (
