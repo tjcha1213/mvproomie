@@ -6,6 +6,7 @@ import type { HeaderNotification } from '../components/Header';
 import ModeSwitchModal from '../../src/components/ModeSwitchModal';
 import { JUAN_AVATAR } from '../../src/avatarPool';
 import { PROFILE_MENU_ICONS } from '../../src/components/ProfileMenuIcons';
+import { formatMockRole, useMockSession } from '../../src/components/MockSession';
 
 interface Props {
   units: Unit[];
@@ -32,6 +33,13 @@ const MENU_ITEMS = [
 export default function ProfileScreen({ units, onOpenListings, onOpenTenants, onOpenTheme, onOpenReviews, notifications, onOpenNotification, onShowToast, onAdd }: Props) {
   const occupied = units.filter(u => u.status === 'Occupied').length;
   const [chooser, setChooser] = useState<'tenant' | 'host' | null>(null);
+  const { profile } = useMockSession();
+  const displayProfile = profile ?? {
+    name: HOST_PROFILE.name,
+    contact: 'juan@roomie.ph',
+    role: 'host' as const,
+    bio: 'Mock host profile ready for demo testing.',
+  };
 
   const navigateTo = (path: string) => {
     window.location.assign(`${import.meta.env.BASE_URL}${path}`);
@@ -63,10 +71,10 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
         {/* Profile header */}
         <div className="profile-header">
           <div className="profile-avatar">
-            <img src={JUAN_AVATAR} alt={HOST_PROFILE.name} />
+            <img src={JUAN_AVATAR} alt={displayProfile.name} />
           </div>
           <div className="profile-name-row-ll">
-            <span className="profile-name">{HOST_PROFILE.name}</span>
+            <span className="profile-name">{displayProfile.name}</span>
             <svg className="verified-badge" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="11" fill="currentColor" />
               <path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -76,7 +84,21 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
             <span className="entity-id-tag">{HOST_PROFILE.userId}</span>
             <span className={`roomie-score-chip is-${HOST_PROFILE.roomieTemperature.toLowerCase()}`}>Roomie {HOST_PROFILE.roomieScore}</span>
           </div>
-          <div className="profile-email">Verified Host · ★ 4.9 (128 reviews)</div>
+          <div className="profile-email">{displayProfile.contact}</div>
+
+          <div className="profile-details-card">
+            <div className="profile-details-title">Personal Details</div>
+            <div className="profile-details-grid">
+              <div className="profile-details-item">
+                <span className="profile-details-label">Role</span>
+                <span className="profile-details-value">{formatMockRole(displayProfile.role)}</span>
+              </div>
+              <div className="profile-details-item">
+                <span className="profile-details-label">Bio</span>
+                <span className="profile-details-value">{displayProfile.bio}</span>
+              </div>
+            </div>
+          </div>
 
           <div className="profile-stats">
             <button type="button" className="profile-stat profile-stat-btn" onClick={onOpenListings}>

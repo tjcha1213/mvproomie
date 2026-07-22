@@ -5,6 +5,7 @@ import type { Tab } from '../components/HostNav';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
 import HostMiniMap from '../components/HostMiniMap';
+import { useMockSession } from '../../src/components/MockSession';
 
 interface Props {
   units: Unit[];
@@ -123,6 +124,7 @@ export default function DashboardScreen({
   onOpenNotification,
   onShowToast,
 }: Props) {
+  const { profile } = useMockSession();
   const [viewMode, setViewMode] = useState<'weekly' | 'calendar' | 'map'>('weekly');
   const [weekStartDate, setWeekStartDate] = useState(() => new Date(2026, 6, 6));
   const [calendarMonth, setCalendarMonth] = useState(() => new Date(2026, 6, 1));
@@ -209,7 +211,7 @@ export default function DashboardScreen({
 
       <div className="scroll-area">
         <div className="ll-greeting">
-          <div className="ll-greeting-title">Hello, Juan 👋</div>
+          <div className="ll-greeting-title">Hello, {profile?.name ?? 'Juan'} 👋</div>
           <div className="ll-greeting-sub">Here's how your properties are doing</div>
         </div>
 

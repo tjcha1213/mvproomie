@@ -3,6 +3,7 @@ import Logo from '../components/Logo';
 import ModeSwitchModal from '../components/ModeSwitchModal';
 import { JUAN_AVATAR } from '../avatarPool';
 import { PROFILE_MENU_ICONS } from '../components/ProfileMenuIcons';
+import { formatMockRole, useMockSession } from '../components/MockSession';
 
 const MENU_ITEMS = [
   { label: 'Account Settings', icon: PROFILE_MENU_ICONS.settings },
@@ -20,6 +21,13 @@ interface Props {
 
 export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
   const [chooser, setChooser] = useState<'tenant' | 'host' | null>(null);
+  const { profile } = useMockSession();
+  const displayProfile = profile ?? {
+    name: 'Juan Dela Cruz',
+    contact: 'juan@roomie.ph',
+    role: 'tenant' as const,
+    bio: 'Mock user profile ready for demo testing.',
+  };
 
   const navigateTo = (path: string) => {
     window.location.assign(`${import.meta.env.BASE_URL}${path}`);
@@ -53,10 +61,24 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
         {/* Profile header */}
         <div className="profile-header">
           <div className="profile-avatar">
-            <img src={JUAN_AVATAR} alt="Juan Dela Cruz" />
+            <img src={JUAN_AVATAR} alt={displayProfile.name} />
           </div>
-          <div className="profile-name">Juan Dela Cruz</div>
-          <div className="profile-email">juan@roomie.ph</div>
+          <div className="profile-name">{displayProfile.name}</div>
+          <div className="profile-email">{displayProfile.contact}</div>
+        </div>
+
+        <div className="profile-details-card">
+          <div className="profile-details-title">Personal Details</div>
+          <div className="profile-details-grid">
+            <div className="profile-details-item">
+              <span className="profile-details-label">Role</span>
+              <span className="profile-details-value">{formatMockRole(displayProfile.role)}</span>
+            </div>
+            <div className="profile-details-item">
+              <span className="profile-details-label">Bio</span>
+              <span className="profile-details-value">{displayProfile.bio}</span>
+            </div>
+          </div>
         </div>
 
         <div className="profile-mode-card">
