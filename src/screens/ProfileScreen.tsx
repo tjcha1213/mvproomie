@@ -68,12 +68,25 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
 
       <div className="scroll-area">
         {/* Profile header */}
-          <div className="profile-header">
-            <div className="profile-avatar">
+        <div className="profile-header">
+          <div className="profile-avatar">
             <img src={displayProfile.avatar ?? JUAN_AVATAR} alt={displayProfile.name} />
           </div>
           <div className="profile-name">{displayProfile.name}</div>
-          <div className="profile-email">{displayProfile.contact}</div>
+          <div className="profile-stats">
+            <div className="profile-stat">
+              <div className="profile-stat-value">5</div>
+              <div className="profile-stat-label">Listings</div>
+            </div>
+            <div className="profile-stat">
+              <div className="profile-stat-value">2</div>
+              <div className="profile-stat-label">Tenants</div>
+            </div>
+            <div className="profile-stat">
+              <div className="profile-stat-value">2021</div>
+              <div className="profile-stat-label">Member since</div>
+            </div>
+          </div>
         </div>
 
         {page === 'main' ? (

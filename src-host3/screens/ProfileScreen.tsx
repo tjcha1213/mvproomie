@@ -92,8 +92,6 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
             <span className="entity-id-tag">{HOST_PROFILE.userId}</span>
             <span className={`roomie-score-chip is-${HOST_PROFILE.roomieTemperature.toLowerCase()}`}>Roomie {HOST_PROFILE.roomieScore}</span>
           </div>
-          <div className="profile-email">{displayProfile.contact}</div>
-
           <div className="profile-stats">
             <button type="button" className="profile-stat profile-stat-btn" onClick={onOpenListings}>
               <div className="profile-stat-value">{units.length}</div>
