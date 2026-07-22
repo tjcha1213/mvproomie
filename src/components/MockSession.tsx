@@ -320,13 +320,12 @@ export function MockLoginGate({
             </label>
             <div className="mock-auth-customize">
               <div className="mock-auth-customize-head">
-                <div className="mock-auth-customize-title">Avatar & theme</div>
                 <button
                   type="button"
                   className="mock-auth-btn secondary mock-auth-customize-btn"
                   onClick={() => setCustomizeOpen(true)}
                 >
-                  Choose avatar & theme
+                  Avatar and Color Theme
                 </button>
               </div>
               <div className="mock-auth-preview-row">
