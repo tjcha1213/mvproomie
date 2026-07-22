@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import AppLogo from '../components/AppLogo';
 import ModeSwitchModal from '../../src/components/ModeSwitchModal';
+import ServicePreferencesCard from '../../src/components/ServicePreferencesCard';
 import { JUAN_AVATAR } from '../../src/avatarPool';
 import { PROFILE_MENU_ICONS } from '../../src/components/ProfileMenuIcons';
 import { formatMockRole, useMockSession } from '../../src/components/MockSession';
@@ -80,6 +81,8 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
             </div>
           </div>
         </div>
+
+        <ServicePreferencesCard />
 
         <div className="profile-mode-card">
           <div className="profile-mode-copy">

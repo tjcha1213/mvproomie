@@ -4,6 +4,7 @@ import type { Unit } from '../data';
 import Header from '../components/Header';
 import type { HeaderNotification } from '../components/Header';
 import ModeSwitchModal from '../../src/components/ModeSwitchModal';
+import ServicePreferencesCard from '../../src/components/ServicePreferencesCard';
 import { JUAN_AVATAR } from '../../src/avatarPool';
 import { PROFILE_MENU_ICONS } from '../../src/components/ProfileMenuIcons';
 import { formatMockRole, useMockSession } from '../../src/components/MockSession';
@@ -115,6 +116,8 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
             </div>
           </div>
         </div>
+
+        <ServicePreferencesCard />
 
         <div className="profile-mode-card">
           <div className="profile-mode-copy">

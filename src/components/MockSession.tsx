@@ -10,6 +10,7 @@ export interface MockUserProfile {
   contact: string;
   role: MockRole;
   bio: string;
+  servicePreferences: string[];
 }
 
 type SessionState = {
@@ -24,6 +25,7 @@ const DEFAULT_PROFILE: MockUserProfile = {
   contact: 'juan@roomie.ph',
   role: 'tenant',
   bio: 'Mock user profile ready for demo testing.',
+  servicePreferences: [],
 };
 
 function isRole(value: unknown): value is MockRole {
@@ -42,11 +44,15 @@ function readStoredProfile(): MockUserProfile | null {
       && typeof parsed.bio === 'string'
       && isRole(parsed.role)
     ) {
+      const servicePreferences = Array.isArray((parsed as { servicePreferences?: unknown }).servicePreferences)
+        ? (parsed as { servicePreferences?: unknown[] }).servicePreferences!.filter((item): item is string => typeof item === 'string')
+        : [];
       return {
         name: parsed.name,
         contact: parsed.contact,
         role: parsed.role,
         bio: parsed.bio,
+        servicePreferences,
       };
     }
   } catch {
@@ -96,12 +102,32 @@ export function loginToDemo() {
 }
 
 export function signUpToDemo(profile: MockUserProfile) {
+  const normalizedProfile: MockUserProfile = {
+    ...DEFAULT_PROFILE,
+    ...profile,
+    servicePreferences: profile.servicePreferences ?? [],
+  };
   if (typeof window !== 'undefined') {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedProfile));
   }
   sessionState = {
     authenticated: true,
-    profile,
+    profile: normalizedProfile,
+  };
+  emit();
+}
+
+export function updateServicePreferences(servicePreferences: string[]) {
+  const nextProfile: MockUserProfile = {
+    ...(sessionState.profile ?? DEFAULT_PROFILE),
+    servicePreferences,
+  };
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextProfile));
+  }
+  sessionState = {
+    ...sessionState,
+    profile: nextProfile,
   };
   emit();
 }
@@ -212,6 +238,7 @@ export function MockLoginGate({
                 contact: contact.trim() || DEFAULT_PROFILE.contact,
                 role,
                 bio: bio.trim() || 'No bio provided yet.',
+                servicePreferences: [],
               });
             }}
           >
