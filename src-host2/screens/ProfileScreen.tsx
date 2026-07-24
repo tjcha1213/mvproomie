@@ -60,15 +60,15 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
 
   const chooserOptions = chooser === 'tenant'
     ? [
-        { label: 'Tenant MVP 1', description: 'Open the MVP 1 profile tab.', href: '/mvproomie/mvp1/?tab=profile', note: 'Live profile tab' },
-        { label: 'Tenant MVP 2', description: 'Open the MVP 2 profile tab.', href: '/mvproomie/mvp2/?tab=profile' },
-        { label: 'Tenant MVP 3', description: 'Open the MVP 3 profile tab.', href: '/mvproomie/mvp3/?tab=profile' },
+        { label: 'Tenant MVP 1', description: 'Tenant MVP 1', href: '/mvproomie/mvp1/?tab=profile' },
+        { label: 'Tenant MVP 2', description: 'Tenant MVP 2', href: '/mvproomie/mvp2/?tab=profile' },
+        { label: 'Tenant MVP 3', description: 'Tenant MVP 3', href: '/mvproomie/mvp3/?tab=profile' },
       ]
     : chooser === 'host'
       ? [
-        { label: 'Host MVP 1', description: 'Open the host dashboard profile tab.', href: '/mvproomie/host/?tab=profile', note: 'MVP 1 links to the live host layout' },
-        { label: 'Host MVP 2', description: 'Open the host MVP 2 profile tab.', href: '/mvproomie/host2/?tab=profile', note: 'Separate host root path' },
-        { label: 'Host MVP 3', description: 'Open the host MVP 3 profile tab.', href: '/mvproomie/host3/?tab=profile', note: 'Separate host root path' },
+        { label: 'Host MVP 1', description: 'Host MVP 1', href: '/mvproomie/host/?tab=profile' },
+        { label: 'Host MVP 2', description: 'Host MVP 2', href: '/mvproomie/host2/?tab=profile' },
+        { label: 'Host MVP 3', description: 'Host MVP 3', href: '/mvproomie/host3/?tab=profile' },
         ]
       : [];
 

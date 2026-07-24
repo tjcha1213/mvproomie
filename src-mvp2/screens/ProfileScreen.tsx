@@ -48,15 +48,15 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
 
   const chooserOptions = chooser === 'tenant'
     ? [
-        { label: 'Tenant MVP 1', description: 'Open the MVP 1 profile tab.', href: 'mvp1/?tab=profile', note: 'Live profile tab' },
-        { label: 'Tenant MVP 2', description: 'Open the MVP 2 profile tab.', href: 'mvp2/?tab=profile' },
-        { label: 'Tenant MVP 3', description: 'Open the MVP 3 profile tab.', href: 'mvp3/?tab=profile' },
+        { label: 'Tenant MVP 1', description: 'Tenant MVP 1', href: 'mvp1/?tab=profile' },
+        { label: 'Tenant MVP 2', description: 'Tenant MVP 2', href: 'mvp2/?tab=profile' },
+        { label: 'Tenant MVP 3', description: 'Tenant MVP 3', href: 'mvp3/?tab=profile' },
       ]
     : chooser === 'host'
       ? [
-        { label: 'Host MVP 1', description: 'Open the host dashboard profile tab.', href: 'host/?tab=profile', note: 'MVP 1 links to the live host layout' },
-        { label: 'Host MVP 2', description: 'Open the host broker overview.', href: 'hosts-brokers.html' },
-        { label: 'Host MVP 3', description: 'Open the host survey layout.', href: 'host-surveys.html' },
+        { label: 'Host MVP 1', description: 'Host MVP 1', href: 'host/?tab=profile' },
+        { label: 'Host MVP 2', description: 'Host MVP 2', href: 'hosts-brokers.html' },
+        { label: 'Host MVP 3', description: 'Host MVP 3', href: 'host-surveys.html' },
       ]
       : [];
 
