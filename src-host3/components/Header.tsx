@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { HOST_PROFILE } from '../data';
 import type { Tab } from './HostNav';
 import Logo from './Logo';
+import { useMockSession } from '../../src/components/MockSession';
 
 export interface HeaderNotification {
   id: string;
@@ -21,6 +22,9 @@ interface Props {
 export default function Header({ onOpenProfile, notifications, onOpenNotification }: Props) {
   const [open, setOpen] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
+  const { profile } = useMockSession();
+  const profileAvatar = profile?.avatar ?? HOST_PROFILE.avatar;
+  const profileName = profile?.name ?? HOST_PROFILE.name;
 
   useEffect(() => {
     function handleMouseDown(event: MouseEvent) {
@@ -78,7 +82,7 @@ export default function Header({ onOpenProfile, notifications, onOpenNotificatio
           </div>
         )}
         <button className="header-avatar" onClick={onOpenProfile} aria-label="Profile">
-          <img src={HOST_PROFILE.avatar} alt={HOST_PROFILE.name} />
+          <img src={profileAvatar} alt={profileName} />
         </button>
       </div>
     </div>

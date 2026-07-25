@@ -7,6 +7,7 @@ const SESSION_METADATA_FIELDS = {
   participant_id: "participant_id",
   participant_role_detail: "participant_role_detail",
   participant_role: "participant_role",
+  tested_route: "tested_route",
   mvp_route: "mvp_route",
   other_services_ranking: "other_services_ranking",
   other_services_ranking_ids: "other_services_ranking_ids",
@@ -20,6 +21,8 @@ const SERVICE_LABELS = {
   repairs: "Repairs",
   utilities: "Utilities",
 };
+
+const OPTIONAL_SURVEY_FIELDS = new Set(["occupation", "session_notes"]);
 
 const SURVEY_FIELDS = [
   "response_id",
@@ -96,6 +99,7 @@ function getSessionMetadata(profile) {
   const contact = typeof profile.contact === "string" ? profile.contact.trim() : "";
   const bio = typeof profile.bio === "string" ? profile.bio.trim() : "";
   const mvpRoute = typeof profile.mvpRoute === "string" ? profile.mvpRoute.trim() : "";
+  const testedRoute = mvpRoute;
   const servicePreferences = Array.isArray(profile.servicePreferences)
     ? profile.servicePreferences.filter((item) => typeof item === "string")
     : [];
@@ -115,6 +119,7 @@ function getSessionMetadata(profile) {
     [SESSION_METADATA_FIELDS.participant_id]: participantId,
     [SESSION_METADATA_FIELDS.participant_role_detail]: roleDetail,
     [SESSION_METADATA_FIELDS.participant_role]: role,
+    [SESSION_METADATA_FIELDS.tested_route]: testedRoute,
     [SESSION_METADATA_FIELDS.mvp_route]: mvpRoute,
     [SESSION_METADATA_FIELDS.other_services_ranking]: otherServicesRanking,
     [SESSION_METADATA_FIELDS.other_services_ranking_ids]: otherServicesRankingIds,
@@ -162,6 +167,28 @@ function buildSurveyPayload(root = document, lockedValues = null) {
   return payload;
 }
 
+function getCurrentSessionMetadata() {
+  return getSessionMetadata(readMockProfile());
+}
+
+function mergeMissingSessionMetadata(response, metadata) {
+  if (!metadata) return response;
+
+  const nextResponse = { ...response };
+  for (const fieldName of Object.values(SESSION_METADATA_FIELDS)) {
+    if (!nextResponse[fieldName] && metadata[fieldName]) {
+      nextResponse[fieldName] = metadata[fieldName];
+    }
+  }
+
+  return nextResponse;
+}
+
+function getResponsesForExport() {
+  const metadata = getCurrentSessionMetadata();
+  return getStoredResponses().map((response) => mergeMissingSessionMetadata(response, metadata));
+}
+
 function validateSurveyPayload(payload) {
   const missing = [];
   if (!payload.name) missing.push("name");
@@ -191,6 +218,20 @@ function applyLockedSessionMetadata(profile) {
   }
 
   return lockedValues;
+}
+
+function normalizeOptionalFields() {
+  OPTIONAL_SURVEY_FIELDS.forEach((fieldName) => {
+    document.querySelectorAll(`[name="${fieldName}"]`).forEach((element) => {
+      if (
+        element instanceof HTMLInputElement ||
+        element instanceof HTMLTextAreaElement ||
+        element instanceof HTMLSelectElement
+      ) {
+        element.required = false;
+      }
+    });
+  });
 }
 
 function escapeCsvValue(value) {
@@ -267,10 +308,13 @@ function initSurveyPage() {
   const statusNode = document.querySelector("[data-save-status]");
   if (!saveButton || !statusNode) return;
 
-  const lockedValues = applyLockedSessionMetadata(readMockProfile());
+  normalizeOptionalFields();
+  applyLockedSessionMetadata(readMockProfile());
 
   saveButton.addEventListener("click", () => {
-    const payload = buildSurveyPayload(document, lockedValues);
+    const currentMetadata = getCurrentSessionMetadata();
+    applyLockedSessionMetadata(readMockProfile());
+    const payload = buildSurveyPayload(document, currentMetadata);
     const missing = validateSurveyPayload(payload);
 
     if (missing.length) {
@@ -294,10 +338,10 @@ function initAdminPage() {
   const refreshButton = document.querySelector("[data-refresh-responses]");
   if (!exportCsvButton || !exportJsonButton || !refreshButton) return;
 
-  const render = () => renderAdminTable(getStoredResponses());
+  const render = () => renderAdminTable(getResponsesForExport());
 
   exportCsvButton.addEventListener("click", () => {
-    const responses = getStoredResponses();
+    const responses = getResponsesForExport();
     downloadBlob(
       `roomie-survey-responses-${new Date().toISOString().slice(0, 10)}.csv`,
       responsesToCsv(responses),
@@ -306,7 +350,7 @@ function initAdminPage() {
   });
 
   exportJsonButton.addEventListener("click", () => {
-    const responses = getStoredResponses();
+    const responses = getResponsesForExport();
     downloadBlob(
       `roomie-survey-responses-${new Date().toISOString().slice(0, 10)}.json`,
       JSON.stringify(responses, null, 2),

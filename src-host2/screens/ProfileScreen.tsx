@@ -90,7 +90,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
             </svg>
           </div>
           <div className="listing-id-row listing-id-row-modal">
-            <span className="entity-id-tag">{HOST_PROFILE.userId}</span>
+            <span className="entity-id-tag">{displayProfile.participantId}</span>
             <span className={`roomie-score-chip is-${HOST_PROFILE.roomieTemperature.toLowerCase()}`}>Roomie {HOST_PROFILE.roomieScore}</span>
           </div>
           <div className="profile-stats">

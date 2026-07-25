@@ -17,8 +17,9 @@ function ScoreChip({ score, temperature }: { score: number; temperature: 'Cool' 
 export default function ReviewsScreen({ onOpenProfile, notifications, onOpenNotification, onAdd }: Props) {
   const { profile } = useMockSession();
   const displayName = profile?.name ?? HOST_PROFILE.name;
+  const displayUserId = profile?.participantId ?? HOST_PROFILE.userId;
   const trustSnapshots = [
-    { label: 'Host account', name: displayName, userId: HOST_PROFILE.userId, score: HOST_PROFILE.roomieScore, temperature: HOST_PROFILE.roomieTemperature },
+    { label: 'Host account', name: displayName, userId: displayUserId, score: HOST_PROFILE.roomieScore, temperature: HOST_PROFILE.roomieTemperature },
     { label: 'Broker verification desk', name: PLATFORM_CONTACTS.broker.name, userId: PLATFORM_CONTACTS.broker.userId, score: PLATFORM_CONTACTS.broker.roomieScore, temperature: PLATFORM_CONTACTS.broker.roomieTemperature },
     { label: 'Admin trust anchor', name: PLATFORM_CONTACTS.admin.name, userId: PLATFORM_CONTACTS.admin.userId, score: PLATFORM_CONTACTS.admin.roomieScore, temperature: PLATFORM_CONTACTS.admin.roomieTemperature },
     { label: 'Top tenant score', name: PAYMENTS[0].tenant, userId: PAYMENTS[0].tenantId, score: PAYMENTS[0].trust.roomieScore, temperature: PAYMENTS[0].trust.roomieTemperature },
@@ -39,7 +40,7 @@ export default function ReviewsScreen({ onOpenProfile, notifications, onOpenNoti
             <span className="profile-name">{displayName}</span>
           </div>
           <div className="listing-id-row listing-id-row-modal">
-            <span className="entity-id-tag">{HOST_PROFILE.userId}</span>
+            <span className="entity-id-tag">{displayUserId}</span>
             <ScoreChip score={HOST_PROFILE.roomieScore} temperature={HOST_PROFILE.roomieTemperature} />
           </div>
           <div className="profile-email">Average rating 4.9 · 128 reviews logged in the host demo</div>
