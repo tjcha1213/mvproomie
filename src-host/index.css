@@ -6506,6 +6506,15 @@ img {
   gap: 8px;
 }
 
+.tenant-overview-status-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .tenant-overview-name {
   font-size: 13px;
   font-weight: 800;
@@ -6514,12 +6523,18 @@ img {
 
 .tenant-overview-status {
   flex-shrink: 0;
-  padding: 3px 8px;
+  padding: 5px 10px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
+  line-height: 1.1;
   background: var(--surface);
   color: var(--text-muted);
+}
+
+.tenant-overview-status.is-occupied {
+  background: var(--primary-bg);
+  color: var(--primary-dark);
 }
 
 .tenant-overview-status.is-overdue {

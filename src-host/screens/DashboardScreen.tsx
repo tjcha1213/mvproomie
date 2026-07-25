@@ -126,6 +126,23 @@ function statusLabel(status: Payment['status']) {
   return status === 'Overdue' ? 'Overdue' : status === 'Due' ? 'Due soon' : 'Paid';
 }
 
+function tenantUnitLabel(unit: Unit) {
+  const area = unit.location.split(',')[0] ?? unit.location;
+  return `${area} ${unit.type.toLowerCase()} · Unit ${unit.id}`;
+}
+
+function tenantPaymentSummary(payment: Payment) {
+  if (payment.status === 'Paid') {
+    return `Rent settled ${payment.dueLabel.replace('Paid ', '').toLowerCase()} through ${payment.method.toLowerCase()}.`;
+  }
+
+  if (payment.status === 'Due') {
+    return `Payment is coming up; reminder already sent for ${payment.dueLabel.replace('Due ', '').toLowerCase()}.`;
+  }
+
+  return `Follow up needed on the overdue balance; payment is currently ${payment.dueLabel.toLowerCase()}.`;
+}
+
 export default function DashboardScreen({
   units,
   inquiries,
@@ -507,14 +524,13 @@ export default function DashboardScreen({
               <div key={unit.id} className="tenant-overview-group">
                 <div className="tenant-overview-group-head">
                   <div className="tenant-overview-group-copy">
-                    <span className="tenant-overview-group-title">{unit.title}</span>
+                    <span className="tenant-overview-group-title">{tenantUnitLabel(unit)}</span>
                     <span className="tenant-overview-group-meta">
                       <span>{activeCount} tenant{activeCount === 1 ? '' : 's'}</span>
                       <span className="ll-meta-dot" aria-hidden="true" />
-                      <span>{overdueCount} overdue</span>
+                      <span>{overdueCount > 0 ? `${overdueCount} overdue account${overdueCount === 1 ? '' : 's'}` : 'No overdue accounts'}</span>
                     </span>
                   </div>
-                  <span className="roomie-score-chip is-cool">Occupied</span>
                 </div>
                 <div className="tenant-overview-list">
                   {unitPayments.map((payment) => (
@@ -530,16 +546,19 @@ export default function DashboardScreen({
                       <div className="tenant-overview-copy">
                         <div className="tenant-overview-name-row">
                           <span className="tenant-overview-name">{payment.tenant}</span>
-                          <span className={`tenant-overview-status is-${payment.status.toLowerCase()}`}>{statusLabel(payment.status)}</span>
+                          <span className="tenant-overview-status-row">
+                            <span className="tenant-overview-status is-occupied">{unit.status}</span>
+                            <span className={`tenant-overview-status is-${payment.status.toLowerCase()}`}>{statusLabel(payment.status)}</span>
+                          </span>
                         </div>
                         <div className="tenant-overview-meta">
                           <span>{payment.tenantId}</span>
                           <span className="ll-meta-dot" aria-hidden="true" />
-                          <span>{payment.method}</span>
+                          <span>{payment.amount.toLocaleString('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 })}/mo</span>
                           <span className="ll-meta-dot" aria-hidden="true" />
                           <span>{payment.dueLabel}</span>
                         </div>
-                        <div className="tenant-overview-detail">{payment.notes}</div>
+                        <div className="tenant-overview-detail">{tenantPaymentSummary(payment)}</div>
                       </div>
                     </div>
                   ))}
