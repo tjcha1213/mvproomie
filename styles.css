@@ -77,8 +77,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 20px 24px 18px;
+  gap: 18px;
+  padding: 16px 24px;
   border-bottom: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(18px);
@@ -88,35 +88,17 @@ body {
 .survey-app-brand {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
   min-width: 0;
 }
 
-.survey-app-copy {
-  display: grid;
-  gap: 5px;
-  min-width: 0;
-}
-
-.survey-app-kicker {
-  margin: 0;
-  color: var(--primary);
-  font-size: 0.76rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
+.survey-app-copy { min-width: 0; }
 
 .survey-app-copy h1 {
   margin: 0;
-  font-size: clamp(1.55rem, 2.4vw, 2.2rem);
-  letter-spacing: -0.02em;
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  letter-spacing: 0;
   line-height: 1;
-}
-
-.survey-app-copy .intro-copy {
-  margin: 0;
-  max-width: 58ch;
 }
 
 .survey-app-actions {
@@ -131,7 +113,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 40px;
-  padding: 0 14px;
+  padding: 0 16px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.74);
@@ -1811,14 +1793,14 @@ h2 {
   }
 
   .survey-app-header {
-    padding: 18px;
-    flex-direction: column;
-    align-items: flex-start;
+    padding: 16px 18px;
+    flex-direction: row;
+    align-items: center;
   }
 
   .survey-app-actions {
-    width: 100%;
-    justify-content: space-between;
+    width: auto;
+    justify-content: flex-end;
   }
 
   .survey-section-tabs {
@@ -1900,11 +1882,11 @@ h2 {
   }
 
   .survey-app-header {
-    padding: 16px;
+    padding: 14px 16px;
   }
 
   .survey-app-brand {
-    align-items: flex-start;
+    align-items: center;
   }
 
   .survey-logo {
