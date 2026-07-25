@@ -8,6 +8,17 @@ const SESSION_METADATA_FIELDS = {
   participant_role_detail: "participant_role_detail",
   participant_role: "participant_role",
   mvp_route: "mvp_route",
+  other_services_ranking: "other_services_ranking",
+  other_services_ranking_ids: "other_services_ranking_ids",
+};
+
+const SERVICE_LABELS = {
+  cleaning: "Cleaning",
+  moving: "Moving",
+  furniture: "Furniture",
+  legal: "Legal",
+  repairs: "Repairs",
+  utilities: "Utilities",
 };
 
 const SURVEY_FIELDS = [
@@ -21,6 +32,8 @@ const SURVEY_FIELDS = [
   "tested_route",
   "participant_role",
   "mvp_route",
+  "other_services_ranking",
+  "other_services_ranking_ids",
   "occupation",
   "session_notes",
   "recommendation",
@@ -83,8 +96,15 @@ function getSessionMetadata(profile) {
   const contact = typeof profile.contact === "string" ? profile.contact.trim() : "";
   const bio = typeof profile.bio === "string" ? profile.bio.trim() : "";
   const mvpRoute = typeof profile.mvpRoute === "string" ? profile.mvpRoute.trim() : "";
+  const servicePreferences = Array.isArray(profile.servicePreferences)
+    ? profile.servicePreferences.filter((item) => typeof item === "string")
+    : [];
+  const otherServicesRanking = servicePreferences
+    .map((serviceId, index) => `${index + 1}. ${SERVICE_LABELS[serviceId] || serviceId}`)
+    .join(" | ");
+  const otherServicesRankingIds = servicePreferences.join(",");
 
-  if (!participantId && !role && !roleDetail && !mvpRoute && !name && !contact && !bio) {
+  if (!participantId && !role && !roleDetail && !mvpRoute && !name && !contact && !bio && !otherServicesRanking) {
     return null;
   }
 
@@ -96,6 +116,8 @@ function getSessionMetadata(profile) {
     [SESSION_METADATA_FIELDS.participant_role_detail]: roleDetail,
     [SESSION_METADATA_FIELDS.participant_role]: role,
     [SESSION_METADATA_FIELDS.mvp_route]: mvpRoute,
+    [SESSION_METADATA_FIELDS.other_services_ranking]: otherServicesRanking,
+    [SESSION_METADATA_FIELDS.other_services_ranking_ids]: otherServicesRankingIds,
   };
 }
 
@@ -233,6 +255,7 @@ function renderAdminTable(responses) {
         <td>${response.tested_route || ""}</td>
         <td>${response.mvp_route || ""}</td>
         <td>${response.participant_role || ""}</td>
+        <td>${response.other_services_ranking || ""}</td>
         <td>${response.recommendation || ""}</td>
       `;
       tableBody.appendChild(row);
