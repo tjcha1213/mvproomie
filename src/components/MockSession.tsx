@@ -244,6 +244,11 @@ export function MockLoginGate({
     setCustomizeOpen(false);
   };
 
+  const openSignup = () => {
+    resetSignupFields();
+    setMode('signup');
+  };
+
   const handleSignupSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     signUpToDemo({
@@ -309,7 +314,7 @@ export function MockLoginGate({
               <button type="submit" className="mock-auth-btn primary">
                 Log in
               </button>
-              <button type="button" className="mock-auth-btn secondary" onClick={() => setMode('signup')}>
+              <button type="button" className="mock-auth-btn secondary" onClick={openSignup}>
                 Create new account
               </button>
             </div>
