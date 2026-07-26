@@ -144,7 +144,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
                       return;
                     }
                     if (item.key === 'survey') {
-                      window.location.assign(`${import.meta.env.BASE_URL}host-surveys.html`);
+                      window.location.assign(`${import.meta.env.BASE_URL}host-surveys.html?mvp=Host%20MVP%201`);
                       return;
                     }
                     if (item.key === 'reviews') {

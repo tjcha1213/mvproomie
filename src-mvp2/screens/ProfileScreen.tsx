@@ -126,7 +126,7 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
                       return;
                     }
                     if (item.label === 'User Testing Survey') {
-                      window.location.assign(`${import.meta.env.BASE_URL}tenant-surveys.html`);
+                      window.location.assign(`${import.meta.env.BASE_URL}tenant-surveys.html?mvp=Tenant%20MVP%202`);
                       return;
                     }
                     onShowToast(`${item.label} — coming soon`);

@@ -199,6 +199,12 @@ function getResponsesForExport() {
 }
 
 function getProfileBackHref() {
+  const params = new URLSearchParams(window.location.search);
+  const queryRoute = params.get("mvp")?.trim() || "";
+  if (PROFILE_ROUTE_BY_MVP[queryRoute]) {
+    return PROFILE_ROUTE_BY_MVP[queryRoute];
+  }
+
   const profile = readMockProfile();
   const mvpRoute = typeof profile?.mvpRoute === "string" ? profile.mvpRoute.trim() : "";
   return PROFILE_ROUTE_BY_MVP[mvpRoute] || "index.html";
