@@ -16,7 +16,7 @@
     <main class="page survey-app-shell">
       <header class="survey-app-header">
         <div class="survey-app-brand">
-          <a class="survey-logo-link" href="index.html" aria-label="Back to Roomie MVPs">
+          <a class="survey-logo-link" href="index.html" data-survey-back aria-label="Back to profile">
             <img
               class="survey-logo"
               src="assets/logo-draft.png"
@@ -28,7 +28,7 @@
           </div>
         </div>
         <div class="survey-app-actions">
-          <a class="survey-app-back" href="index.html">Back</a>
+          <a class="survey-app-back" href="index.html" data-survey-back>Back</a>
         </div>
       </header>
       <div class="survey-feature-shell">
@@ -42,11 +42,11 @@
         </div>
         <div class="survey-scroll-area">
           <nav class="subhead-tabs survey-section-tabs" aria-label="Survey sections">
-        <a class="subhead-tab active" href="#metadata">Session</a>
-        <a class="subhead-tab" href="#recommendation">Rating</a>
+        <a class="subhead-tab active" href="#metadata" aria-current="true">Setup</a>
+        <a class="subhead-tab" href="#recommendation">Recommendation</a>
         <a class="subhead-tab" href="#usability">Usability</a>
-        <a class="subhead-tab" href="#branding">Brand</a>
-        <a class="subhead-tab" href="#responses">Save</a>
+        <a class="subhead-tab" href="#branding">Design</a>
+        <a class="subhead-tab" href="#open-ended">Open-Ended</a>
       </nav>
 
       <div class="survey-feature-body">
@@ -317,7 +317,7 @@
         </form>
       </section>
 
-      <section class="survey-section">
+      <section class="survey-section" id="open-ended">
         <div class="survey-header">
           <p class="eyebrow">Qualitative Follow-up</p>
           <h2>Open-ended prompts</h2>

@@ -24,6 +24,15 @@ const SERVICE_LABELS = {
 
 const OPTIONAL_SURVEY_FIELDS = new Set(["occupation", "session_notes"]);
 
+const PROFILE_ROUTE_BY_MVP = {
+  "Tenant MVP 1": "mvp1/?tab=profile",
+  "Tenant MVP 2": "mvp2/?tab=profile",
+  "Tenant MVP 3": "mvp3/?tab=profile",
+  "Host MVP 1": "host/?tab=profile",
+  "Host MVP 2": "host2/?tab=profile",
+  "Host MVP 3": "host3/?tab=profile",
+};
+
 const SURVEY_FIELDS = [
   "response_id",
   "submitted_at",
@@ -189,6 +198,12 @@ function getResponsesForExport() {
   return getStoredResponses().map((response) => mergeMissingSessionMetadata(response, metadata));
 }
 
+function getProfileBackHref() {
+  const profile = readMockProfile();
+  const mvpRoute = typeof profile?.mvpRoute === "string" ? profile.mvpRoute.trim() : "";
+  return PROFILE_ROUTE_BY_MVP[mvpRoute] || "index.html";
+}
+
 function validateSurveyPayload(payload) {
   const missing = [];
   if (!payload.name) missing.push("name");
@@ -232,6 +247,71 @@ function normalizeOptionalFields() {
       }
     });
   });
+}
+
+function initSurveyBackLinks() {
+  const href = getProfileBackHref();
+  document.querySelectorAll("[data-survey-back]").forEach((element) => {
+    if (element instanceof HTMLAnchorElement) {
+      element.href = href;
+    }
+  });
+}
+
+function setActiveSurveyTab(activeTab) {
+  document.querySelectorAll(".survey-section-tabs .subhead-tab").forEach((tab) => {
+    const isActive = tab === activeTab;
+    tab.classList.toggle("active", isActive);
+    if (isActive) {
+      tab.setAttribute("aria-current", "true");
+    } else {
+      tab.removeAttribute("aria-current");
+    }
+  });
+}
+
+function initSurveySectionTabs() {
+  const tabs = Array.from(document.querySelectorAll(".survey-section-tabs .subhead-tab")).filter(
+    (tab) => tab instanceof HTMLAnchorElement
+  );
+  if (!tabs.length) return;
+
+  tabs.forEach((tab) => {
+    if (tab.classList.contains("active")) {
+      tab.setAttribute("aria-current", "true");
+    }
+    tab.addEventListener("click", () => setActiveSurveyTab(tab));
+  });
+
+  const sections = tabs
+    .map((tab) => {
+      const sectionId = tab.hash ? tab.hash.slice(1) : "";
+      const section = sectionId ? document.getElementById(sectionId) : null;
+      return section ? { tab, section } : null;
+    })
+    .filter(Boolean);
+
+  if (!("IntersectionObserver" in window) || !sections.length) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visibleEntry = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((first, second) => second.intersectionRatio - first.intersectionRatio)[0];
+      if (!visibleEntry) return;
+
+      const activeSection = sections.find(({ section }) => section === visibleEntry.target);
+      if (activeSection) {
+        setActiveSurveyTab(activeSection.tab);
+      }
+    },
+    {
+      root: document.querySelector(".survey-scroll-area"),
+      threshold: [0.35, 0.65],
+    }
+  );
+
+  sections.forEach(({ section }) => observer.observe(section));
 }
 
 function escapeCsvValue(value) {
@@ -363,6 +443,8 @@ function initAdminPage() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  initSurveyBackLinks();
+  initSurveySectionTabs();
   initSurveyPage();
   initAdminPage();
 });

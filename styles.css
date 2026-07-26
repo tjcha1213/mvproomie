@@ -275,9 +275,11 @@ body {
   color: var(--muted);
   font-weight: 700;
   text-decoration: none;
+  transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
 }
 
-.subhead-tab.active {
+.subhead-tab.active,
+.subhead-tab[aria-current="true"] {
   background: linear-gradient(135deg, #6a78ff, #3f51e5);
   color: #ffffff;
   box-shadow: 0 10px 20px rgba(63, 81, 229, 0.18);
