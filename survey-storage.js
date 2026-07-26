@@ -25,12 +25,12 @@ const SERVICE_LABELS = {
 const OPTIONAL_SURVEY_FIELDS = new Set(["occupation", "session_notes"]);
 
 const PROFILE_ROUTE_BY_MVP = {
-  "Tenant MVP 1": "mvp1/?tab=profile",
-  "Tenant MVP 2": "mvp2/?tab=profile",
-  "Tenant MVP 3": "mvp3/?tab=profile",
-  "Host MVP 1": "host/?tab=profile",
-  "Host MVP 2": "host2/?tab=profile",
-  "Host MVP 3": "host3/?tab=profile",
+  "Tenant MVP 1": "mvp1/?tab=profile&surveyReturn=profile",
+  "Tenant MVP 2": "mvp2/?tab=profile&surveyReturn=profile",
+  "Tenant MVP 3": "mvp3/?tab=profile&surveyReturn=profile",
+  "Host MVP 1": "host/?tab=profile&surveyReturn=profile",
+  "Host MVP 2": "host2/?tab=profile&surveyReturn=profile",
+  "Host MVP 3": "host3/?tab=profile&surveyReturn=profile",
 };
 
 const SURVEY_FIELDS = [

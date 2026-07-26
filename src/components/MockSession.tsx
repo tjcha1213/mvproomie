@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import Logo from './Logo';
 import { AVATARS, JUAN_AVATAR } from '../avatarPool';
@@ -125,6 +125,14 @@ export function loginToDemo() {
   emit();
 }
 
+function restoreSurveyReturnSession(profile: MockUserProfile) {
+  sessionState = {
+    authenticated: true,
+    profile,
+  };
+  emit();
+}
+
 export function signUpToDemo(profile: Omit<MockUserProfile, 'participantId'>) {
   const normalizedProfile: MockUserProfile = {
     ...DEFAULT_PROFILE,
@@ -210,6 +218,17 @@ export function MockLoginGate({
   const [avatar, setAvatar] = useState(profile?.avatar ?? JUAN_AVATAR);
   const [themeColor, setThemeColor] = useState(profile?.themeColor ?? DEFAULT_PRIMARY);
   const [customizeOpen, setCustomizeOpen] = useState(false);
+
+  useEffect(() => {
+    if (authenticated || !profile || typeof window === 'undefined') return;
+
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('surveyReturn') !== 'profile') return;
+
+    restoreSurveyReturnSession(profile);
+    url.searchParams.delete('surveyReturn');
+    window.history.replaceState({}, '', url);
+  }, [authenticated, profile]);
 
   if (authenticated) return <>{children}</>;
 
