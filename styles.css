@@ -324,6 +324,27 @@ body {
   box-shadow: 0 10px 20px color-mix(in srgb, var(--primary) 18%, transparent);
 }
 
+.survey-section-tabs.subhead-tabs {
+  width: auto;
+  margin: 0;
+  padding: 12px 14px 10px;
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--primary) 7%, rgba(255, 255, 255, 0.96));
+}
+
+.survey-section-tabs .subhead-tab {
+  color: color-mix(in srgb, var(--primary) 38%, var(--muted));
+  background: color-mix(in srgb, var(--primary) 5%, #ffffff);
+}
+
+.survey-section-tabs .subhead-tab.active,
+.survey-section-tabs .subhead-tab[aria-current="true"] {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 70%, #ffffff), var(--primary));
+  color: #ffffff;
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
 /* Child tabs: section nav (MVPs / Surveys) shown under the audience tabs */
 .subhead-tabs-child {
   padding: 4px;
