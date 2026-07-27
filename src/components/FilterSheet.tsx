@@ -48,7 +48,7 @@ export default function FilterSheet({ open, filters, countFor, onApply, onClose,
 
   if (fromTop) {
     const topOverlayStyle: CSSProperties = bottomInsetPx > 0
-      ? { bottom: `${bottomInsetPx}px` }
+      ? ({ '--filter-sheet-offset': `${bottomInsetPx}px` } as CSSProperties)
       : {};
 
     return (
