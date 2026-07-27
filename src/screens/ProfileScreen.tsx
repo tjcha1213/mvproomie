@@ -7,7 +7,7 @@ import ProfileSectionPage from '../components/ProfileSectionPage';
 import ServicePreferencesCard from '../components/ServicePreferencesCard';
 import { JUAN_AVATAR } from '../avatarPool';
 import { PROFILE_MENU_ICONS } from '../components/ProfileMenuIcons';
-import { formatMockRole, useMockSession } from '../components/MockSession';
+import { useMockSession } from '../components/MockSession';
 
 const MENU_ITEMS = [
   { label: 'Account Settings', icon: PROFILE_MENU_ICONS.settings },
@@ -184,10 +184,6 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
                 <div className="profile-details-item">
                   <span className="profile-details-label">Participant ID</span>
                   <span className="profile-details-value">{displayProfile.participantId}</span>
-                </div>
-                <div className="profile-details-item">
-                  <span className="profile-details-label">Role</span>
-                  <span className="profile-details-value">{formatMockRole(displayProfile.role)}</span>
                 </div>
                 <div className="profile-details-item">
                   <span className="profile-details-label">Participant role detail</span>
