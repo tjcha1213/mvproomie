@@ -492,9 +492,10 @@ body {
 }
 
 .survey-field span {
-  font-weight: 800;
-  color: var(--ink);
-  font-size: 0.86rem;
+  font-weight: 650;
+  color: color-mix(in srgb, var(--ink) 88%, #5f6f93);
+  font-size: 0.88rem;
+  line-height: 1.45;
 }
 
 .survey-field input,
@@ -553,10 +554,11 @@ body {
   width: 100%;
   max-width: 100%;
   padding: 0 8px 0 0;
-  margin-bottom: 10px;
-  font-weight: 800;
-  color: var(--ink);
-  line-height: 1.55;
+  margin-bottom: 12px;
+  font-weight: 620;
+  color: color-mix(in srgb, var(--ink) 90%, #52627f);
+  font-size: 0.94rem;
+  line-height: 1.6;
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -625,7 +627,7 @@ body {
 }
 
 .theme-option-text {
-  font-weight: 700;
+  font-weight: 650;
   line-height: 1.4;
 }
 
@@ -663,7 +665,8 @@ body {
   border-radius: 16px;
   background: #ffffff;
   color: var(--ink);
-  font-weight: 700;
+  font-weight: 650;
+  line-height: 1.25;
 }
 
 .nps-scale input,

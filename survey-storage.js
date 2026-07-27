@@ -298,7 +298,7 @@ function initSurveySectionTabs() {
       prevButton.disabled = activeStep === 0;
     }
     if (nextButton instanceof HTMLButtonElement) {
-      nextButton.hidden = activeStep === maxStep;
+      nextButton.disabled = activeStep === maxStep;
     }
     if (stepLabel) {
       stepLabel.textContent = `Page ${activeStep + 1} of ${maxStep + 1}`;
