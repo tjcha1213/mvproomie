@@ -1,5 +1,12 @@
 const SURVEY_STORAGE_KEY = "roomie-survey-responses-v1";
 const MOCK_PROFILE_STORAGE_KEY = "roomie.mock-user-profile";
+const THEME_STORAGE_KEY = "roomie-primary";
+const THEME_COLOR_BY_PREFERENCE = {
+  "indigo-white": "#4338ca",
+  turquoise: "#14b8a6",
+  "warm-mango": "#f59e0b",
+  "sunset-orange": "#f97316",
+};
 const SESSION_METADATA_FIELDS = {
   name: "name",
   contact: "contact",
@@ -325,6 +332,44 @@ function initSurveySectionTabs() {
   setStep(0);
 }
 
+function applySurveyThemeColor(color) {
+  if (!/^#[0-9a-f]{6}$/i.test(color || "")) return;
+  document.documentElement.style.setProperty("--primary", color);
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, color);
+  } catch {}
+}
+
+function initSurveyThemePreference() {
+  const inputs = Array.from(document.querySelectorAll('[name="color_theme_preference"]')).filter(
+    (input) => input instanceof HTMLInputElement && input.type === "radio"
+  );
+  if (!inputs.length) return;
+
+  let storedColor = "";
+  try {
+    storedColor = localStorage.getItem(THEME_STORAGE_KEY) || "";
+  } catch {}
+
+  const storedPreference = Object.entries(THEME_COLOR_BY_PREFERENCE).find(
+    ([, color]) => color.toLowerCase() === storedColor.toLowerCase()
+  )?.[0];
+
+  if (storedPreference) {
+    inputs.forEach((input) => {
+      input.checked = input.value === storedPreference;
+    });
+  }
+
+  inputs.forEach((input) => {
+    input.addEventListener("change", () => {
+      if (input.checked) {
+        applySurveyThemeColor(THEME_COLOR_BY_PREFERENCE[input.value]);
+      }
+    });
+  });
+}
+
 function escapeCsvValue(value) {
   const stringValue = String(value ?? "");
   if (/[",\n]/.test(stringValue)) {
@@ -463,6 +508,7 @@ function initAdminPage() {
 document.addEventListener("DOMContentLoaded", () => {
   initSurveyBackLinks();
   initSurveySectionTabs();
+  initSurveyThemePreference();
   initSurveyPage();
   initAdminPage();
 });
