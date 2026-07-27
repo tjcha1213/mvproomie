@@ -81,9 +81,9 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
       <div className="scroll-area">
         {/* Profile header */}
         <div className="profile-header">
-          <div className="profile-avatar">
+          <button type="button" className="profile-avatar" onClick={() => setPage('personal')} aria-label="Open personal details">
             <img src={displayProfile.avatar ?? JUAN_AVATAR} alt={displayProfile.name} />
-          </div>
+          </button>
           <div className="profile-name-row-ll">
             <span className="profile-name">{displayProfile.name}</span>
             <svg className="verified-badge" viewBox="0 0 24 24">
