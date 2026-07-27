@@ -165,6 +165,36 @@ export function updateServicePreferences(servicePreferences: string[]) {
   emit();
 }
 
+export function updateProfileAvatar(avatar: string) {
+  const nextProfile: MockUserProfile = {
+    ...(sessionState.profile ?? DEFAULT_PROFILE),
+    avatar,
+  };
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextProfile));
+  }
+  sessionState = {
+    ...sessionState,
+    profile: nextProfile,
+  };
+  emit();
+}
+
+export function updateProfileBio(bio: string) {
+  const nextProfile: MockUserProfile = {
+    ...(sessionState.profile ?? DEFAULT_PROFILE),
+    bio,
+  };
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextProfile));
+  }
+  sessionState = {
+    ...sessionState,
+    profile: nextProfile,
+  };
+  emit();
+}
+
 function RoleCard({
   role,
   selected,

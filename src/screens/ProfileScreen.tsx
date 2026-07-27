@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import Logo from '../components/Logo';
 import ModeSwitchModal from '../components/ModeSwitchModal';
+import ProfileBioEditor from '../components/ProfileBioEditor';
+import ProfilePhotoCard from '../components/ProfilePhotoCard';
 import ProfileSectionPage from '../components/ProfileSectionPage';
 import ServicePreferencesCard from '../components/ServicePreferencesCard';
 import { JUAN_AVATAR } from '../avatarPool';
@@ -164,6 +166,11 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
             subtitle="Your account information and profile summary."
             onBack={() => setPage('main')}
           >
+            <ProfilePhotoCard
+              avatar={displayProfile.avatar ?? JUAN_AVATAR}
+              name={displayProfile.name}
+              onShowToast={onShowToast}
+            />
             <div className="profile-details-card">
               <div className="profile-details-grid">
                 <div className="profile-details-item">
@@ -190,10 +197,7 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
                   <span className="profile-details-label">MVP route</span>
                   <span className="profile-details-value">{displayProfile.mvpRoute}</span>
                 </div>
-                <div className="profile-details-item">
-                  <span className="profile-details-label">Bio</span>
-                  <span className="profile-details-value">{displayProfile.bio}</span>
-                </div>
+                <ProfileBioEditor bio={displayProfile.bio} onShowToast={onShowToast} />
               </div>
             </div>
           </ProfileSectionPage>
