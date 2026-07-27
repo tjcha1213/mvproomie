@@ -41,15 +41,15 @@
         </div>
         <div class="survey-scroll-area">
           <nav class="subhead-tabs survey-section-tabs" aria-label="Survey sections">
-        <a class="subhead-tab active" href="#metadata" aria-current="true">Setup</a>
-        <a class="subhead-tab" href="#recommendation">Recommendation</a>
-        <a class="subhead-tab" href="#usability">Usability</a>
-        <a class="subhead-tab" href="#branding">Design</a>
-        <a class="subhead-tab" href="#open-ended">Open-Ended</a>
+        <a class="subhead-tab active" href="#metadata" data-survey-step="0" aria-current="true">Setup Recommendation</a>
+        <a class="subhead-tab" href="#usability" data-survey-step="1">Usability</a>
+        <a class="subhead-tab" href="#branding" data-survey-step="2">Design</a>
+        <a class="subhead-tab" href="#open-ended" data-survey-step="3">Open-Ended</a>
+        <a class="subhead-tab" href="#responses" data-survey-step="4">Save</a>
       </nav>
 
       <div class="survey-feature-body">
-        <section class="survey-section" id="metadata">
+        <section class="survey-section" id="metadata" data-survey-page="0">
         <div class="survey-header">
           <p class="eyebrow">Survey Setup</p>
           <h2>Session metadata</h2>
@@ -99,7 +99,7 @@
         </form>
       </section>
 
-        <section class="survey-section" id="recommendation">
+        <section class="survey-section" id="recommendation" data-survey-page="0">
         <div class="survey-header">
           <p class="eyebrow">Recommendation</p>
           <h2>Likelihood to recommend</h2>
@@ -128,7 +128,7 @@
         </form>
       </section>
 
-        <section class="survey-section" id="usability">
+        <section class="survey-section" id="usability" data-survey-page="1">
         <div class="survey-header">
           <p class="eyebrow">System Usability Scale</p>
           <h2>Ten-item usability assessment</h2>
@@ -238,7 +238,7 @@
         </form>
       </section>
 
-        <section class="survey-section" id="branding">
+        <section class="survey-section" id="branding" data-survey-page="2">
         <div class="survey-header">
           <p class="eyebrow">Brand Preferences</p>
           <h2>Logo, color, naming, and domain feedback</h2>
@@ -316,7 +316,7 @@
         </form>
       </section>
 
-      <section class="survey-section" id="open-ended">
+      <section class="survey-section" id="open-ended" data-survey-page="3">
         <div class="survey-header">
           <p class="eyebrow">Qualitative Follow-up</p>
           <h2>Open-ended prompts</h2>
@@ -346,7 +346,7 @@
         </form>
       </section>
 
-        <section class="survey-section" id="responses">
+        <section class="survey-section" id="responses" data-survey-page="4">
         <div class="survey-header">
           <p class="eyebrow">Response Logging</p>
           <h2>Save and export-ready storage</h2>
@@ -358,11 +358,22 @@
           <button class="demo-button" type="button" data-save-survey>Save response</button>
           <a class="secondary-button button-like" href="survey-admin.html">Open admin export</a>
         </div>
+        <label class="survey-agreement">
+          <input type="checkbox" data-survey-agree />
+          <span>
+            I confirm that this survey response may be stored for Roomie user testing analysis and exported for research review.
+          </span>
+        </label>
         <p class="survey-status" data-save-status data-state="idle">
           Responses are stored locally in this browser and can be downloaded later as CSV or JSON.
         </p>
       </section>
         </div>
+          <div class="survey-step-controls" aria-label="Survey page navigation">
+            <button class="secondary-button button-like" type="button" data-survey-prev>Back</button>
+            <div class="survey-step-indicator" data-survey-step-label>Page 1 of 5</div>
+            <button class="demo-button" type="button" data-survey-next>Next</button>
+          </div>
       </div>
     </main>
     <script type="module" src="./survey-storage.js"></script>

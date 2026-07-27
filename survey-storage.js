@@ -264,60 +264,65 @@ function initSurveyBackLinks() {
   });
 }
 
-function setActiveSurveyTab(activeTab) {
-  document.querySelectorAll(".survey-section-tabs .subhead-tab").forEach((tab) => {
-    const isActive = tab === activeTab;
-    tab.classList.toggle("active", isActive);
-    if (isActive) {
-      tab.setAttribute("aria-current", "true");
-    } else {
-      tab.removeAttribute("aria-current");
-    }
-  });
-}
-
 function initSurveySectionTabs() {
   const tabs = Array.from(document.querySelectorAll(".survey-section-tabs .subhead-tab")).filter(
     (tab) => tab instanceof HTMLAnchorElement
   );
-  if (!tabs.length) return;
+  const pages = Array.from(document.querySelectorAll("[data-survey-page]")).filter(
+    (section) => section instanceof HTMLElement
+  );
+  const prevButton = document.querySelector("[data-survey-prev]");
+  const nextButton = document.querySelector("[data-survey-next]");
+  const stepLabel = document.querySelector("[data-survey-step-label]");
+  const scrollArea = document.querySelector(".survey-scroll-area");
+  const maxStep = tabs.length - 1;
+  let activeStep = 0;
 
-  tabs.forEach((tab) => {
-    if (tab.classList.contains("active")) {
-      tab.setAttribute("aria-current", "true");
+  if (!tabs.length || !pages.length) return;
+
+  const setStep = (nextStep) => {
+    activeStep = Math.max(0, Math.min(maxStep, nextStep));
+
+    tabs.forEach((tab, index) => {
+      const isActive = index === activeStep;
+      tab.classList.toggle("active", isActive);
+      if (isActive) tab.setAttribute("aria-current", "true");
+      else tab.removeAttribute("aria-current");
+    });
+
+    pages.forEach((page) => {
+      page.hidden = Number(page.dataset.surveyPage) !== activeStep;
+    });
+
+    if (prevButton instanceof HTMLButtonElement) {
+      prevButton.disabled = activeStep === 0;
     }
-    tab.addEventListener("click", () => setActiveSurveyTab(tab));
+    if (nextButton instanceof HTMLButtonElement) {
+      nextButton.hidden = activeStep === maxStep;
+    }
+    if (stepLabel) {
+      stepLabel.textContent = `Page ${activeStep + 1} of ${maxStep + 1}`;
+    }
+    if (scrollArea) {
+      scrollArea.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", (event) => {
+      event.preventDefault();
+      setStep(index);
+    });
   });
 
-  const sections = tabs
-    .map((tab) => {
-      const sectionId = tab.hash ? tab.hash.slice(1) : "";
-      const section = sectionId ? document.getElementById(sectionId) : null;
-      return section ? { tab, section } : null;
-    })
-    .filter(Boolean);
+  if (prevButton instanceof HTMLButtonElement) {
+    prevButton.addEventListener("click", () => setStep(activeStep - 1));
+  }
+  if (nextButton instanceof HTMLButtonElement) {
+    nextButton.addEventListener("click", () => setStep(activeStep + 1));
+  }
 
-  if (!("IntersectionObserver" in window) || !sections.length) return;
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      const visibleEntry = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((first, second) => second.intersectionRatio - first.intersectionRatio)[0];
-      if (!visibleEntry) return;
-
-      const activeSection = sections.find(({ section }) => section === visibleEntry.target);
-      if (activeSection) {
-        setActiveSurveyTab(activeSection.tab);
-      }
-    },
-    {
-      root: document.querySelector(".survey-scroll-area"),
-      threshold: [0.35, 0.65],
-    }
-  );
-
-  sections.forEach(({ section }) => observer.observe(section));
+  setStep(0);
 }
 
 function escapeCsvValue(value) {
@@ -392,12 +397,19 @@ function renderAdminTable(responses) {
 function initSurveyPage() {
   const saveButton = document.querySelector("[data-save-survey]");
   const statusNode = document.querySelector("[data-save-status]");
+  const agreement = document.querySelector("[data-survey-agree]");
   if (!saveButton || !statusNode) return;
 
   normalizeOptionalFields();
   applyLockedSessionMetadata(readMockProfile());
 
   saveButton.addEventListener("click", () => {
+    if (agreement instanceof HTMLInputElement && !agreement.checked) {
+      statusNode.textContent = "Please agree to the user testing survey terms before saving.";
+      statusNode.dataset.state = "error";
+      return;
+    }
+
     const currentMetadata = getCurrentSessionMetadata();
     applyLockedSessionMetadata(readMockProfile());
     const payload = buildSurveyPayload(document, currentMetadata);
