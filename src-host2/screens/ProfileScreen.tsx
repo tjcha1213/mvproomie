@@ -7,6 +7,8 @@ import ModeSwitchModal from '../../src/components/ModeSwitchModal';
 import ProfileBioEditor from '../../src/components/ProfileBioEditor';
 import ProfilePhotoCard from '../../src/components/ProfilePhotoCard';
 import ProfileSectionPage from '../../src/components/ProfileSectionPage';
+import ProfileUtilityPage from '../../src/components/ProfileUtilityPage';
+import type { ProfileUtilityPageKey } from '../../src/components/ProfileUtilityPage';
 import ServicePreferencesCard from '../../src/components/ServicePreferencesCard';
 import { JUAN_AVATAR } from '../../src/avatarPool';
 import { PROFILE_MENU_ICONS } from '../../src/components/ProfileMenuIcons';
@@ -39,7 +41,7 @@ const MENU_ITEMS = [
 export default function ProfileScreen({ units, onOpenListings, onOpenTenants, onOpenTheme, onOpenReviews, notifications, onOpenNotification, onShowToast, onAdd }: Props) {
   const occupied = units.filter(u => u.status === 'Occupied').length;
   const [chooser, setChooser] = useState<'tenant' | 'host' | null>(null);
-  const [page, setPage] = useState<'main' | 'personal' | 'services'>('main');
+  const [page, setPage] = useState<'main' | 'personal' | 'services' | ProfileUtilityPageKey>('main');
   const { profile } = useMockSession();
   const displayProfile = profile ?? {
     participantId: 'PT-DEMO-2002',
@@ -135,7 +137,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
                   className="profile-menu-item"
                   onClick={() => {
                     if (item.key === 'settings') {
-                      onShowToast('Account Settings — coming soon');
+                      setPage('settings');
                       return;
                     }
                     if (item.key === 'personal') {
@@ -154,7 +156,10 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
                       onOpenReviews();
                       return;
                     }
-                    onShowToast(`${item.label} — coming soon`);
+                    if (item.key === 'security') setPage('security');
+                    if (item.key === 'verification') setPage('verification');
+                    if (item.key === 'payments') setPage('payments');
+                    if (item.key === 'support') setPage('support');
                   }}
                 >
                   <div className="profile-menu-icon">
@@ -220,7 +225,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
               </div>
             </div>
           </ProfileSectionPage>
-        ) : (
+        ) : page === 'services' ? (
           <ProfileSectionPage
             title="Other Services"
             subtitle="Rank the services you would like on Roomie."
@@ -228,6 +233,8 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
           >
             <ServicePreferencesCard />
           </ProfileSectionPage>
+        ) : (
+          <ProfileUtilityPage page={page} mode="host" onBack={() => setPage('main')} />
         )}
 
         <div style={{ height: 32 }} />

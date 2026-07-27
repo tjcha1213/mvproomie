@@ -1,0 +1,98 @@
+.profile-util-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.profile-util-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.profile-util-card-title {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.profile-util-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  text-align: left;
+}
+
+.profile-util-row strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.profile-util-row small {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.profile-util-switch {
+  width: 42px;
+  height: 24px;
+  border-radius: 999px;
+  padding: 3px;
+  flex: 0 0 auto;
+  background: color-mix(in srgb, var(--text-muted) 24%, #ffffff);
+  transition: background 0.16s ease;
+}
+
+.profile-util-switch span {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2);
+  transition: transform 0.16s ease;
+}
+
+.profile-util-switch.on {
+  background: var(--primary);
+}
+
+.profile-util-switch.on span {
+  transform: translateX(18px);
+}
+
+.profile-util-pill {
+  border-radius: 999px;
+  padding: 6px 9px;
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.profile-util-pill.is-complete {
+  background: color-mix(in srgb, #22c55e 14%, #ffffff);
+  color: #047857;
+}
+
+.profile-util-pill.is-pending {
+  background: color-mix(in srgb, #f59e0b 16%, #ffffff);
+  color: #92400e;
+}
+
+.profile-util-pill.is-optional {
+  background: color-mix(in srgb, var(--text-muted) 14%, #ffffff);
+  color: var(--text-muted);
+}

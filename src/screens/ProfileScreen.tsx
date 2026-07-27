@@ -4,6 +4,8 @@ import ModeSwitchModal from '../components/ModeSwitchModal';
 import ProfileBioEditor from '../components/ProfileBioEditor';
 import ProfilePhotoCard from '../components/ProfilePhotoCard';
 import ProfileSectionPage from '../components/ProfileSectionPage';
+import ProfileUtilityPage from '../components/ProfileUtilityPage';
+import type { ProfileUtilityPageKey } from '../components/ProfileUtilityPage';
 import ServicePreferencesCard from '../components/ServicePreferencesCard';
 import { JUAN_AVATAR } from '../avatarPool';
 import { PROFILE_MENU_ICONS } from '../components/ProfileMenuIcons';
@@ -27,7 +29,7 @@ interface Props {
 
 export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
   const [chooser, setChooser] = useState<'tenant' | 'host' | null>(null);
-  const [page, setPage] = useState<'main' | 'personal' | 'services'>('main');
+  const [page, setPage] = useState<'main' | 'personal' | 'services' | ProfileUtilityPageKey>('main');
   const { profile } = useMockSession();
   const displayProfile = profile ?? {
     participantId: 'PT-DEMO-1001',
@@ -131,7 +133,11 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
                       window.location.assign(`${import.meta.env.BASE_URL}tenant-surveys.html?mvp=Tenant%20MVP%201`);
                       return;
                     }
-                    onShowToast(`${item.label} — coming soon`);
+                    if (item.label === 'Account Settings') setPage('settings');
+                    if (item.label === 'Login & Security') setPage('security');
+                    if (item.label === 'Verification') setPage('verification');
+                    if (item.label === 'Payment Methods') setPage('payments');
+                    if (item.label === 'Help & Support') setPage('support');
                   }}
                 >
                   <div className="profile-menu-icon">
@@ -197,7 +203,7 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
               </div>
             </div>
           </ProfileSectionPage>
-        ) : (
+        ) : page === 'services' ? (
           <ProfileSectionPage
             title="Other Services"
             subtitle="Rank the services you would like on Roomie."
@@ -205,6 +211,8 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
           >
             <ServicePreferencesCard />
           </ProfileSectionPage>
+        ) : (
+          <ProfileUtilityPage page={page} mode="tenant" onBack={() => setPage('main')} />
         )}
 
         <div style={{ height: 32 }} />
