@@ -68,7 +68,7 @@ function readStoredProfile(): MockUserProfile | null {
         : [];
       return {
         participantId: typeof parsed.participantId === 'string' ? parsed.participantId : generateParticipantId(),
-        avatar: typeof parsed.avatar === 'string' ? parsed.avatar : JUAN_AVATAR,
+        avatar: JUAN_AVATAR,
         themeColor: typeof parsed.themeColor === 'string' ? parsed.themeColor : DEFAULT_PRIMARY,
         name: parsed.name,
         contact: parsed.contact,
@@ -170,9 +170,6 @@ export function updateProfileAvatar(avatar: string) {
     ...(sessionState.profile ?? DEFAULT_PROFILE),
     avatar,
   };
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextProfile));
-  }
   sessionState = {
     ...sessionState,
     profile: nextProfile,
