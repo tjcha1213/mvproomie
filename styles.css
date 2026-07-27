@@ -25,7 +25,11 @@ body {
   background:
     radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 14%, transparent), transparent 28%),
     radial-gradient(circle at top right, color-mix(in srgb, var(--primary) 10%, transparent), transparent 24%),
-    linear-gradient(180deg, #fafbff 0%, #eef1ff 100%);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary) 3%, #ffffff) 0%,
+      color-mix(in srgb, var(--primary) 9%, #ffffff) 100%
+    );
   color: var(--ink);
   font-family: "Avenir Next", "Segoe UI", sans-serif;
 }
@@ -69,10 +73,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0;
-  border: 1px solid rgba(29, 38, 84, 0.08);
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, rgba(29, 38, 84, 0.08));
   border-radius: 28px;
-  background: #f7f9ff;
-  box-shadow: 0 22px 54px rgba(29, 38, 84, 0.14);
+  background: color-mix(in srgb, var(--primary) 5%, #ffffff);
+  box-shadow: 0 22px 54px color-mix(in srgb, var(--primary) 16%, transparent);
   overflow: hidden;
 }
 
@@ -82,7 +86,7 @@ body {
   justify-content: flex-start;
   gap: 12px;
   padding: 14px 16px;
-  border-bottom: 1px solid rgba(29, 38, 84, 0.08);
+  border-bottom: 1px solid color-mix(in srgb, var(--primary) 10%, rgba(29, 38, 84, 0.08));
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(18px);
   flex-shrink: 0;
@@ -159,7 +163,7 @@ body {
   padding: 12px 14px 10px;
   border: 0;
   border-radius: 0;
-  background: rgba(247, 249, 255, 0.94);
+  background: color-mix(in srgb, var(--primary) 5%, rgba(255, 255, 255, 0.96));
   overflow: visible;
   scrollbar-width: none;
   backdrop-filter: blur(14px);
@@ -209,7 +213,7 @@ body {
   flex-direction: column;
   min-height: 0;
   flex: 1;
-  background: #f7f9ff;
+  background: color-mix(in srgb, var(--primary) 5%, #ffffff);
 }
 
 .survey-status-bar {
@@ -361,10 +365,10 @@ body {
 .survey-section {
   padding: 16px;
   margin-bottom: 0;
-  border: 1px solid rgba(29, 38, 84, 0.08);
+  border: 1px solid color-mix(in srgb, var(--primary) 10%, rgba(29, 38, 84, 0.08));
   border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 12px 28px rgba(29, 38, 84, 0.07);
+  background: color-mix(in srgb, var(--primary) 3%, #ffffff);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
 .survey-header {
@@ -410,9 +414,9 @@ body {
   align-items: flex-start;
   margin-top: 16px;
   padding: 14px;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--primary) 14%, #ffffff);
   border-radius: 18px;
-  background: rgba(248, 251, 255, 0.96);
+  background: color-mix(in srgb, var(--primary) 5%, #ffffff);
   color: var(--muted);
   font-size: 0.92rem;
   line-height: 1.5;
@@ -434,8 +438,8 @@ body {
   gap: 12px;
   align-items: center;
   padding: 14px 24px 18px;
-  border-top: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.92);
+  border-top: 1px solid color-mix(in srgb, var(--primary) 12%, #ffffff);
+  background: color-mix(in srgb, var(--primary) 4%, rgba(255, 255, 255, 0.94));
   backdrop-filter: blur(16px);
 }
 
@@ -480,9 +484,9 @@ body {
 
 .survey-field,
 .survey-card {
-  border: 1px solid rgba(29, 38, 84, 0.08);
+  border: 1px solid color-mix(in srgb, var(--primary) 10%, rgba(29, 38, 84, 0.08));
   border-radius: 16px;
-  background: #f8faff;
+  background: color-mix(in srgb, var(--primary) 5%, #ffffff);
 }
 
 .survey-field {
@@ -503,7 +507,7 @@ body {
 .survey-field textarea {
   width: 100%;
   padding: 12px 13px;
-  border: 1px solid #dbe5f3;
+  border: 1px solid color-mix(in srgb, var(--primary) 13%, #dbe5f3);
   border-radius: 13px;
   background: #ffffff;
   color: var(--ink);
@@ -514,11 +518,11 @@ body {
 .survey-field input[readonly],
 .survey-field textarea[readonly],
 .survey-field select:disabled {
-  background: #f5f7ff;
+  background: color-mix(in srgb, var(--primary) 6%, #ffffff);
   color: #54618a;
   cursor: not-allowed;
   opacity: 1;
-  box-shadow: inset 0 0 0 1px rgba(87, 104, 166, 0.08);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
 .survey-field input[readonly]::placeholder,
@@ -578,9 +582,9 @@ body {
   align-items: center;
   gap: 12px;
   padding: 14px;
-  border: 1px solid #dbe5f3;
+  border: 1px solid color-mix(in srgb, var(--primary) 13%, #dbe5f3);
   border-radius: 18px;
-  background: #ffffff;
+  background: color-mix(in srgb, var(--primary) 2%, #ffffff);
   color: var(--ink);
   cursor: pointer;
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
@@ -589,7 +593,7 @@ body {
 .theme-option-card:hover {
   transform: translateY(-1px);
   border-color: color-mix(in srgb, var(--primary) 28%, #ffffff);
-  box-shadow: 0 10px 20px rgba(29, 38, 84, 0.08);
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
 .theme-option-card input {
@@ -612,7 +616,7 @@ body {
   min-width: 58px;
   height: 34px;
   overflow: hidden;
-  border: 1px solid #dbe5f3;
+  border: 1px solid color-mix(in srgb, var(--primary) 13%, #dbe5f3);
   border-radius: 999px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
@@ -661,9 +665,9 @@ body {
   min-width: 0;
   min-height: 68px;
   padding: 12px 8px;
-  border: 1px solid #dbe5f3;
+  border: 1px solid color-mix(in srgb, var(--primary) 13%, #dbe5f3);
   border-radius: 16px;
-  background: #ffffff;
+  background: color-mix(in srgb, var(--primary) 2%, #ffffff);
   color: var(--ink);
   font-weight: 650;
   line-height: 1.25;
