@@ -10,6 +10,16 @@
       name="description"
       content="Roomie user testing survey page with recommendation, usability, and qualitative questionnaires."
     />
+    <script>
+      (() => {
+        try {
+          const color = localStorage.getItem("roomie-primary");
+          if (/^#[0-9a-f]{6}$/i.test(color || "")) {
+            document.documentElement.style.setProperty("--primary", color);
+          }
+        } catch {}
+      })();
+    </script>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -21,14 +31,13 @@
           </svg>
         </a>
         <div class="survey-app-copy">
-          <p class="survey-app-kicker">Profile</p>
           <h1>User Testing Survey</h1>
         </div>
       </header>
       <div class="survey-feature-shell">
         <div class="survey-scroll-area">
           <nav class="subhead-tabs survey-section-tabs" aria-label="Survey sections">
-        <a class="subhead-tab active" href="#metadata" data-survey-step="0" aria-current="true">Setup Recommendation</a>
+        <a class="subhead-tab active" href="#metadata" data-survey-step="0" aria-current="true">Setup & Recommendation</a>
         <a class="subhead-tab" href="#usability" data-survey-step="1">Usability</a>
         <a class="subhead-tab" href="#branding" data-survey-step="2">Design</a>
         <a class="subhead-tab" href="#open-ended" data-survey-step="3">Open-Ended</a>
@@ -343,12 +352,17 @@
         </div>
         <div class="survey-actions">
           <button class="demo-button" type="button" data-save-survey>Save response</button>
-          <a class="secondary-button button-like" href="survey-admin.html">Open admin export</a>
         </div>
         <label class="survey-agreement">
           <input type="checkbox" data-survey-agree />
           <span>
             I confirm that this survey response may be stored for Roomie user testing analysis and exported for research review.
+          </span>
+        </label>
+        <label class="survey-agreement">
+          <input type="checkbox" name="nda_agreement" value="agreed" />
+          <span>
+            I agree to keep unreleased Roomie prototype details, research materials, and testing observations confidential unless Roomie gives permission to share them.
           </span>
         </label>
         <p class="survey-status" data-save-status data-state="idle">

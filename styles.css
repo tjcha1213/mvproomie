@@ -5,8 +5,9 @@
   --ink: #1d2654;
   --muted: #5a668e;
   --line: #d7ddf5;
-  --accent: #3f51e5;
-  --accent-soft: #e4e8ff;
+  --primary: #1D4ED8;
+  --accent: var(--primary);
+  --accent-soft: color-mix(in srgb, var(--primary) 12%, #ffffff);
   --shadow: rgba(29, 38, 84, 0.1);
 }
 
@@ -22,8 +23,8 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(63, 81, 229, 0.14), transparent 28%),
-    radial-gradient(circle at top right, rgba(121, 134, 255, 0.1), transparent 24%),
+    radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 14%, transparent), transparent 28%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--primary) 10%, transparent), transparent 24%),
     linear-gradient(180deg, #fafbff 0%, #eef1ff 100%);
   color: var(--ink);
   font-family: "Avenir Next", "Segoe UI", sans-serif;
@@ -96,14 +97,6 @@ body {
 
 .survey-app-copy { min-width: 0; }
 
-.survey-app-kicker {
-  margin: 0 0 2px;
-  color: var(--muted);
-  font-size: 0.74rem;
-  font-weight: 800;
-  line-height: 1.1;
-}
-
 .survey-app-copy h1 {
   margin: 0;
   max-width: none;
@@ -127,8 +120,8 @@ body {
   width: 42px;
   height: 42px;
   border-radius: 14px;
-  border: 1px solid rgba(63, 81, 229, 0.14);
-  background: #eef2ff;
+  border: 1px solid color-mix(in srgb, var(--primary) 14%, #ffffff);
+  background: color-mix(in srgb, var(--primary) 9%, #ffffff);
   color: var(--accent);
   text-decoration: none;
   flex: 0 0 auto;
@@ -322,9 +315,9 @@ body {
 
 .subhead-tab.active,
 .subhead-tab[aria-current="true"] {
-  background: linear-gradient(135deg, #6a78ff, #3f51e5);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 70%, #ffffff), var(--primary));
   color: #ffffff;
-  box-shadow: 0 10px 20px rgba(63, 81, 229, 0.18);
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--primary) 18%, transparent);
 }
 
 /* Child tabs: section nav (MVPs / Surveys) shown under the audience tabs */
@@ -466,7 +459,7 @@ body {
 }
 
 .survey-status[data-state="success"] {
-  color: #1f66db;
+  color: var(--primary);
 }
 
 .survey-status[data-state="error"] {
@@ -593,7 +586,7 @@ body {
 
 .theme-option-card:hover {
   transform: translateY(-1px);
-  border-color: #b9c9f4;
+  border-color: color-mix(in srgb, var(--primary) 28%, #ffffff);
   box-shadow: 0 10px 20px rgba(29, 38, 84, 0.08);
 }
 
@@ -604,9 +597,9 @@ body {
 }
 
 .theme-option-card:has(input:checked) {
-  border-color: #4a8dff;
-  background: rgba(241, 246, 255, 0.96);
-  box-shadow: 0 12px 24px rgba(31, 102, 219, 0.12);
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, #ffffff);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
 .theme-option-swatch {
@@ -675,7 +668,7 @@ body {
 
 .nps-scale input,
 .likert-row input {
-  accent-color: #1f66db;
+  accent-color: var(--primary);
 }
 
 .nps-labels {
@@ -756,7 +749,7 @@ h2 {
   padding: 0 20px;
   border-radius: 999px;
   border: 1px solid transparent;
-  background: linear-gradient(135deg, #4a8dff, #1f66db);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 72%, #ffffff), var(--primary));
   color: #ffffff;
   font: inherit;
   font-size: 0.96rem;
@@ -765,7 +758,7 @@ h2 {
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
-  box-shadow: 0 12px 24px rgba(31, 102, 219, 0.2);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
 .secondary-button {
