@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect, useCallback, useMemo, type PointerEvent as ReactPointerEvent } from 'react';
+import { useState, useRef, useEffect, useCallback, type PointerEvent as ReactPointerEvent } from 'react';
 import { formatListingId, type Listing } from '../data/listings';
 import ListingMap, { MiniListingMap } from '../components/ListingMap';
 import AppLogo from '../components/AppLogo';
 import FilterSheet from '../../src/components/FilterSheet';
-import { PRICE_MIN, PRICE_MAX, applyFilters, type Filters } from '../../src/filters';
+import type { Filters } from '../../src/filters';
+import { defaultFilters, applyFilters, activeFilterCount } from '../../src/filters';
 
 interface Props {
   listings: Listing[];
@@ -104,14 +105,8 @@ function ListingPhotoCarousel({
 
 export default function SearchScreen({ listings, onSelectListing, onToggleSave, onShowToast, onSendInquiry }: Props) {
   const [query, setQuery] = useState('');
+  const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
-  const [minSqm, setMinSqm] = useState('');
-  const [maxSqm, setMaxSqm] = useState('');
-  const [listingType, setListingType] = useState<'Any' | Listing['type']>('Any');
-  const [furnished, setFurnished] = useState(false);
-  const [wifi, setWifi] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(listings[0]?.id ?? null);
   const [sheetHeight, setSheetHeight] = useState(320);
   const [isDragging, setIsDragging] = useState(false);
@@ -129,59 +124,8 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
     moved: false,
   });
 
-  const filteredListings = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const parsedMinPrice = minPrice ? Number(minPrice) : null;
-    const parsedMaxPrice = maxPrice ? Number(maxPrice) : null;
-    const parsedMinSqm = minSqm ? Number(minSqm) : null;
-    const parsedMaxSqm = maxSqm ? Number(maxSqm) : null;
-
-    return listings.filter((listing) => {
-      const matchesQuery =
-        !q ||
-        listing.location.toLowerCase().includes(q) ||
-        listing.district.toLowerCase().includes(q) ||
-        listing.title.toLowerCase().includes(q);
-
-      const matchesMinPrice = parsedMinPrice === null || listing.price >= parsedMinPrice;
-      const matchesMaxPrice = parsedMaxPrice === null || listing.price <= parsedMaxPrice;
-      const matchesMinSqm = parsedMinSqm === null || listing.sqm >= parsedMinSqm;
-      const matchesMaxSqm = parsedMaxSqm === null || listing.sqm <= parsedMaxSqm;
-      const matchesType = listingType === 'Any' || listing.type === listingType;
-      const matchesFurnished = !furnished || listing.furnished;
-      const matchesWifi = !wifi || listing.wifi;
-
-      return matchesQuery && matchesMinPrice && matchesMaxPrice && matchesMinSqm && matchesMaxSqm && matchesType && matchesFurnished && matchesWifi;
-    });
-  }, [listings, query, minPrice, maxPrice, minSqm, maxSqm, listingType, furnished, wifi]);
-
-  const activeFilterCount = [
-    minPrice,
-    maxPrice,
-    minSqm,
-    maxSqm,
-    listingType !== 'Any' ? listingType : '',
-    furnished ? 'furnished' : '',
-    wifi ? 'wifi' : '',
-  ].filter(Boolean).length;
-
-  const sharedFilters: Filters = {
-    priceMin: minPrice ? Number(minPrice) : PRICE_MIN,
-    priceMax: maxPrice ? Number(maxPrice) : PRICE_MAX,
-    types: listingType === 'Any' ? [] : [listingType],
-    furnished,
-    wifi,
-  };
-
-  const applySharedFilters = (next: Filters) => {
-    setMinPrice(next.priceMin === PRICE_MIN ? '' : String(next.priceMin));
-    setMaxPrice(next.priceMax === PRICE_MAX ? '' : String(next.priceMax));
-    setMinSqm('');
-    setMaxSqm('');
-    setListingType(next.types[0] ?? 'Any');
-    setFurnished(next.furnished);
-    setWifi(next.wifi);
-  };
+  const filteredListings = applyFilters(listings, query, filters);
+  const filterCount = activeFilterCount(filters);
 
   const getSnapPoints = useCallback(() => {
     const collapsed = 44;
@@ -386,17 +330,16 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
             )}
           </div>
           <button
-            className={`filter-btn mvp2-filter-pill ${sheetOpen ? 'active' : ''}`}
+            className="filter-btn mvp2-filter-pill"
             onClick={() => setSheetOpen(true)}
             aria-label="Filters"
-            aria-expanded={sheetOpen}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="4" y1="6" x2="20" y2="6"/>
               <line x1="8" y1="12" x2="16" y2="12"/>
               <line x1="11" y1="18" x2="13" y2="18"/>
             </svg>
-            {activeFilterCount > 0 && <span className="mvp2-filter-count">{activeFilterCount}</span>}
+            {filterCount > 0 && <span className="mvp2-filter-count">{filterCount}</span>}
           </button>
         </div>
       </div>
@@ -518,9 +461,9 @@ export default function SearchScreen({ listings, onSelectListing, onToggleSave, 
       </div>
       <FilterSheet
         open={sheetOpen}
-        filters={sharedFilters}
+        filters={filters}
         countFor={(nextFilters) => applyFilters(listings, query, nextFilters).length}
-        onApply={applySharedFilters}
+        onApply={setFilters}
         onClose={() => setSheetOpen(false)}
         fromTop
         bottomInsetPx={sheetHeight}
