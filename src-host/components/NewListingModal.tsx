@@ -35,6 +35,9 @@ const INITIAL_FORM = {
   amenities: '',
 };
 
+const OTHER_IMPORT_PLATFORM = 'Other platform';
+const IMPORT_PLATFORMS = ['Airbnb', 'Facebook Marketplace', 'Rentpad', 'Lamudi', 'DormyPH/SuzyRent', 'Hoppler', OTHER_IMPORT_PLATFORM];
+
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -48,6 +51,10 @@ export default function NewListingModal({ open, onClose, onCreate }: Props) {
   const [form, setForm] = useState(INITIAL_FORM);
   const [photos, setPhotos] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importPlatform, setImportPlatform] = useState(IMPORT_PLATFORMS[0]);
+  const [otherPlatformName, setOtherPlatformName] = useState('');
+  const [importHelpSent, setImportHelpSent] = useState(false);
 
   const photoSlots = useMemo(() => {
     const padded = [...photos];
@@ -61,6 +68,10 @@ export default function NewListingModal({ open, onClose, onCreate }: Props) {
     setForm(INITIAL_FORM);
     setPhotos([]);
     setIsUploading(false);
+    setImportOpen(false);
+    setImportPlatform(IMPORT_PLATFORMS[0]);
+    setOtherPlatformName('');
+    setImportHelpSent(false);
   }
 
   function handleClose() {
@@ -105,6 +116,16 @@ export default function NewListingModal({ open, onClose, onCreate }: Props) {
     handleClose();
   }
 
+  function selectImportPlatform(platform: string) {
+    setImportPlatform(platform);
+    setImportHelpSent(false);
+  }
+
+  function sendOtherPlatformHelpInquiry() {
+    if (!otherPlatformName.trim()) return;
+    setImportHelpSent(true);
+  }
+
   return (
     <div className="listing-modal-overlay" onClick={handleClose}>
       <div
@@ -127,6 +148,70 @@ export default function NewListingModal({ open, onClose, onCreate }: Props) {
           </div>
 
           <form className="new-listing-body" onSubmit={handleSubmit}>
+            <section className={`listing-import-card ${importOpen ? 'is-open' : ''}`}>
+              <button
+                type="button"
+                className="listing-import-toggle"
+                onClick={() => setImportOpen((current) => !current)}
+                aria-expanded={importOpen}
+              >
+                <span>
+                  <strong>Import listings from other platforms</strong>
+                  <small>Bring listing details from another rental channel, then review before publishing.</small>
+                </span>
+                <span className="listing-import-chevron" aria-hidden="true">v</span>
+              </button>
+              {importOpen && (
+                <div className="listing-import-panel">
+                  <div className="listing-import-platforms" role="list" aria-label="Listing import platforms">
+                    {IMPORT_PLATFORMS.map((platform) => (
+                      <button
+                        key={platform}
+                        type="button"
+                        className={`listing-import-platform ${importPlatform === platform ? 'active' : ''}`}
+                        onClick={() => selectImportPlatform(platform)}
+                      >
+                        {platform}
+                      </button>
+                    ))}
+                  </div>
+                  {importPlatform === OTHER_IMPORT_PLATFORM ? (
+                    <div className="listing-import-help">
+                      {importHelpSent ? (
+                        <div className="listing-import-confirmation">
+                          Help inquiry sent to the Roomie support team. They will respond ASAP.
+                        </div>
+                      ) : (
+                        <>
+                          <label className="listing-import-other-field">
+                            <span>Platform name</span>
+                            <input
+                              value={otherPlatformName}
+                              onChange={(event) => setOtherPlatformName(event.target.value)}
+                              placeholder="Enter platform"
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            className="listing-import-ok"
+                            onClick={sendOtherPlatformHelpInquiry}
+                            disabled={!otherPlatformName.trim()}
+                          >
+                            OK
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <label className="new-listing-field listing-import-url">
+                      <span>{importPlatform} listing link</span>
+                      <input placeholder="Paste listing URL to import details" />
+                    </label>
+                  )}
+                </div>
+              )}
+            </section>
+
             <div className="new-listing-grid">
               <label className="new-listing-field">
                 <span>Listing title</span>

@@ -4594,6 +4594,154 @@ img {
   gap: 12px;
 }
 
+.listing-import-card {
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--border));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--primary) 5%, #ffffff);
+  overflow: hidden;
+}
+
+.listing-import-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  padding: 14px;
+  color: var(--text);
+  text-align: left;
+}
+
+.listing-import-toggle strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.listing-import-toggle small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.listing-import-chevron {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 900;
+  transition: transform 0.16s ease;
+}
+
+.listing-import-card.is-open .listing-import-chevron {
+  transform: rotate(180deg);
+}
+
+.listing-import-panel {
+  display: grid;
+  gap: 10px;
+  padding: 0 14px 14px;
+}
+
+.listing-import-platforms {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 6px;
+}
+
+.listing-import-platform {
+  min-height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.listing-import-platform.active {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  color: #fff;
+}
+
+.listing-import-url {
+  margin-top: 0;
+}
+
+.listing-import-help {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: var(--surface);
+}
+
+.listing-import-other-field {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.listing-import-other-field span {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.listing-import-other-field input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 9px 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+
+.listing-import-ok {
+  border: 0;
+  border-radius: 999px;
+  min-height: 34px;
+  padding: 0 13px;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.listing-import-ok:disabled {
+  opacity: 0.42;
+}
+
+.listing-import-confirmation {
+  grid-column: 1 / -1;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, #22c55e 12%, #ffffff);
+  color: #047857;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
 .new-listing-field {
   display: grid;
   gap: 7px;
