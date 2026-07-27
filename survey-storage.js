@@ -443,6 +443,7 @@ function initSurveyPage() {
   const saveButton = document.querySelector("[data-save-survey]");
   const statusNode = document.querySelector("[data-save-status]");
   const agreement = document.querySelector("[data-survey-agree]");
+  const ndaAgreement = document.querySelector('[name="nda_agreement"]');
   if (!saveButton || !statusNode) return;
 
   normalizeOptionalFields();
@@ -451,6 +452,11 @@ function initSurveyPage() {
   saveButton.addEventListener("click", () => {
     if (agreement instanceof HTMLInputElement && !agreement.checked) {
       statusNode.textContent = "Please agree to the user testing survey terms before saving.";
+      statusNode.dataset.state = "error";
+      return;
+    }
+    if (ndaAgreement instanceof HTMLInputElement && !ndaAgreement.checked) {
+      statusNode.textContent = "Please agree to the NDA clause before saving.";
       statusNode.dataset.state = "error";
       return;
     }
@@ -470,7 +476,7 @@ function initSurveyPage() {
     responses.push(payload);
     setStoredResponses(responses);
 
-    statusNode.textContent = `Saved locally as ${payload.response_id}. Administrators can export it later as CSV.`;
+    statusNode.textContent = "Thank you. Your response has been saved.";
     statusNode.dataset.state = "success";
   });
 }
