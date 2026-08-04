@@ -29,6 +29,7 @@ type SessionState = {
 const STORAGE_KEY = 'roomie.mock-user-profile';
 const SURVEY_SESSION_METADATA_KEY = 'roomie.mock-survey-session-metadata';
 const SURVEY_DRAFT_STORAGE_KEY = 'roomie-survey-drafts-v1';
+const DEFAULT_SIGNUP_BIRTHDATE = '2026-01-01';
 
 const DEFAULT_PROFILE: MockUserProfile = {
   participantId: 'PT-DEMO-0001',
@@ -36,7 +37,7 @@ const DEFAULT_PROFILE: MockUserProfile = {
   themeColor: DEFAULT_PRIMARY,
   name: 'Juan Dela Cruz',
   contact: 'juan@roomie.ph',
-  birthdate: '1998-01-01',
+  birthdate: DEFAULT_SIGNUP_BIRTHDATE,
   role: 'tenant',
   participantRoleDetail: 'Tenant',
   mvpRoute: 'Tenant MVP 1',
@@ -284,7 +285,7 @@ export function MockLoginGate({
   const [password, setPassword] = useState('');
   const [name, setName] = useState(profile?.name ?? '');
   const [contact, setContact] = useState(profile?.contact ?? '');
-  const [birthdate, setBirthdate] = useState(profile?.birthdate ?? '');
+  const [birthdate, setBirthdate] = useState(profile?.birthdate ?? DEFAULT_SIGNUP_BIRTHDATE);
   const [role, setRole] = useState<MockRole>(profile?.role ?? (variant === 'host' ? 'host' : 'tenant'));
   const [bio, setBio] = useState(profile?.bio ?? '');
   const [avatar, setAvatar] = useState(profile?.avatar ?? JUAN_AVATAR);
@@ -309,7 +310,7 @@ export function MockLoginGate({
     setPassword('');
     setName('');
     setContact('');
-    setBirthdate('');
+    setBirthdate(DEFAULT_SIGNUP_BIRTHDATE);
     setRole(variant === 'host' ? 'host' : 'tenant');
     setBio('');
     setAvatar(JUAN_AVATAR);
