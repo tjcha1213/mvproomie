@@ -416,10 +416,7 @@ function normalizeRemoteResponsesPayload(payload) {
 async function postSurveyResponseToRemote(payload) {
   if (!SURVEY_REMOTE_ENDPOINT) return;
 
-  const remotePayload = {
-    ...normalizeSurveyResponse(payload),
-    _roomie_action: "append",
-  };
+  const remotePayload = normalizeSurveyResponse(payload);
 
   await fetch(SURVEY_REMOTE_ENDPOINT, {
     method: "POST",
