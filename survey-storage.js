@@ -111,6 +111,7 @@ function getStoredResponses() {
 
 function setStoredResponses(responses) {
   localStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify(responses));
+  window.dispatchEvent(new CustomEvent("roomie-survey-responses-updated"));
 }
 
 function getStoredDrafts() {
@@ -137,20 +138,42 @@ function readMockProfile() {
   }
 }
 
+function getSurveyRouteFromQuery() {
+  try {
+    const route = new URLSearchParams(window.location.search).get("mvp")?.trim() || "";
+    return PROFILE_ROUTE_BY_MVP[route] ? route : "";
+  } catch {
+    return "";
+  }
+}
+
+function inferRoleFromMvpRoute(mvpRoute, fallbackRole = "", fallbackRoleDetail = "") {
+  if (mvpRoute.startsWith("Tenant MVP")) {
+    return { role: "tenant", roleDetail: "Tenant" };
+  }
+  if (mvpRoute.startsWith("Host MVP")) {
+    return { role: "host", roleDetail: "Host" };
+  }
+  return { role: fallbackRole, roleDetail: fallbackRoleDetail || fallbackRole };
+}
+
 function getSessionMetadata(profile) {
   if (!profile || typeof profile !== "object") return null;
 
   const participantId = typeof profile.participantId === "string" ? profile.participantId.trim() : "";
-  const role = typeof profile.role === "string" ? profile.role.trim() : "";
-  const roleDetail = typeof profile.participantRoleDetail === "string"
+  const profileRole = typeof profile.role === "string" ? profile.role.trim() : "";
+  const profileRoleDetail = typeof profile.participantRoleDetail === "string"
     ? profile.participantRoleDetail.trim()
-    : role;
+    : profileRole;
   const name = typeof profile.name === "string" ? profile.name.trim() : "";
   const contact = typeof profile.contact === "string" ? profile.contact.trim() : "";
   const birthdate = typeof profile.birthdate === "string" ? profile.birthdate.trim() : "";
   const bio = typeof profile.bio === "string" ? profile.bio.trim() : "";
-  const mvpRoute = typeof profile.mvpRoute === "string" ? profile.mvpRoute.trim() : "";
+  const queryRoute = getSurveyRouteFromQuery();
+  const profileRoute = typeof profile.mvpRoute === "string" ? profile.mvpRoute.trim() : "";
+  const mvpRoute = queryRoute || profileRoute;
   const testedRoute = mvpRoute;
+  const { role, roleDetail } = inferRoleFromMvpRoute(mvpRoute, profileRole, profileRoleDetail);
   const servicePreferences = Array.isArray(profile.servicePreferences)
     ? profile.servicePreferences.filter((item) => typeof item === "string")
     : [];
@@ -1073,6 +1096,11 @@ function initAdminPage() {
       render();
     });
   }
+
+  window.addEventListener("storage", (event) => {
+    if (event.key === SURVEY_STORAGE_KEY) render();
+  });
+  window.addEventListener("roomie-survey-responses-updated", render);
 
   render();
 }
