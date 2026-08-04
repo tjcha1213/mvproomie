@@ -565,7 +565,15 @@ body {
   background: color-mix(in srgb, var(--primary) 4%, #ffffff);
 }
 
+.mvp-ranking-card {
+  background: color-mix(in srgb, var(--primary) 4%, #ffffff);
+}
+
 .services-ranking-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mvp-ranking-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
@@ -2125,6 +2133,10 @@ h2 {
 
   .services-ranking-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mvp-ranking-grid {
+    grid-template-columns: 1fr;
   }
 
   .survey-actions {

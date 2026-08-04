@@ -86,9 +86,10 @@ const SURVEY_FIELDS = [
   "location_context_feedback",
   "task_find_contact_listing",
   "task_listing_details_clarity",
-  "mvp_easiest_to_use",
-  "mvp_most_trustworthy",
-  "mvp_most_likely_to_reuse",
+  "mvp_best_overall_rank_1",
+  "mvp_best_overall_rank_2",
+  "mvp_best_overall_rank_3",
+  "mvp_best_overall_reason",
   "most_clear",
   "most_confusing",
   "trust_feedback",
@@ -747,6 +748,56 @@ function initPriorityRanking() {
   });
 }
 
+function initMvpRanking() {
+  document.querySelectorAll("[data-mvp-ranking]").forEach((rankingRoot) => {
+    if (!(rankingRoot instanceof HTMLElement)) return;
+
+    const cards = Array.from(rankingRoot.querySelectorAll("[data-mvp-id]")).filter(
+      (card) => card instanceof HTMLButtonElement
+    );
+    const fieldRoot = rankingRoot.closest(".survey-card") || document;
+    const hiddenFields = [1, 2, 3].map((rank) => {
+      const field = fieldRoot.querySelector(`[data-mvp-rank="${rank}"]`);
+      return field instanceof HTMLInputElement ? field : null;
+    });
+    let ranked = hiddenFields
+      .map((field) => field?.value || "")
+      .filter((value) => value && cards.some((card) => card.dataset.mvpId === value));
+
+    const render = () => {
+      hiddenFields.forEach((field, index) => {
+        if (field) {
+          field.value = ranked[index] || "";
+          field.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+      });
+
+      cards.forEach((card) => {
+        const rankIndex = ranked.indexOf(card.dataset.mvpId || "");
+        const selected = rankIndex >= 0;
+        card.classList.toggle("active", selected);
+        card.setAttribute("aria-pressed", selected ? "true" : "false");
+        const badge = card.querySelector("[data-rank-badge]");
+        if (badge) badge.textContent = selected ? String(rankIndex + 1) : "•";
+      });
+    };
+
+    cards.forEach((card) => {
+      card.addEventListener("click", () => {
+        const mvpId = card.dataset.mvpId || "";
+        if (!mvpId) return;
+
+        ranked = ranked.includes(mvpId)
+          ? ranked.filter((value) => value !== mvpId)
+          : [...ranked, mvpId].slice(0, 3);
+        render();
+      });
+    });
+
+    render();
+  });
+}
+
 function formatServiceRanking(serviceIds) {
   return serviceIds
     .map((serviceId, index) => `${index + 1}. ${SERVICE_LABELS[serviceId] || serviceId}`)
@@ -912,6 +963,22 @@ function renderAdminTable(responses, selectedResponseIds = new Set()) {
   emptyNode.hidden = true;
   tableWrap.hidden = false;
 
+  const formatMvpId = (value) => {
+    if (value === "mvp_1") return "MVP 1";
+    if (value === "mvp_2") return "MVP 2";
+    if (value === "mvp_3") return "MVP 3";
+    return value || "";
+  };
+  const formatMvpRanking = (response) =>
+    [
+      response.mvp_best_overall_rank_1,
+      response.mvp_best_overall_rank_2,
+      response.mvp_best_overall_rank_3,
+    ]
+      .map((value, index) => (value ? `${index + 1}. ${formatMvpId(value)}` : ""))
+      .filter(Boolean)
+      .join(" | ");
+
   responses
     .slice()
     .reverse()
@@ -936,6 +1003,8 @@ function renderAdminTable(responses, selectedResponseIds = new Set()) {
         <td>${escapeHtml(response.mvp_route)}</td>
         <td>${escapeHtml(response.participant_role)}</td>
         <td>${escapeHtml(response.other_services_ranking)}</td>
+        <td>${escapeHtml(formatMvpRanking(response))}</td>
+        <td>${escapeHtml(response.mvp_best_overall_reason)}</td>
         <td>${escapeHtml(response.recommendation)}</td>
       `;
       tableBody.appendChild(row);
@@ -1110,6 +1179,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSurveyThemePreference();
   initSurveyPage();
   initPriorityRanking();
+  initMvpRanking();
   initOtherServicesRanking();
   initSurveySectionTabs();
   initSurveyDraftAutosave();

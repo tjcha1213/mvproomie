@@ -8,7 +8,7 @@
     <title>Roomie | User Test Surveys</title>
     <meta
       name="description"
-      content="Roomie host and broker user testing survey page with recommendation, usability, and qualitative questionnaires."
+      content="Roomie user testing survey page with recommendation, usability, and qualitative questionnaires."
     />
     <script>
       (() => {
@@ -418,17 +418,30 @@
               <span>Were the listing details, host information, and next step clear?</span>
               <textarea class="survey-answer-roomy" name="task_listing_details_clarity" rows="4" placeholder="Were the photos, price, unit details, host profile, messaging, and buttons clear?"></textarea>
             </label>
+            <fieldset class="survey-card priority-ranking-card mvp-ranking-card full-width-field">
+              <legend>Overall MVP ranking</legend>
+              <p class="priority-ranking-help">Rank the three MVPs by the version that felt best overall for your role, considering ease of use, trust, fit, and likelihood of using it again.</p>
+              <div class="priority-ranking-grid mvp-ranking-grid" data-mvp-ranking>
+                <button class="priority-rank-card" type="button" data-mvp-id="mvp_1">
+                  <span class="priority-rank-badge" data-rank-badge>•</span>
+                  <span class="priority-rank-label">MVP 1</span>
+                </button>
+                <button class="priority-rank-card" type="button" data-mvp-id="mvp_2">
+                  <span class="priority-rank-badge" data-rank-badge>•</span>
+                  <span class="priority-rank-label">MVP 2</span>
+                </button>
+                <button class="priority-rank-card" type="button" data-mvp-id="mvp_3">
+                  <span class="priority-rank-badge" data-rank-badge>•</span>
+                  <span class="priority-rank-label">MVP 3</span>
+                </button>
+              </div>
+              <input type="hidden" name="mvp_best_overall_rank_1" data-mvp-rank="1" />
+              <input type="hidden" name="mvp_best_overall_rank_2" data-mvp-rank="2" />
+              <input type="hidden" name="mvp_best_overall_rank_3" data-mvp-rank="3" />
+            </fieldset>
             <label class="survey-field full-width-field">
-              <span>Of the three tenant MVPs, which version felt easiest to use, and why?</span>
-              <textarea class="survey-answer-roomy" name="mvp_easiest_to_use" rows="4" placeholder="After trying the MVPs, which version was easiest to use? What made it easier than the others?"></textarea>
-            </label>
-            <label class="survey-field full-width-field">
-              <span>Which MVP felt most trustworthy or most appropriate for Manila renters?</span>
-              <textarea name="mvp_most_trustworthy" rows="4" placeholder="Which version felt most trustworthy or safe for Manila housing, and why?"></textarea>
-            </label>
-            <label class="survey-field full-width-field">
-              <span>Which MVP would you be most likely to use again if you were looking for housing?</span>
-              <textarea class="survey-answer-roomy" name="mvp_most_likely_to_reuse" rows="4" placeholder="Which version would you be most likely to use again? Please explain the main reason."></textarea>
+              <span>Why did you rank the MVPs this way?</span>
+              <textarea class="survey-answer-roomy" name="mvp_best_overall_reason" rows="4" placeholder="Explain your ranking. Consider what felt easiest, most trustworthy, most appropriate for your role, and most likely to be used again."></textarea>
             </label>
             <label class="survey-field full-width-field">
               <span>What part of the Roomie experience felt most clear or helpful?</span>
