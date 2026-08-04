@@ -971,6 +971,17 @@ h2 {
   box-shadow: none;
 }
 
+.danger-button {
+  color: #b42318;
+  border-color: rgba(180, 35, 24, 0.22);
+  background: rgba(255, 247, 245, 0.94);
+}
+
+.danger-button:hover {
+  border-color: rgba(180, 35, 24, 0.34);
+  box-shadow: 0 10px 20px rgba(180, 35, 24, 0.08);
+}
+
 .disabled-button {
   background: rgba(233, 239, 255, 0.88);
   color: var(--accent);

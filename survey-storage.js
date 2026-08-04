@@ -933,29 +933,57 @@ function initAdminPage() {
   const exportCsvButton = document.querySelector("[data-export-csv]");
   const exportJsonButton = document.querySelector("[data-export-json]");
   const refreshButton = document.querySelector("[data-refresh-responses]");
+  const clearButton = document.querySelector("[data-clear-responses]");
+  const statusNode = document.querySelector("[data-admin-status]");
   if (!exportCsvButton || !exportJsonButton || !refreshButton) return;
 
   const render = () => renderAdminTable(getResponsesForExport());
-
-  exportCsvButton.addEventListener("click", () => {
-    const responses = getResponsesForExport();
+  const exportCsv = (responses) => {
     downloadBlob(
       `roomie-survey-responses-${new Date().toISOString().slice(0, 10)}.csv`,
       responsesToCsv(responses),
       "text/csv;charset=utf-8"
     );
-  });
-
-  exportJsonButton.addEventListener("click", () => {
-    const responses = getResponsesForExport();
+  };
+  const exportJson = (responses) => {
     downloadBlob(
       `roomie-survey-responses-${new Date().toISOString().slice(0, 10)}.json`,
       JSON.stringify(responses, null, 2),
       "application/json;charset=utf-8"
     );
+  };
+
+  exportCsvButton.addEventListener("click", () => {
+    exportCsv(getResponsesForExport());
+  });
+
+  exportJsonButton.addEventListener("click", () => {
+    exportJson(getResponsesForExport());
   });
 
   refreshButton.addEventListener("click", render);
+
+  if (clearButton instanceof HTMLButtonElement) {
+    clearButton.addEventListener("click", () => {
+      const responses = getResponsesForExport();
+      const confirmed = window.confirm(
+        `Are you sure you want to clear ${responses.length} stored response${responses.length === 1 ? "" : "s"}? CSV and JSON backups will download before the log is cleared.`
+      );
+      if (!confirmed) return;
+
+      exportCsv(responses);
+      exportJson(responses);
+      localStorage.removeItem(SURVEY_STORAGE_KEY);
+      localStorage.removeItem(SURVEY_DRAFT_STORAGE_KEY);
+
+      if (statusNode) {
+        statusNode.textContent = "Backups downloaded. Stored survey log cleared.";
+        statusNode.dataset.state = "success";
+      }
+      render();
+    });
+  }
+
   render();
 }
 
