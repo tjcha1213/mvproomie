@@ -97,6 +97,8 @@ const SURVEY_FIELDS = [
   "missing_feature_expectation",
   "parent_student_housing_comfort",
   "priority_change",
+  "survey_terms_agreement",
+  "nda_agreement",
 ];
 
 function getStoredResponses() {
@@ -195,6 +197,12 @@ function buildSurveyPayload(root = document, lockedValues = null) {
     if (first instanceof HTMLInputElement && first.type === "radio") {
       const checked = root.querySelector(`[name="${field}"]:checked`);
       payload[field] = checked instanceof HTMLInputElement ? checked.value : "";
+      continue;
+    }
+
+    if (first instanceof HTMLInputElement && first.type === "checkbox") {
+      const checked = root.querySelector(`[name="${field}"]:checked`);
+      payload[field] = checked instanceof HTMLInputElement ? checked.value || "checked" : "";
       continue;
     }
 
@@ -822,6 +830,19 @@ function responsesToCsv(responses) {
   return [header, ...rows].join("\n");
 }
 
+function responsesToTableJson(responses) {
+  return {
+    columns: SURVEY_FIELDS,
+    rows: responses.map((response) => SURVEY_FIELDS.map((field) => response[field] ?? "")),
+    records: responses.map((response) =>
+      SURVEY_FIELDS.reduce((record, field) => {
+        record[field] = response[field] ?? "";
+        return record;
+      }, {})
+    ),
+  };
+}
+
 function downloadBlob(filename, content, mimeType) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -834,16 +855,30 @@ function downloadBlob(filename, content, mimeType) {
   URL.revokeObjectURL(url);
 }
 
-function renderAdminTable(responses) {
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function renderAdminTable(responses, selectedResponseIds = new Set()) {
   const countNode = document.querySelector("[data-response-count]");
   const emptyNode = document.querySelector("[data-empty-state]");
   const tableWrap = document.querySelector("[data-response-table-wrap]");
   const tableBody = document.querySelector("[data-response-table-body]");
+  const selectAllButton = document.querySelector("[data-toggle-select-all]");
 
   if (!countNode || !emptyNode || !tableWrap || !tableBody) return;
 
-  countNode.textContent = `${responses.length} stored response${responses.length === 1 ? "" : "s"}`;
+  const selectedCount = responses.filter((response) => selectedResponseIds.has(response.response_id)).length;
+  countNode.textContent = `${responses.length} stored response${responses.length === 1 ? "" : "s"}${selectedCount ? `, ${selectedCount} selected` : ""}`;
   tableBody.innerHTML = "";
+  if (selectAllButton instanceof HTMLButtonElement) {
+    selectAllButton.textContent = responses.length > 0 && selectedCount === responses.length ? "Deselect all" : "Select all";
+  }
 
   if (!responses.length) {
     emptyNode.hidden = false;
@@ -858,19 +893,27 @@ function renderAdminTable(responses) {
     .slice()
     .reverse()
     .forEach((response) => {
+      const responseId = response.response_id || "";
       const row = document.createElement("tr");
+      row.classList.toggle("selected", selectedResponseIds.has(responseId));
       row.innerHTML = `
-        <td>${response.response_id || ""}</td>
-        <td>${response.submitted_at || ""}</td>
-        <td>${response.name || ""}</td>
-        <td>${response.birthdate || ""}</td>
-        <td>${response.participant_id || ""}</td>
-        <td>${response.participant_role_detail || ""}</td>
-        <td>${response.tested_route || ""}</td>
-        <td>${response.mvp_route || ""}</td>
-        <td>${response.participant_role || ""}</td>
-        <td>${response.other_services_ranking || ""}</td>
-        <td>${response.recommendation || ""}</td>
+        <td>
+          <label class="response-select">
+            <input type="checkbox" data-response-select value="${escapeHtml(responseId)}" ${selectedResponseIds.has(responseId) ? "checked" : ""} />
+            <span>Select session</span>
+          </label>
+        </td>
+        <td>${escapeHtml(response.response_id)}</td>
+        <td>${escapeHtml(response.submitted_at)}</td>
+        <td>${escapeHtml(response.name)}</td>
+        <td>${escapeHtml(response.birthdate)}</td>
+        <td>${escapeHtml(response.participant_id)}</td>
+        <td>${escapeHtml(response.participant_role_detail)}</td>
+        <td>${escapeHtml(response.tested_route)}</td>
+        <td>${escapeHtml(response.mvp_route)}</td>
+        <td>${escapeHtml(response.participant_role)}</td>
+        <td>${escapeHtml(response.other_services_ranking)}</td>
+        <td>${escapeHtml(response.recommendation)}</td>
       `;
       tableBody.appendChild(row);
     });
@@ -932,12 +975,23 @@ function initSurveyDraftAutosave() {
 function initAdminPage() {
   const exportCsvButton = document.querySelector("[data-export-csv]");
   const exportJsonButton = document.querySelector("[data-export-json]");
-  const refreshButton = document.querySelector("[data-refresh-responses]");
+  const selectAllButton = document.querySelector("[data-toggle-select-all]");
   const clearButton = document.querySelector("[data-clear-responses]");
   const statusNode = document.querySelector("[data-admin-status]");
-  if (!exportCsvButton || !exportJsonButton || !refreshButton) return;
+  const tableBody = document.querySelector("[data-response-table-body]");
+  if (!exportCsvButton || !exportJsonButton) return;
 
-  const render = () => renderAdminTable(getResponsesForExport());
+  const selectedResponseIds = new Set();
+  const getSelectedResponses = () =>
+    getResponsesForExport().filter((response) => selectedResponseIds.has(response.response_id));
+  const render = () => {
+    const responses = getResponsesForExport();
+    const currentIds = new Set(responses.map((response) => response.response_id));
+    Array.from(selectedResponseIds).forEach((responseId) => {
+      if (!currentIds.has(responseId)) selectedResponseIds.delete(responseId);
+    });
+    renderAdminTable(responses, selectedResponseIds);
+  };
   const exportCsv = (responses) => {
     downloadBlob(
       `roomie-survey-responses-${new Date().toISOString().slice(0, 10)}.csv`,
@@ -948,7 +1002,7 @@ function initAdminPage() {
   const exportJson = (responses) => {
     downloadBlob(
       `roomie-survey-responses-${new Date().toISOString().slice(0, 10)}.json`,
-      JSON.stringify(responses, null, 2),
+      JSON.stringify(responsesToTableJson(responses), null, 2),
       "application/json;charset=utf-8"
     );
   };
@@ -961,23 +1015,59 @@ function initAdminPage() {
     exportJson(getResponsesForExport());
   });
 
-  refreshButton.addEventListener("click", render);
+  if (selectAllButton instanceof HTMLButtonElement) {
+    selectAllButton.addEventListener("click", () => {
+      const responses = getResponsesForExport();
+      const allSelected = responses.length > 0 && responses.every((response) => selectedResponseIds.has(response.response_id));
+      selectedResponseIds.clear();
+      if (!allSelected) {
+        responses.forEach((response) => {
+          if (response.response_id) selectedResponseIds.add(response.response_id);
+        });
+      }
+      if (statusNode) {
+        statusNode.textContent = allSelected ? "All sessions deselected." : "All sessions selected.";
+        statusNode.dataset.state = "idle";
+      }
+      render();
+    });
+  }
+
+  if (tableBody instanceof HTMLElement) {
+    tableBody.addEventListener("change", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement) || target.dataset.responseSelect === undefined) return;
+      if (target.checked) selectedResponseIds.add(target.value);
+      else selectedResponseIds.delete(target.value);
+      render();
+    });
+  }
 
   if (clearButton instanceof HTMLButtonElement) {
     clearButton.addEventListener("click", () => {
-      const responses = getResponsesForExport();
+      const responses = getSelectedResponses();
+      if (!responses.length) {
+        if (statusNode) {
+          statusNode.textContent = "Select at least one log session before clearing.";
+          statusNode.dataset.state = "error";
+        }
+        return;
+      }
+
       const confirmed = window.confirm(
-        `Are you sure you want to clear ${responses.length} stored response${responses.length === 1 ? "" : "s"}? CSV and JSON backups will download before the log is cleared.`
+        `Are you sure you want to clear ${responses.length} selected log session${responses.length === 1 ? "" : "s"}? CSV and JSON backups for the selected sessions will download before they are cleared.`
       );
       if (!confirmed) return;
 
       exportCsv(responses);
       exportJson(responses);
-      localStorage.removeItem(SURVEY_STORAGE_KEY);
-      localStorage.removeItem(SURVEY_DRAFT_STORAGE_KEY);
+      const selectedIds = new Set(responses.map((response) => response.response_id));
+      const remainingResponses = getStoredResponses().filter((response) => !selectedIds.has(response.response_id));
+      setStoredResponses(remainingResponses);
+      selectedResponseIds.clear();
 
       if (statusNode) {
-        statusNode.textContent = "Backups downloaded. Stored survey log cleared.";
+        statusNode.textContent = "Backups downloaded. Selected survey log sessions cleared.";
         statusNode.dataset.state = "success";
       }
       render();
