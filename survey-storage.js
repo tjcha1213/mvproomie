@@ -429,6 +429,27 @@ async function postSurveyResponseToRemote(payload) {
   });
 }
 
+async function deleteRemoteResponses(responseIds) {
+  if (!SURVEY_REMOTE_ENDPOINT || !responseIds.length) return;
+
+  await fetch(SURVEY_REMOTE_ENDPOINT, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+    },
+    body: JSON.stringify({
+      action: "delete",
+      token: SURVEY_REMOTE_ADMIN_TOKEN,
+      response_ids: responseIds,
+    }),
+    keepalive: true,
+  });
+
+  const responseIdSet = new Set(responseIds);
+  remoteResponsesCache = remoteResponsesCache.filter((response) => !responseIdSet.has(response.response_id));
+}
+
 async function fetchRemoteResponsesCors() {
   const url = new URL(SURVEY_REMOTE_ENDPOINT);
   url.searchParams.set("action", "list");
@@ -1308,7 +1329,7 @@ function initAdminPage() {
   }
 
   if (clearButton instanceof HTMLButtonElement) {
-    clearButton.addEventListener("click", () => {
+    clearButton.addEventListener("click", async () => {
       const responses = getSelectedResponses();
       if (!responses.length) {
         if (statusNode) {
@@ -1326,6 +1347,15 @@ function initAdminPage() {
       exportCsv(responses);
       exportJson(responses);
       const selectedIds = new Set(responses.map((response) => response.response_id));
+      clearButton.disabled = true;
+      try {
+        await deleteRemoteResponses(Array.from(selectedIds));
+      } catch (error) {
+        console.warn("Unable to clear selected remote survey log sessions.", error);
+      } finally {
+        clearButton.disabled = false;
+      }
+
       const remainingResponses = getStoredResponses().filter((response) => !selectedIds.has(response.response_id));
       const didClear = setStoredResponses(remainingResponses);
       if (!didClear) {
@@ -1338,10 +1368,11 @@ function initAdminPage() {
       selectedResponseIds.clear();
 
       if (statusNode) {
-        statusNode.textContent = "Backups downloaded. Selected survey log sessions cleared.";
+        statusNode.textContent = "Backups downloaded. Selected survey log sessions cleared locally and synced with Google Sheets.";
         statusNode.dataset.state = "success";
       }
       render();
+      loadRemoteResponses().then(render);
     });
   }
 

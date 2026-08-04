@@ -76,6 +76,23 @@ function doPost(e) {
   ensureSurveyHeaders(sheet);
 
   const payload = JSON.parse(e.postData.contents || "{}");
+  if (payload.action === "delete") {
+    if (payload.token !== ADMIN_TOKEN) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ ok: false, error: "Unauthorized" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    const responseIds = Array.isArray(payload.response_ids)
+      ? payload.response_ids.map(String).filter(Boolean)
+      : [];
+    const deleted = deleteSurveyRowsByResponseId(sheet, responseIds);
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: true, deleted }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   sheet.appendRow(SURVEY_FIELDS.map((field) => payload[field] || ""));
 
   return ContentService
@@ -108,4 +125,26 @@ function doGet(e) {
 
 function repairSurveyHeaders() {
   ensureSurveyHeaders(getSurveySheet());
+}
+
+function deleteSurveyRowsByResponseId(sheet, responseIds) {
+  if (!responseIds.length) return 0;
+
+  const responseIdSet = new Set(responseIds);
+  const values = sheet.getDataRange().getValues();
+  if (values.length < 2) return 0;
+
+  const headers = values[0];
+  const responseIdColumnIndex = headers.indexOf("response_id");
+  if (responseIdColumnIndex < 0) return 0;
+
+  let deleted = 0;
+  for (let rowIndex = values.length - 1; rowIndex >= 1; rowIndex -= 1) {
+    const responseId = String(values[rowIndex][responseIdColumnIndex] || "");
+    if (!responseIdSet.has(responseId)) continue;
+    sheet.deleteRow(rowIndex + 1);
+    deleted += 1;
+  }
+
+  return deleted;
 }
