@@ -170,13 +170,34 @@
 
 .mock-auth-field input,
 .mock-auth-field textarea {
+  box-sizing: border-box;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   border-radius: 16px;
   border: 1.5px solid var(--border);
   background: #fff;
   padding: 14px 16px;
   color: var(--text);
   resize: vertical;
+}
+
+.mock-auth-field input[type='date'] {
+  display: block;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.mock-auth-field input[type='date']::-webkit-date-and-time-value {
+  min-width: 0;
+  text-align: left;
+}
+
+.mock-auth-field input[type='date']::-webkit-calendar-picker-indicator {
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 
 .mock-auth-field input:focus,
@@ -403,7 +424,18 @@
     padding: 22px;
     border-radius: 24px;
     width: min(100%, 460px);
+    overflow-x: hidden;
     max-height: calc(100dvh - 40px);
+  }
+
+  .mock-auth-form,
+  .mock-auth-field {
+    min-width: 0;
+  }
+
+  .mock-auth-field input[type='date'] {
+    font-size: 16px;
+    padding-inline: 14px;
   }
 
   .mock-auth-logo {

@@ -3,6 +3,7 @@ const SURVEY_DRAFT_STORAGE_KEY = "roomie-survey-drafts-v1";
 const SURVEY_REMOTE_ENDPOINT = "https://script.google.com/macros/s/AKfycbxwT1AvMctwVk_QtR3FYPmvwSYgKvMCdGVxOQPSZ8b3_wA2mQ1ye6Z0zK2g5Ot5mWUx/exec";
 const SURVEY_REMOTE_ADMIN_TOKEN = "roomieadmin";
 const MOCK_PROFILE_STORAGE_KEY = "roomie.mock-user-profile";
+const MOCK_SURVEY_SESSION_METADATA_KEY = "roomie.mock-survey-session-metadata";
 const THEME_STORAGE_KEY = "roomie-primary";
 const THEME_COLOR_BY_PREFERENCE = {
   "roomie-teal": "#15BDB6",
@@ -150,6 +151,18 @@ function readMockProfile() {
   }
 }
 
+function readSurveySessionMetadataProfile() {
+  try {
+    const raw = localStorage.getItem(MOCK_SURVEY_SESSION_METADATA_KEY);
+    if (!raw) return readMockProfile();
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return readMockProfile();
+    return parsed;
+  } catch {
+    return readMockProfile();
+  }
+}
+
 function getSurveyRouteFromQuery() {
   try {
     const route = new URLSearchParams(window.location.search).get("mvp")?.trim() || "";
@@ -267,11 +280,11 @@ function buildSurveyPayload(root = document, lockedValues = null) {
 }
 
 function getCurrentSessionMetadata() {
-  return getSessionMetadata(readMockProfile());
+  return getSessionMetadata(readSurveySessionMetadataProfile());
 }
 
 function writeServicePreferencesToProfile(servicePreferences) {
-  const profile = readMockProfile();
+  const profile = readSurveySessionMetadataProfile();
   if (!profile || typeof profile !== "object") return;
 
   const nextProfile = {
@@ -288,7 +301,7 @@ function writeServicePreferencesToProfile(servicePreferences) {
 function getSurveyDraftKey() {
   const params = new URLSearchParams(window.location.search);
   const queryRoute = params.get("mvp")?.trim() || "";
-  const profile = readMockProfile();
+  const profile = readSurveySessionMetadataProfile();
   const participantId = typeof profile?.participantId === "string" ? profile.participantId.trim() : "anonymous";
   const route = queryRoute || (typeof profile?.mvpRoute === "string" ? profile.mvpRoute.trim() : window.location.pathname);
   return `${window.location.pathname}::${route}::${participantId}`;
@@ -1187,8 +1200,9 @@ function initSurveyPage() {
   if (!saveButton || !statusNode) return;
 
   normalizeOptionalFields();
-  applyLockedSessionMetadata(readMockProfile());
+  applyLockedSessionMetadata(readSurveySessionMetadataProfile());
   restoreSurveyDraft();
+  applyLockedSessionMetadata(readSurveySessionMetadataProfile());
 
   saveButton.addEventListener("click", async () => {
     if (agreement instanceof HTMLInputElement && !agreement.checked) {
@@ -1203,7 +1217,7 @@ function initSurveyPage() {
     }
 
     const currentMetadata = getCurrentSessionMetadata();
-    applyLockedSessionMetadata(readMockProfile());
+    applyLockedSessionMetadata(readSurveySessionMetadataProfile());
     const payload = buildSurveyPayload(document, currentMetadata);
     const missing = validateSurveyPayload(payload);
 

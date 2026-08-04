@@ -27,6 +27,7 @@ type SessionState = {
 };
 
 const STORAGE_KEY = 'roomie.mock-user-profile';
+const SURVEY_SESSION_METADATA_KEY = 'roomie.mock-survey-session-metadata';
 const SURVEY_DRAFT_STORAGE_KEY = 'roomie-survey-drafts-v1';
 
 const DEFAULT_PROFILE: MockUserProfile = {
@@ -168,6 +169,7 @@ export function signUpToDemo(profile: Omit<MockUserProfile, 'participantId'>) {
   };
   if (typeof window !== 'undefined') {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedProfile));
+    window.localStorage.setItem(SURVEY_SESSION_METADATA_KEY, JSON.stringify(normalizedProfile));
     window.localStorage.removeItem(SURVEY_DRAFT_STORAGE_KEY);
   }
   sessionState = {
