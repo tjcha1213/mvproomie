@@ -377,6 +377,40 @@ body {
   display: block;
 }
 
+.mvp-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.mvp-thumbnail-card {
+  display: grid;
+  gap: 16px;
+  align-content: center;
+  justify-items: center;
+  min-height: 148px;
+  padding: 22px 14px;
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, rgba(29, 38, 84, 0.08));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--primary) 4%, #ffffff);
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--primary) 10%, transparent);
+  text-align: center;
+}
+
+.mvp-thumbnail-card h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1.2rem, 3vw, 1.7rem);
+  line-height: 1;
+}
+
+.mvp-card-button {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 0.82rem;
+}
+
 .survey-feature-body {
   display: grid;
   gap: 12px;
@@ -2122,6 +2156,23 @@ h2 {
 
   .layout-section.host-mvp1-layout {
     grid-template-columns: 1fr;
+  }
+
+  .mvp-card-grid {
+    gap: 8px;
+  }
+
+  .mvp-thumbnail-card {
+    min-height: 112px;
+    gap: 12px;
+    padding: 16px 8px;
+    border-radius: 16px;
+  }
+
+  .mvp-card-button {
+    min-height: 34px;
+    padding: 0 10px;
+    font-size: 0.74rem;
   }
 
   .survey-grid,
