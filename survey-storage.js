@@ -1,6 +1,7 @@
 const SURVEY_STORAGE_KEY = "roomie-survey-responses-v1";
 const SURVEY_DRAFT_STORAGE_KEY = "roomie-survey-drafts-v1";
 const SURVEY_REMOTE_ENDPOINT = "https://script.google.com/macros/s/AKfycbxwT1AvMctwVk_QtR3FYPmvwSYgKvMCdGVxOQPSZ8b3_wA2mQ1ye6Z0zK2g5Ot5mWUx/exec";
+const SURVEY_REMOTE_ADMIN_TOKEN = "roomieadmin";
 const MOCK_PROFILE_STORAGE_KEY = "roomie.mock-user-profile";
 const THEME_STORAGE_KEY = "roomie-primary";
 const THEME_COLOR_BY_PREFERENCE = {
@@ -105,6 +106,7 @@ const SURVEY_FIELDS = [
 
 let remoteResponsesCache = [];
 let remoteResponsesLoaded = false;
+let remoteResponsesError = "";
 
 function getStoredResponses() {
   try {
@@ -433,6 +435,7 @@ async function postSurveyResponseToRemote(payload) {
 async function fetchRemoteResponsesCors() {
   const url = new URL(SURVEY_REMOTE_ENDPOINT);
   url.searchParams.set("action", "list");
+  if (SURVEY_REMOTE_ADMIN_TOKEN) url.searchParams.set("token", SURVEY_REMOTE_ADMIN_TOKEN);
   url.searchParams.set("_", String(Date.now()));
   const response = await fetch(url.toString(), { cache: "no-store" });
   if (!response.ok) throw new Error(`Remote survey log request failed: ${response.status}`);
@@ -458,6 +461,7 @@ function fetchRemoteResponsesJsonp() {
     };
 
     url.searchParams.set("action", "list");
+    if (SURVEY_REMOTE_ADMIN_TOKEN) url.searchParams.set("token", SURVEY_REMOTE_ADMIN_TOKEN);
     url.searchParams.set("callback", callbackName);
     url.searchParams.set("_", String(Date.now()));
 
@@ -484,10 +488,12 @@ async function loadRemoteResponses() {
     const payload = await fetchRemoteResponsesCors().catch(() => fetchRemoteResponsesJsonp());
     remoteResponsesCache = normalizeRemoteResponsesPayload(payload);
     remoteResponsesLoaded = true;
+    remoteResponsesError = "";
     window.dispatchEvent(new CustomEvent("roomie-survey-remote-responses-updated"));
     return remoteResponsesCache;
   } catch (error) {
     remoteResponsesLoaded = true;
+    remoteResponsesError = "Remote Google Sheet log is unavailable. Check that the Apps Script web app is deployed for Anyone access and returns JSON for action=list.";
     console.warn("Unable to load remote survey responses.", error);
     return remoteResponsesCache;
   }
@@ -1237,7 +1243,13 @@ function initAdminPage() {
     getResponsesForExport().filter((response) => selectedResponseIds.has(response.response_id));
   const refreshRemoteAndRender = () => {
     render();
-    loadRemoteResponses().then(render);
+    loadRemoteResponses().then(() => {
+      render();
+      if (statusNode && remoteResponsesError) {
+        statusNode.textContent = remoteResponsesError;
+        statusNode.dataset.state = "error";
+      }
+    });
   };
   const render = () => {
     const responses = getResponsesForExport();
