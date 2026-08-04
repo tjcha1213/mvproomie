@@ -1,5 +1,6 @@
 const SURVEY_STORAGE_KEY = "roomie-survey-responses-v1";
 const SURVEY_DRAFT_STORAGE_KEY = "roomie-survey-drafts-v1";
+const SURVEY_REMOTE_ENDPOINT = "https://script.google.com/macros/s/AKfycbxwT1AvMctwVk_QtR3FYPmvwSYgKvMCdGVxOQPSZ8b3_wA2mQ1ye6Z0zK2g5Ot5mWUx/exec";
 const MOCK_PROFILE_STORAGE_KEY = "roomie.mock-user-profile";
 const THEME_STORAGE_KEY = "roomie-primary";
 const THEME_COLOR_BY_PREFERENCE = {
@@ -102,6 +103,9 @@ const SURVEY_FIELDS = [
   "nda_agreement",
 ];
 
+let remoteResponsesCache = [];
+let remoteResponsesLoaded = false;
+
 function getStoredResponses() {
   try {
     return JSON.parse(localStorage.getItem(SURVEY_STORAGE_KEY) || "[]");
@@ -111,8 +115,13 @@ function getStoredResponses() {
 }
 
 function setStoredResponses(responses) {
-  localStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify(responses));
-  window.dispatchEvent(new CustomEvent("roomie-survey-responses-updated"));
+  try {
+    localStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify(responses));
+    window.dispatchEvent(new CustomEvent("roomie-survey-responses-updated"));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function getStoredDrafts() {
@@ -346,7 +355,142 @@ function mergeMissingSessionMetadata(response, metadata) {
 
 function getResponsesForExport() {
   const metadata = getCurrentSessionMetadata();
-  return getStoredResponses().map((response) => mergeMissingSessionMetadata(response, metadata));
+  return mergeResponseCollections(
+    remoteResponsesCache.map((response) => mergeMissingSessionMetadata(response, metadata)),
+    getStoredResponses().map((response) => mergeMissingSessionMetadata(response, metadata))
+  );
+}
+
+function normalizeSurveyResponse(response) {
+  const normalized = {};
+  SURVEY_FIELDS.forEach((field) => {
+    normalized[field] = response?.[field] ?? "";
+  });
+  return normalized;
+}
+
+function mergeResponseCollections(...collections) {
+  const merged = new Map();
+  collections.flat().forEach((response) => {
+    const normalized = normalizeSurveyResponse(response);
+    const fallbackKey = `${normalized.submitted_at}-${normalized.participant_id}-${normalized.mvp_route}`;
+    const key = normalized.response_id || fallbackKey;
+    if (!key || key === "--") return;
+    merged.set(key, { ...(merged.get(key) || {}), ...normalized });
+  });
+  return Array.from(merged.values());
+}
+
+function normalizeRemoteResponsesPayload(payload) {
+  const records =
+    Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.records)
+        ? payload.records
+        : Array.isArray(payload?.responses)
+          ? payload.responses
+          : Array.isArray(payload?.data)
+            ? payload.data
+            : [];
+
+  if (records.length) {
+    return records.filter((record) => record && typeof record === "object").map(normalizeSurveyResponse);
+  }
+
+  const columns = Array.isArray(payload?.columns) ? payload.columns : SURVEY_FIELDS;
+  const rows = Array.isArray(payload?.rows) ? payload.rows : [];
+  return rows
+    .filter((row) => Array.isArray(row) || (row && typeof row === "object"))
+    .map((row) => {
+      if (!Array.isArray(row)) return normalizeSurveyResponse(row);
+      const record = {};
+      columns.forEach((column, index) => {
+        record[column] = row[index] ?? "";
+      });
+      return normalizeSurveyResponse(record);
+    });
+}
+
+async function postSurveyResponseToRemote(payload) {
+  if (!SURVEY_REMOTE_ENDPOINT) return;
+
+  const remotePayload = {
+    ...normalizeSurveyResponse(payload),
+    _roomie_action: "append",
+  };
+
+  await fetch(SURVEY_REMOTE_ENDPOINT, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+    },
+    body: JSON.stringify(remotePayload),
+    keepalive: true,
+  });
+}
+
+async function fetchRemoteResponsesCors() {
+  const url = new URL(SURVEY_REMOTE_ENDPOINT);
+  url.searchParams.set("action", "list");
+  url.searchParams.set("_", String(Date.now()));
+  const response = await fetch(url.toString(), { cache: "no-store" });
+  if (!response.ok) throw new Error(`Remote survey log request failed: ${response.status}`);
+  return response.json();
+}
+
+function fetchRemoteResponsesJsonp() {
+  return new Promise((resolve, reject) => {
+    const callbackName = `roomieSurveyLogs${Date.now()}${Math.random().toString(16).slice(2)}`;
+    const url = new URL(SURVEY_REMOTE_ENDPOINT);
+    let script;
+    let timeoutId;
+
+    const cleanup = () => {
+      window[callbackName] = undefined;
+      if (script) script.remove();
+      window.clearTimeout(timeoutId);
+    };
+
+    window[callbackName] = (payload) => {
+      cleanup();
+      resolve(payload);
+    };
+
+    url.searchParams.set("action", "list");
+    url.searchParams.set("callback", callbackName);
+    url.searchParams.set("_", String(Date.now()));
+
+    script = document.createElement("script");
+    script.src = url.toString();
+    script.async = true;
+    script.onerror = () => {
+      cleanup();
+      reject(new Error("Remote survey log JSONP request failed."));
+    };
+    timeoutId = window.setTimeout(() => {
+      cleanup();
+      reject(new Error("Remote survey log JSONP request timed out."));
+    }, 8000);
+
+    document.head.appendChild(script);
+  });
+}
+
+async function loadRemoteResponses() {
+  if (!SURVEY_REMOTE_ENDPOINT) return [];
+
+  try {
+    const payload = await fetchRemoteResponsesCors().catch(() => fetchRemoteResponsesJsonp());
+    remoteResponsesCache = normalizeRemoteResponsesPayload(payload);
+    remoteResponsesLoaded = true;
+    window.dispatchEvent(new CustomEvent("roomie-survey-remote-responses-updated"));
+    return remoteResponsesCache;
+  } catch (error) {
+    remoteResponsesLoaded = true;
+    console.warn("Unable to load remote survey responses.", error);
+    return remoteResponsesCache;
+  }
 }
 
 function getProfileBackHref() {
@@ -1022,7 +1166,7 @@ function initSurveyPage() {
   applyLockedSessionMetadata(readMockProfile());
   restoreSurveyDraft();
 
-  saveButton.addEventListener("click", () => {
+  saveButton.addEventListener("click", async () => {
     if (agreement instanceof HTMLInputElement && !agreement.checked) {
       statusNode.textContent = "Please agree to the user testing survey terms before saving.";
       statusNode.dataset.state = "error";
@@ -1047,7 +1191,22 @@ function initSurveyPage() {
 
     const responses = getStoredResponses();
     responses.push(payload);
-    setStoredResponses(responses);
+    const didSave = setStoredResponses(responses);
+    if (!didSave) {
+      statusNode.textContent = "This browser could not save the response. Please check private browsing or storage settings and try again.";
+      statusNode.dataset.state = "error";
+      return;
+    }
+
+    saveButton.disabled = true;
+    try {
+      await postSurveyResponseToRemote(payload);
+    } catch (error) {
+      console.warn("Unable to post survey response to remote log.", error);
+    } finally {
+      saveButton.disabled = false;
+    }
+
     clearSurveyDraft();
 
     statusNode.textContent = "Thank you. Your response has been saved.";
@@ -1076,6 +1235,10 @@ function initAdminPage() {
   const selectedResponseIds = new Set();
   const getSelectedResponses = () =>
     getResponsesForExport().filter((response) => selectedResponseIds.has(response.response_id));
+  const refreshRemoteAndRender = () => {
+    render();
+    loadRemoteResponses().then(render);
+  };
   const render = () => {
     const responses = getResponsesForExport();
     const currentIds = new Set(responses.map((response) => response.response_id));
@@ -1155,7 +1318,14 @@ function initAdminPage() {
       exportJson(responses);
       const selectedIds = new Set(responses.map((response) => response.response_id));
       const remainingResponses = getStoredResponses().filter((response) => !selectedIds.has(response.response_id));
-      setStoredResponses(remainingResponses);
+      const didClear = setStoredResponses(remainingResponses);
+      if (!didClear) {
+        if (statusNode) {
+          statusNode.textContent = "Backups downloaded, but this browser could not clear the selected log sessions.";
+          statusNode.dataset.state = "error";
+        }
+        return;
+      }
       selectedResponseIds.clear();
 
       if (statusNode) {
@@ -1170,8 +1340,14 @@ function initAdminPage() {
     if (event.key === SURVEY_STORAGE_KEY) render();
   });
   window.addEventListener("roomie-survey-responses-updated", render);
+  window.addEventListener("roomie-survey-remote-responses-updated", render);
+  window.addEventListener("pageshow", refreshRemoteAndRender);
+  window.addEventListener("focus", refreshRemoteAndRender);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshRemoteAndRender();
+  });
 
-  render();
+  refreshRemoteAndRender();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
