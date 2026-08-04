@@ -18,6 +18,7 @@ export default defineConfig(({ command }) => ({
       input: {
         index: resolve(__dirname, 'index.html'),
         hostsBrokers: resolve(__dirname, 'hosts-brokers.html'),
+        userTestingSurvey: resolve(__dirname, 'user-testing-survey.html'),
         hostSurveys: resolve(__dirname, 'host-surveys.html'),
         tenantSurveys: resolve(__dirname, 'tenant-surveys.html'),
         surveyAdmin: resolve(__dirname, 'survey-admin.html'),

@@ -36,6 +36,7 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
     avatar: JUAN_AVATAR,
     name: 'Juan Dela Cruz',
     contact: 'juan@roomie.ph',
+    birthdate: '1998-01-01',
     role: 'tenant' as const,
     participantRoleDetail: 'Tenant',
     mvpRoute: 'Tenant MVP 3',
@@ -59,8 +60,8 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
     : chooser === 'host'
       ? [
         { label: 'Host MVP 1', description: 'Host MVP 1', href: 'host/?tab=profile' },
-        { label: 'Host MVP 2', description: 'Host MVP 2', href: 'hosts-brokers.html' },
-        { label: 'Host MVP 3', description: 'Host MVP 3', href: 'host-surveys.html' },
+        { label: 'Host MVP 2', description: 'Host MVP 2', href: 'host2/?tab=profile' },
+        { label: 'Host MVP 3', description: 'Host MVP 3', href: 'host3/?tab=profile' },
         ]
       : [];
 
@@ -130,7 +131,7 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
                       return;
                     }
                     if (item.label === 'User Testing Survey') {
-                      window.location.assign(`${import.meta.env.BASE_URL}tenant-surveys.html?mvp=Tenant%20MVP%203`);
+                      window.location.assign(`${import.meta.env.BASE_URL}user-testing-survey.html?mvp=Tenant%20MVP%203`);
                       return;
                     }
                     if (item.label === 'Account Settings') setPage('settings');
@@ -188,6 +189,10 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
                   <span className="profile-details-value">{displayProfile.contact}</span>
                 </div>
                 <div className="profile-details-item">
+                  <span className="profile-details-label">Birthdate</span>
+                  <span className="profile-details-value">{displayProfile.birthdate || 'Not set'}</span>
+                </div>
+                <div className="profile-details-item">
                   <span className="profile-details-label">Participant ID</span>
                   <span className="profile-details-value">{displayProfile.participantId}</span>
                 </div>
@@ -199,7 +204,7 @@ export default function ProfileScreen({ onShowToast, onOpenTheme }: Props) {
                   <span className="profile-details-label">MVP route</span>
                   <span className="profile-details-value">{displayProfile.mvpRoute}</span>
                 </div>
-                <ProfileBioEditor bio={displayProfile.bio} onShowToast={onShowToast} />
+                <ProfileBioEditor bio={displayProfile.bio} birthdate={displayProfile.birthdate} onShowToast={onShowToast} />
               </div>
             </div>
           </ProfileSectionPage>

@@ -1,15 +1,17 @@
 const SURVEY_STORAGE_KEY = "roomie-survey-responses-v1";
+const SURVEY_DRAFT_STORAGE_KEY = "roomie-survey-drafts-v1";
 const MOCK_PROFILE_STORAGE_KEY = "roomie.mock-user-profile";
 const THEME_STORAGE_KEY = "roomie-primary";
 const THEME_COLOR_BY_PREFERENCE = {
-  "indigo-white": "#4338ca",
-  turquoise: "#14b8a6",
-  "warm-mango": "#f59e0b",
-  "sunset-orange": "#f97316",
+  "roomie-teal": "#15BDB6",
+  "deep-ocean-blue": "#1D4ED8",
+  "warm-mango": "#FFB000",
+  "sunset-orange": "#FF5A1F",
 };
 const SESSION_METADATA_FIELDS = {
   name: "name",
   contact: "contact",
+  birthdate: "birthdate",
   bio: "bio",
   participant_id: "participant_id",
   participant_role_detail: "participant_role_detail",
@@ -29,7 +31,7 @@ const SERVICE_LABELS = {
   utilities: "Utilities",
 };
 
-const OPTIONAL_SURVEY_FIELDS = new Set(["occupation", "session_notes"]);
+const OPTIONAL_SURVEY_FIELDS = new Set(["occupation_other", "session_notes", "brand_notes"]);
 
 const PROFILE_ROUTE_BY_MVP = {
   "Tenant MVP 1": "mvp1/?tab=profile&surveyReturn=profile",
@@ -45,6 +47,7 @@ const SURVEY_FIELDS = [
   "submitted_at",
   "name",
   "contact",
+  "birthdate",
   "bio",
   "participant_id",
   "participant_role_detail",
@@ -54,7 +57,11 @@ const SURVEY_FIELDS = [
   "other_services_ranking",
   "other_services_ranking_ids",
   "occupation",
+  "occupation_other",
   "session_notes",
+  "priority_rank_1",
+  "priority_rank_2",
+  "priority_rank_3",
   "recommendation",
   "nps_reason",
   "sus_1",
@@ -73,9 +80,22 @@ const SURVEY_FIELDS = [
   "company_name_preference",
   "domain_name_preference",
   "brand_notes",
+  "current_housing_platforms",
+  "current_platform_reasons",
+  "metro_manila_housing_priorities",
+  "location_context_feedback",
+  "task_find_contact_listing",
+  "task_listing_details_clarity",
+  "mvp_easiest_to_use",
+  "mvp_most_trustworthy",
+  "mvp_most_likely_to_reuse",
   "most_clear",
   "most_confusing",
   "trust_feedback",
+  "listing_trust_requirements",
+  "listing_distrust_triggers",
+  "missing_feature_expectation",
+  "parent_student_housing_comfort",
   "priority_change",
 ];
 
@@ -89,6 +109,18 @@ function getStoredResponses() {
 
 function setStoredResponses(responses) {
   localStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify(responses));
+}
+
+function getStoredDrafts() {
+  try {
+    return JSON.parse(localStorage.getItem(SURVEY_DRAFT_STORAGE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function setStoredDrafts(drafts) {
+  localStorage.setItem(SURVEY_DRAFT_STORAGE_KEY, JSON.stringify(drafts));
 }
 
 function readMockProfile() {
@@ -113,6 +145,7 @@ function getSessionMetadata(profile) {
     : role;
   const name = typeof profile.name === "string" ? profile.name.trim() : "";
   const contact = typeof profile.contact === "string" ? profile.contact.trim() : "";
+  const birthdate = typeof profile.birthdate === "string" ? profile.birthdate.trim() : "";
   const bio = typeof profile.bio === "string" ? profile.bio.trim() : "";
   const mvpRoute = typeof profile.mvpRoute === "string" ? profile.mvpRoute.trim() : "";
   const testedRoute = mvpRoute;
@@ -124,13 +157,14 @@ function getSessionMetadata(profile) {
     .join(" | ");
   const otherServicesRankingIds = servicePreferences.join(",");
 
-  if (!participantId && !role && !roleDetail && !mvpRoute && !name && !contact && !bio && !otherServicesRanking) {
+  if (!participantId && !role && !roleDetail && !mvpRoute && !name && !contact && !birthdate && !bio && !otherServicesRanking) {
     return null;
   }
 
   return {
     [SESSION_METADATA_FIELDS.name]: name,
     [SESSION_METADATA_FIELDS.contact]: contact,
+    [SESSION_METADATA_FIELDS.birthdate]: birthdate,
     [SESSION_METADATA_FIELDS.bio]: bio,
     [SESSION_METADATA_FIELDS.participant_id]: participantId,
     [SESSION_METADATA_FIELDS.participant_role_detail]: roleDetail,
@@ -177,7 +211,13 @@ function buildSurveyPayload(root = document, lockedValues = null) {
   }
 
   if (lockedValues) {
-    Object.assign(payload, lockedValues);
+    for (const [fieldName, value] of Object.entries(lockedValues)) {
+      const isEditableMetadata =
+        fieldName === SESSION_METADATA_FIELDS.other_services_ranking ||
+        fieldName === SESSION_METADATA_FIELDS.other_services_ranking_ids;
+      if (isEditableMetadata && payload[fieldName]) continue;
+      payload[fieldName] = value;
+    }
   }
 
   return payload;
@@ -185,6 +225,78 @@ function buildSurveyPayload(root = document, lockedValues = null) {
 
 function getCurrentSessionMetadata() {
   return getSessionMetadata(readMockProfile());
+}
+
+function writeServicePreferencesToProfile(servicePreferences) {
+  const profile = readMockProfile();
+  if (!profile || typeof profile !== "object") return;
+
+  const nextProfile = {
+    ...profile,
+    servicePreferences,
+  };
+
+  try {
+    localStorage.setItem(MOCK_PROFILE_STORAGE_KEY, JSON.stringify(nextProfile));
+    window.dispatchEvent(new CustomEvent("roomie-profile-updated", { detail: nextProfile }));
+  } catch {}
+}
+
+function getSurveyDraftKey() {
+  const params = new URLSearchParams(window.location.search);
+  const queryRoute = params.get("mvp")?.trim() || "";
+  const profile = readMockProfile();
+  const participantId = typeof profile?.participantId === "string" ? profile.participantId.trim() : "anonymous";
+  const route = queryRoute || (typeof profile?.mvpRoute === "string" ? profile.mvpRoute.trim() : window.location.pathname);
+  return `${window.location.pathname}::${route}::${participantId}`;
+}
+
+function saveSurveyDraft() {
+  const draft = buildSurveyPayload(document, getCurrentSessionMetadata());
+  draft.saved_at = new Date().toISOString();
+  const drafts = getStoredDrafts();
+  drafts[getSurveyDraftKey()] = draft;
+  setStoredDrafts(drafts);
+}
+
+function clearSurveyDraft() {
+  const drafts = getStoredDrafts();
+  delete drafts[getSurveyDraftKey()];
+  setStoredDrafts(drafts);
+}
+
+function restoreSurveyDraft() {
+  const draft = getStoredDrafts()[getSurveyDraftKey()];
+  if (!draft || typeof draft !== "object") return;
+
+  for (const field of SURVEY_FIELDS) {
+    if (
+      field === SESSION_METADATA_FIELDS.other_services_ranking ||
+      field === SESSION_METADATA_FIELDS.other_services_ranking_ids
+    ) {
+      continue;
+    }
+
+    const value = typeof draft[field] === "string" ? draft[field] : "";
+    if (!value) continue;
+
+    const elements = document.querySelectorAll(`[name="${field}"]`);
+    elements.forEach((element) => {
+      if (element.dataset.locked === "true") return;
+
+      if (element instanceof HTMLInputElement && element.type === "radio") {
+        element.checked = element.value === value;
+      } else if (element instanceof HTMLInputElement && element.type === "checkbox") {
+        element.checked = value === element.value || value === "true" || value === "on";
+      } else if (
+        element instanceof HTMLInputElement ||
+        element instanceof HTMLTextAreaElement ||
+        element instanceof HTMLSelectElement
+      ) {
+        element.value = value;
+      }
+    });
+  }
 }
 
 function mergeMissingSessionMetadata(response, metadata) {
@@ -233,14 +345,49 @@ function applyLockedSessionMetadata(profile) {
   for (const [fieldName, value] of Object.entries(lockedValues)) {
     const elements = document.querySelectorAll(`[name="${fieldName}"]`);
     elements.forEach((element) => {
+      const shouldAlwaysLock = fieldName === SESSION_METADATA_FIELDS.birthdate;
+      const shouldStayEditable =
+        fieldName === SESSION_METADATA_FIELDS.other_services_ranking ||
+        fieldName === SESSION_METADATA_FIELDS.other_services_ranking_ids;
+
+      if (!value) {
+        if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+          element.readOnly = shouldAlwaysLock;
+          if (shouldAlwaysLock) element.dataset.locked = "true";
+          else delete element.dataset.locked;
+        } else if (element instanceof HTMLSelectElement) {
+          element.disabled = shouldAlwaysLock;
+          if (shouldAlwaysLock) element.dataset.locked = "true";
+          else delete element.dataset.locked;
+        }
+        return;
+      }
+
+      if (shouldStayEditable) {
+        if (
+          element instanceof HTMLInputElement ||
+          element instanceof HTMLTextAreaElement ||
+          element instanceof HTMLSelectElement
+        ) {
+          if (!element.value.trim()) {
+            element.value = value;
+            element.dispatchEvent(new Event("input", { bubbles: true }));
+            element.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }
+        return;
+      }
+
       if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
         element.value = value;
         element.readOnly = true;
         element.dataset.locked = "true";
+        element.dispatchEvent(new Event("input", { bubbles: true }));
       } else if (element instanceof HTMLSelectElement) {
         element.value = value;
         element.disabled = true;
         element.dataset.locked = "true";
+        element.dispatchEvent(new Event("change", { bubbles: true }));
       }
     });
   }
@@ -267,8 +414,107 @@ function initSurveyBackLinks() {
   document.querySelectorAll("[data-survey-back]").forEach((element) => {
     if (element instanceof HTMLAnchorElement) {
       element.href = href;
+      element.addEventListener("click", () => {
+        saveSurveyDraft();
+      });
     }
   });
+}
+
+function getFieldLabel(element) {
+  const field = element.closest(".survey-field");
+  const fieldLabel = field?.querySelector("span")?.textContent?.trim();
+  if (fieldLabel) return fieldLabel;
+
+  const card = element.closest(".survey-card");
+  const cardLabel = card?.querySelector("legend")?.textContent?.trim();
+  return cardLabel || element.name || "required field";
+}
+
+function setFieldMissing(element, missing) {
+  const container = element.closest(".survey-field, .survey-card");
+  if (container instanceof HTMLElement) {
+    container.classList.toggle("survey-required-missing", missing);
+  }
+}
+
+function isOptionalSurveyElement(element) {
+  const name = element.name;
+  if (!OPTIONAL_SURVEY_FIELDS.has(name)) return false;
+
+  if (name === "occupation_other") {
+    const occupation = document.querySelector('[name="occupation"]');
+    return !(occupation instanceof HTMLSelectElement && occupation.value === "other");
+  }
+
+  return true;
+}
+
+function isIncompleteOtherServicesRanking(element) {
+  if (element.name !== SESSION_METADATA_FIELDS.other_services_ranking_ids) return false;
+
+  const rankingCard = element.closest("[data-services-ranking]") || element.closest(".services-ranking-card");
+  const cardRoot = rankingCard instanceof HTMLElement ? rankingCard : element.closest(".survey-card");
+  const serviceCards = Array.from(cardRoot?.querySelectorAll("[data-service-id]") || []).filter(
+    (card) => card instanceof HTMLButtonElement
+  );
+  const rankedIds = String(element.value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return serviceCards.length > 0 && rankedIds.length < serviceCards.length;
+}
+
+function validateSurveyStep(step, pages, { mark = false } = {}) {
+  const sections = pages.filter((page) => Number(page.dataset.surveyPage) === step);
+  const missing = [];
+  const seenRadioGroups = new Set();
+
+  sections.forEach((section) => {
+    const elements = Array.from(section.querySelectorAll("input[name], select[name], textarea[name]")).filter(
+      (element) =>
+        (element instanceof HTMLInputElement ||
+          element instanceof HTMLSelectElement ||
+          element instanceof HTMLTextAreaElement) &&
+        !element.disabled
+    );
+
+    elements.forEach((element) => {
+      if (element.dataset.locked === "true" && !element.value.trim()) {
+        if (mark) setFieldMissing(element, false);
+        return;
+      }
+
+      if (isOptionalSurveyElement(element)) {
+        if (mark) setFieldMissing(element, false);
+        return;
+      }
+
+      let isMissing = false;
+
+      if (isIncompleteOtherServicesRanking(element)) {
+        isMissing = true;
+      } else if (element instanceof HTMLInputElement && element.type === "radio") {
+        if (seenRadioGroups.has(element.name)) return;
+        seenRadioGroups.add(element.name);
+        const checked = section.querySelector(`[name="${element.name}"]:checked`);
+        isMissing = !(checked instanceof HTMLInputElement);
+      } else if (element instanceof HTMLInputElement && element.type === "checkbox") {
+        isMissing = !element.checked;
+      } else {
+        isMissing = !element.value.trim();
+      }
+
+      if (mark) setFieldMissing(element, isMissing);
+      if (isMissing) missing.push(getFieldLabel(element));
+    });
+  });
+
+  return {
+    valid: missing.length === 0,
+    missing,
+  };
 }
 
 function initSurveySectionTabs() {
@@ -313,11 +559,55 @@ function initSurveySectionTabs() {
     if (scrollArea) {
       scrollArea.scrollTo({ top: 0, behavior: "smooth" });
     }
+
+    updateNavState();
+  };
+
+  const canMoveToStep = (targetStep, { mark = false } = {}) => {
+    if (targetStep <= activeStep) return true;
+    for (let step = activeStep; step < targetStep; step += 1) {
+      const result = validateSurveyStep(step, pages, { mark });
+      if (!result.valid) {
+        if (mark && stepLabel) {
+          stepLabel.textContent = "Complete required fields first";
+          stepLabel.dataset.state = "error";
+        }
+        return false;
+      }
+    }
+    return true;
+  };
+
+  function updateNavState() {
+    const currentStepValid = activeStep === maxStep || validateSurveyStep(activeStep, pages).valid;
+    const currentSections = pages.filter((page) => Number(page.dataset.surveyPage) === activeStep);
+    const hasMarkedMissingField = currentSections.some((section) =>
+      section.querySelector(".survey-required-missing")
+    );
+
+    if (hasMarkedMissingField) {
+      validateSurveyStep(activeStep, pages, { mark: true });
+    }
+
+    if (nextButton instanceof HTMLButtonElement) {
+      nextButton.disabled = activeStep === maxStep || !currentStepValid;
+    }
+    if (stepLabel && stepLabel.dataset.state === "error" && currentStepValid) {
+      stepLabel.dataset.state = "idle";
+      stepLabel.textContent = `Page ${activeStep + 1} of ${maxStep + 1}`;
+    }
+
+    tabs.forEach((tab, index) => {
+      const unavailable = index > activeStep && !canMoveToStep(index);
+      tab.classList.toggle("disabled", unavailable);
+      tab.setAttribute("aria-disabled", unavailable ? "true" : "false");
+    });
   };
 
   tabs.forEach((tab, index) => {
     tab.addEventListener("click", (event) => {
       event.preventDefault();
+      if (!canMoveToStep(index, { mark: true })) return;
       setStep(index);
     });
   });
@@ -326,8 +616,14 @@ function initSurveySectionTabs() {
     prevButton.addEventListener("click", () => setStep(activeStep - 1));
   }
   if (nextButton instanceof HTMLButtonElement) {
-    nextButton.addEventListener("click", () => setStep(activeStep + 1));
+    nextButton.addEventListener("click", () => {
+      if (!canMoveToStep(activeStep + 1, { mark: true })) return;
+      setStep(activeStep + 1);
+    });
   }
+
+  document.addEventListener("input", updateNavState);
+  document.addEventListener("change", updateNavState);
 
   setStep(0);
 }
@@ -367,6 +663,146 @@ function initSurveyThemePreference() {
         applySurveyThemeColor(THEME_COLOR_BY_PREFERENCE[input.value]);
       }
     });
+  });
+}
+
+function initPriorityRanking() {
+  document.querySelectorAll("[data-priority-ranking]").forEach((rankingRoot) => {
+    if (!(rankingRoot instanceof HTMLElement)) return;
+
+    const cards = Array.from(rankingRoot.querySelectorAll("[data-priority-id]")).filter(
+      (card) => card instanceof HTMLButtonElement
+    );
+    const fieldRoot = rankingRoot.closest(".survey-card") || document;
+    const hiddenFields = [1, 2, 3].map((rank) => {
+      const field = fieldRoot.querySelector(`[data-priority-rank="${rank}"]`);
+      return field instanceof HTMLInputElement ? field : null;
+    });
+    let ranked = hiddenFields
+      .map((field) => field?.value || "")
+      .filter((value) => value && cards.some((card) => card.dataset.priorityId === value));
+
+    const render = () => {
+      hiddenFields.forEach((field, index) => {
+        if (field) {
+          field.value = ranked[index] || "";
+          field.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+      });
+
+      cards.forEach((card) => {
+        const rankIndex = ranked.indexOf(card.dataset.priorityId || "");
+        const selected = rankIndex >= 0;
+        card.classList.toggle("active", selected);
+        card.setAttribute("aria-pressed", selected ? "true" : "false");
+        const badge = card.querySelector("[data-rank-badge]");
+        if (badge) badge.textContent = selected ? String(rankIndex + 1) : "•";
+      });
+    };
+
+    cards.forEach((card) => {
+      card.addEventListener("click", () => {
+        const priorityId = card.dataset.priorityId || "";
+        if (!priorityId) return;
+
+        ranked = ranked.includes(priorityId)
+          ? ranked.filter((value) => value !== priorityId)
+          : [...ranked, priorityId].slice(0, 3);
+        render();
+      });
+    });
+
+    render();
+  });
+}
+
+function formatServiceRanking(serviceIds) {
+  return serviceIds
+    .map((serviceId, index) => `${index + 1}. ${SERVICE_LABELS[serviceId] || serviceId}`)
+    .join(" | ");
+}
+
+function parseServiceRankingIds(value, cards) {
+  const knownIds = new Set(cards.map((card) => card.dataset.serviceId || "").filter(Boolean));
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item && knownIds.has(item));
+}
+
+function initOtherServicesRanking() {
+  document.querySelectorAll("[data-services-ranking]").forEach((rankingRoot) => {
+    if (!(rankingRoot instanceof HTMLElement)) return;
+
+    const cards = Array.from(rankingRoot.querySelectorAll("[data-service-id]")).filter(
+      (card) => card instanceof HTMLButtonElement
+    );
+    const fieldRoot = rankingRoot.closest(".survey-card") || document;
+    const rankingField = fieldRoot.querySelector('[name="other_services_ranking"]');
+    const idsField = fieldRoot.querySelector('[name="other_services_ranking_ids"]');
+
+    if (!(rankingField instanceof HTMLInputElement || rankingField instanceof HTMLTextAreaElement)) return;
+    if (!(idsField instanceof HTMLInputElement || idsField instanceof HTMLTextAreaElement)) return;
+
+    const readProfileServicePreferences = () => {
+      const profile = readMockProfile();
+      return Array.isArray(profile?.servicePreferences)
+        ? profile.servicePreferences.filter((item) => typeof item === "string")
+        : [];
+    };
+
+    let ranked = parseServiceRankingIds(idsField.value, cards);
+    if (!ranked.length) {
+      ranked = readProfileServicePreferences().filter((serviceId) =>
+        cards.some((card) => card.dataset.serviceId === serviceId)
+      );
+    }
+
+    const syncFields = ({ writeProfile = false } = {}) => {
+      rankingField.value = formatServiceRanking(ranked);
+      idsField.value = ranked.join(",");
+      rankingField.dispatchEvent(new Event("input", { bubbles: true }));
+      idsField.dispatchEvent(new Event("input", { bubbles: true }));
+      if (writeProfile) {
+        writeServicePreferencesToProfile(ranked);
+      }
+    };
+
+    const render = (options) => {
+      syncFields(options);
+
+      cards.forEach((card) => {
+        const rankIndex = ranked.indexOf(card.dataset.serviceId || "");
+        const selected = rankIndex >= 0;
+        card.classList.toggle("active", selected);
+        card.setAttribute("aria-pressed", selected ? "true" : "false");
+        const badge = card.querySelector("[data-rank-badge]");
+        if (badge) badge.textContent = selected ? String(rankIndex + 1) : "•";
+      });
+    };
+
+    cards.forEach((card) => {
+      card.addEventListener("click", () => {
+        const serviceId = card.dataset.serviceId || "";
+        if (!serviceId) return;
+
+        ranked = ranked.includes(serviceId)
+          ? ranked.filter((value) => value !== serviceId)
+          : [...ranked, serviceId];
+        render({ writeProfile: true });
+      });
+    });
+
+    window.addEventListener("storage", (event) => {
+      if (event.key !== MOCK_PROFILE_STORAGE_KEY) return;
+      const nextRanked = readProfileServicePreferences().filter((serviceId) =>
+        cards.some((card) => card.dataset.serviceId === serviceId)
+      );
+      ranked = nextRanked;
+      render();
+    });
+
+    render();
   });
 }
 
@@ -427,6 +863,7 @@ function renderAdminTable(responses) {
         <td>${response.response_id || ""}</td>
         <td>${response.submitted_at || ""}</td>
         <td>${response.name || ""}</td>
+        <td>${response.birthdate || ""}</td>
         <td>${response.participant_id || ""}</td>
         <td>${response.participant_role_detail || ""}</td>
         <td>${response.tested_route || ""}</td>
@@ -448,6 +885,7 @@ function initSurveyPage() {
 
   normalizeOptionalFields();
   applyLockedSessionMetadata(readMockProfile());
+  restoreSurveyDraft();
 
   saveButton.addEventListener("click", () => {
     if (agreement instanceof HTMLInputElement && !agreement.checked) {
@@ -475,10 +913,20 @@ function initSurveyPage() {
     const responses = getStoredResponses();
     responses.push(payload);
     setStoredResponses(responses);
+    clearSurveyDraft();
 
     statusNode.textContent = "Thank you. Your response has been saved.";
     statusNode.dataset.state = "success";
   });
+}
+
+function initSurveyDraftAutosave() {
+  const autosave = () => {
+    saveSurveyDraft();
+  };
+
+  document.addEventListener("input", autosave);
+  document.addEventListener("change", autosave);
 }
 
 function initAdminPage() {
@@ -513,8 +961,11 @@ function initAdminPage() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initSurveyBackLinks();
-  initSurveySectionTabs();
   initSurveyThemePreference();
   initSurveyPage();
+  initPriorityRanking();
+  initOtherServicesRanking();
+  initSurveySectionTabs();
+  initSurveyDraftAutosave();
   initAdminPage();
 });

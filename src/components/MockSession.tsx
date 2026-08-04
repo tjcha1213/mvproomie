@@ -13,6 +13,7 @@ export interface MockUserProfile {
   themeColor?: string;
   name: string;
   contact: string;
+  birthdate: string;
   role: MockRole;
   participantRoleDetail: string;
   mvpRoute: string;
@@ -26,6 +27,7 @@ type SessionState = {
 };
 
 const STORAGE_KEY = 'roomie.mock-user-profile';
+const SURVEY_DRAFT_STORAGE_KEY = 'roomie-survey-drafts-v1';
 
 const DEFAULT_PROFILE: MockUserProfile = {
   participantId: 'PT-DEMO-0001',
@@ -33,6 +35,7 @@ const DEFAULT_PROFILE: MockUserProfile = {
   themeColor: DEFAULT_PRIMARY,
   name: 'Juan Dela Cruz',
   contact: 'juan@roomie.ph',
+  birthdate: '1998-01-01',
   role: 'tenant',
   participantRoleDetail: 'Tenant',
   mvpRoute: 'Tenant MVP 1',
@@ -72,6 +75,7 @@ function readStoredProfile(): MockUserProfile | null {
         themeColor: typeof parsed.themeColor === 'string' ? parsed.themeColor : DEFAULT_PRIMARY,
         name: parsed.name,
         contact: parsed.contact,
+        birthdate: typeof parsed.birthdate === 'string' ? parsed.birthdate : '',
         role: parsed.role,
         participantRoleDetail: typeof parsed.participantRoleDetail === 'string' ? parsed.participantRoleDetail : formatMockRole(parsed.role),
         mvpRoute: typeof parsed.mvpRoute === 'string' ? parsed.mvpRoute : 'Tenant MVP 1',
@@ -91,9 +95,21 @@ let sessionState: SessionState = {
 };
 
 const listeners = new Set<() => void>();
+let subscribedToProfileStorage = false;
 
 function emit() {
   listeners.forEach((listener) => listener());
+}
+
+function refreshProfileFromStorage() {
+  const storedProfile = readStoredProfile();
+  if (!storedProfile) return;
+
+  sessionState = {
+    ...sessionState,
+    profile: storedProfile,
+  };
+  emit();
 }
 
 function getSnapshot(): SessionState {
@@ -101,6 +117,16 @@ function getSnapshot(): SessionState {
 }
 
 function subscribe(listener: () => void) {
+  if (!subscribedToProfileStorage && typeof window !== 'undefined') {
+    window.addEventListener('storage', (event) => {
+      if (event.key === STORAGE_KEY) {
+        refreshProfileFromStorage();
+      }
+    });
+    window.addEventListener('roomie-profile-updated', refreshProfileFromStorage);
+    subscribedToProfileStorage = true;
+  }
+
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
@@ -142,6 +168,7 @@ export function signUpToDemo(profile: Omit<MockUserProfile, 'participantId'>) {
   };
   if (typeof window !== 'undefined') {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedProfile));
+    window.localStorage.removeItem(SURVEY_DRAFT_STORAGE_KEY);
   }
   sessionState = {
     authenticated: true,
@@ -181,6 +208,21 @@ export function updateProfileBio(bio: string) {
   const nextProfile: MockUserProfile = {
     ...(sessionState.profile ?? DEFAULT_PROFILE),
     bio,
+  };
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextProfile));
+  }
+  sessionState = {
+    ...sessionState,
+    profile: nextProfile,
+  };
+  emit();
+}
+
+export function updateProfileBirthdate(birthdate: string) {
+  const nextProfile: MockUserProfile = {
+    ...(sessionState.profile ?? DEFAULT_PROFILE),
+    birthdate,
   };
   if (typeof window !== 'undefined') {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextProfile));
@@ -240,6 +282,7 @@ export function MockLoginGate({
   const [password, setPassword] = useState('');
   const [name, setName] = useState(profile?.name ?? '');
   const [contact, setContact] = useState(profile?.contact ?? '');
+  const [birthdate, setBirthdate] = useState(profile?.birthdate ?? '');
   const [role, setRole] = useState<MockRole>(profile?.role ?? (variant === 'host' ? 'host' : 'tenant'));
   const [bio, setBio] = useState(profile?.bio ?? '');
   const [avatar, setAvatar] = useState(profile?.avatar ?? JUAN_AVATAR);
@@ -264,6 +307,7 @@ export function MockLoginGate({
     setPassword('');
     setName('');
     setContact('');
+    setBirthdate('');
     setRole(variant === 'host' ? 'host' : 'tenant');
     setBio('');
     setAvatar(JUAN_AVATAR);
@@ -283,6 +327,7 @@ export function MockLoginGate({
       themeColor,
       name: name.trim() || DEFAULT_PROFILE.name,
       contact: contact.trim() || DEFAULT_PROFILE.contact,
+      birthdate,
       role,
       participantRoleDetail: formatMockRole(role),
       mvpRoute,
@@ -377,6 +422,16 @@ export function MockLoginGate({
             <label className="mock-auth-field">
               <span>Contact</span>
               <input value={contact} onChange={(event) => setContact(event.target.value)} placeholder="Mobile number or email" />
+            </label>
+            <label className="mock-auth-field">
+              <span>Birthdate</span>
+              <input
+                type="date"
+                value={birthdate}
+                onChange={(event) => setBirthdate(event.target.value)}
+                autoComplete="bday"
+                required
+              />
             </label>
             <div className="mock-auth-field">
               <span>I am a…</span>

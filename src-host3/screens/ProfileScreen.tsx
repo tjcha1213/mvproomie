@@ -47,6 +47,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
     avatar: JUAN_AVATAR,
     name: HOST_PROFILE.name,
     contact: 'juan@roomie.ph',
+    birthdate: '1998-01-01',
     role: 'host' as const,
     participantRoleDetail: 'Host',
     mvpRoute: 'Host MVP 3',
@@ -148,7 +149,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
                       return;
                     }
                     if (item.key === 'survey') {
-                      window.location.assign(`${import.meta.env.BASE_URL}host-surveys.html?mvp=Host%20MVP%203`);
+                      window.location.assign(`${import.meta.env.BASE_URL}user-testing-survey.html?mvp=Host%20MVP%203`);
                       return;
                     }
                     if (item.key === 'reviews') {
@@ -209,6 +210,10 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
                   <span className="profile-details-value">{displayProfile.contact}</span>
                 </div>
                 <div className="profile-details-item">
+                  <span className="profile-details-label">Birthdate</span>
+                  <span className="profile-details-value">{displayProfile.birthdate || 'Not set'}</span>
+                </div>
+                <div className="profile-details-item">
                   <span className="profile-details-label">Participant ID</span>
                   <span className="profile-details-value">{displayProfile.participantId}</span>
                 </div>
@@ -220,7 +225,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
                   <span className="profile-details-label">MVP route</span>
                   <span className="profile-details-value">{displayProfile.mvpRoute}</span>
                 </div>
-                <ProfileBioEditor bio={displayProfile.bio} onShowToast={onShowToast} />
+                <ProfileBioEditor bio={displayProfile.bio} birthdate={displayProfile.birthdate} onShowToast={onShowToast} />
               </div>
             </div>
           </ProfileSectionPage>

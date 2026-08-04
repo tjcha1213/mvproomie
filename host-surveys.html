@@ -48,7 +48,6 @@
         <section class="survey-section" id="metadata" data-survey-page="0">
         <div class="survey-header">
           <p class="eyebrow">Survey Setup</p>
-          <h2>Session metadata</h2>
           <p class="copy">
             Capture participant background and the prototype reviewed.
           </p>
@@ -57,15 +56,19 @@
           <div class="survey-grid">
             <label class="survey-field">
               <span>Name</span>
-              <input type="text" name="name" placeholder="Participant name" />
+              <input type="text" name="name" placeholder="Your name or tester ID" />
             </label>
             <label class="survey-field">
               <span>Contact</span>
-              <input type="text" name="contact" placeholder="Email, phone number, or preferred contact" />
+              <input type="text" name="contact" placeholder="Email, phone, Messenger, or preferred contact" />
+            </label>
+            <label class="survey-field">
+              <span>Birthdate</span>
+              <input type="date" name="birthdate" readonly />
             </label>
             <label class="survey-field full-width-field">
               <span>Bio</span>
-              <textarea name="bio" rows="4" placeholder="Short background, housing experience, or other relevant context"></textarea>
+              <textarea name="bio" rows="4" placeholder="Share your housing situation, school/work area, or rental experience."></textarea>
             </label>
             <label class="survey-field">
               <span>Participant ID</span>
@@ -73,24 +76,93 @@
             </label>
             <label class="survey-field">
               <span>Participant role detail</span>
-              <input type="text" name="participant_role_detail" placeholder="Auto-filled from the login session" />
+              <input type="text" name="participant_role_detail" placeholder="This is filled from your testing profile." />
             </label>
             <label class="survey-field">
               <span>MVP route</span>
-              <input type="text" name="mvp_route" placeholder="Auto-filled from the login session" />
+              <input type="text" name="mvp_route" placeholder="This is filled from the MVP you opened." />
             </label>
-            <label class="survey-field full-width-field">
-              <span>Other Services ranking</span>
-              <textarea name="other_services_ranking" rows="3" placeholder="Auto-filled from the tester profile"></textarea>
+            <fieldset class="survey-card priority-ranking-card services-ranking-card full-width-field">
+              <legend>Other Services ranking</legend>
+              <p class="priority-ranking-help">This starts with your saved profile ranking. Tap cards to change the order for this survey.</p>
+              <div class="priority-ranking-grid services-ranking-grid" data-services-ranking>
+                <button class="priority-rank-card service-rank-card" type="button" data-service-id="cleaning">
+                  <span class="priority-rank-badge" data-rank-badge>•</span>
+                  <span class="priority-rank-label">Cleaning</span>
+                  <span class="service-rank-desc">Home upkeep</span>
+                </button>
+                <button class="priority-rank-card service-rank-card" type="button" data-service-id="moving">
+                  <span class="priority-rank-badge" data-rank-badge>•</span>
+                  <span class="priority-rank-label">Moving</span>
+                  <span class="service-rank-desc">Help on the go</span>
+                </button>
+                <button class="priority-rank-card service-rank-card" type="button" data-service-id="furniture">
+                  <span class="priority-rank-badge" data-rank-badge>•</span>
+                  <span class="priority-rank-label">Furniture</span>
+                  <span class="service-rank-desc">Set up spaces</span>
+                </button>
+                <button class="priority-rank-card service-rank-card" type="button" data-service-id="legal">
+                  <span class="priority-rank-badge" data-rank-badge>•</span>
+                  <span class="priority-rank-label">Legal</span>
+                  <span class="service-rank-desc">Contracts & help</span>
+                </button>
+                <button class="priority-rank-card service-rank-card" type="button" data-service-id="repairs">
+                  <span class="priority-rank-badge" data-rank-badge>•</span>
+                  <span class="priority-rank-label">Repairs</span>
+                  <span class="service-rank-desc">Quick fixes</span>
+                </button>
+                <button class="priority-rank-card service-rank-card" type="button" data-service-id="utilities">
+                  <span class="priority-rank-badge" data-rank-badge>•</span>
+                  <span class="priority-rank-label">Utilities</span>
+                  <span class="service-rank-desc">Bills & setup</span>
+                </button>
+              </div>
+              <input type="hidden" name="other_services_ranking" />
+              <input type="hidden" name="other_services_ranking_ids" />
+            </fieldset>
+            <label class="survey-field">
+              <span>Occupation</span>
+              <select name="occupation">
+                <option value="">Select one</option>
+                <option value="student">Student</option>
+                <option value="student_part_time_worker">Student/part-time worker</option>
+                <option value="graduated_part_time_worker">Graduated/part-time worker</option>
+                <option value="freelance">Freelance</option>
+                <option value="full_time_worker">Full-time worker</option>
+                <option value="currently_unemployed">Currently unemployed</option>
+                <option value="retired">Retired</option>
+                <option value="other">Other (please specify)</option>
+              </select>
             </label>
             <label class="survey-field">
-              <span>Occupation optional</span>
-              <input type="text" name="occupation" placeholder="Current occupation" />
+              <span>Other occupation</span>
+              <input type="text" name="occupation_other" placeholder="Please specify if other" />
             </label>
             <label class="survey-field">
               <span>Session notes optional</span>
-              <input type="text" name="session_notes" placeholder="Moderator initials, context, or device used" />
+              <input type="text" name="session_notes" placeholder="Optional setting, device, or session notes" />
             </label>
+            <fieldset class="survey-card priority-ranking-card full-width-field">
+              <legend>Priorities ranking</legend>
+              <p class="priority-ranking-help">Tap each card in order from most important to least important.</p>
+              <div class="priority-ranking-grid" data-priority-ranking>
+                <button class="priority-rank-card" type="button" data-priority-id="trust_safety">
+                  <span class="priority-rank-badge" data-rank-badge>•</span>
+                  <span class="priority-rank-label">Trust/Safety</span>
+                </button>
+                <button class="priority-rank-card" type="button" data-priority-id="price">
+                  <span class="priority-rank-badge" data-rank-badge>•</span>
+                  <span class="priority-rank-label">Price</span>
+                </button>
+                <button class="priority-rank-card" type="button" data-priority-id="convenience">
+                  <span class="priority-rank-badge" data-rank-badge>•</span>
+                  <span class="priority-rank-label">Convenience</span>
+                </button>
+              </div>
+              <input type="hidden" name="priority_rank_1" data-priority-rank="1" />
+              <input type="hidden" name="priority_rank_2" data-priority-rank="2" />
+              <input type="hidden" name="priority_rank_3" data-priority-rank="3" />
+            </fieldset>
           </div>
         </form>
       </section>
@@ -98,7 +170,6 @@
         <section class="survey-section" id="recommendation" data-survey-page="0">
         <div class="survey-header">
           <p class="eyebrow">Recommendation</p>
-          <h2>Likelihood to recommend</h2>
           <p class="copy">
             A 4-point recommendation signal for overall impression.
           </p>
@@ -119,15 +190,14 @@
           </fieldset>
           <label class="survey-field full-width-field">
             <span>Why did you choose that score?</span>
-            <textarea name="nps_reason" rows="4" placeholder="Capture the participant's main reason in their own words."></textarea>
+            <textarea name="nps_reason" rows="4" placeholder="Example: I would or would not recommend this because..."></textarea>
           </label>
         </form>
       </section>
 
         <section class="survey-section" id="usability" data-survey-page="1">
         <div class="survey-header">
-          <p class="eyebrow">System Usability Scale</p>
-          <h2>Ten-item usability assessment</h2>
+          <p class="eyebrow">Usability Preferences</p>
           <p class="copy">
             Rate each statement on a 4-point Likert scale.
           </p>
@@ -236,8 +306,7 @@
 
         <section class="survey-section" id="branding" data-survey-page="2">
         <div class="survey-header">
-          <p class="eyebrow">Brand Preferences</p>
-          <h2>Logo, color, naming, and domain feedback</h2>
+          <p class="eyebrow">Design Preferences</p>
           <p class="copy">
             Capture how participants react to the current brand direction and naming options.
           </p>
@@ -246,67 +315,71 @@
           <div class="survey-stack">
             <label class="survey-field full-width-field">
               <span>What is your preference or reaction to the current logo?</span>
-              <textarea name="logo_preference" rows="4" placeholder="Describe what feels strong, weak, memorable, confusing, or worth changing."></textarea>
+              <textarea class="survey-answer-roomy" name="logo_preference" rows="4" placeholder="What do you notice first? Does it feel trustworthy, modern, local, confusing, or worth changing?"></textarea>
             </label>
             <fieldset class="survey-card full-width-field">
               <legend>Preferred color theme</legend>
               <div class="theme-option-grid" role="radiogroup" aria-label="Preferred color theme">
                 <label class="theme-option-card">
-                  <input type="radio" name="color_theme_preference" value="indigo-white" />
+                  <input type="radio" name="color_theme_preference" value="roomie-teal" />
                   <span class="theme-option-swatch" aria-hidden="true">
-                    <span style="background:#4338ca"></span>
+                    <span style="background:#15BDB6"></span>
                     <span style="background:#ffffff"></span>
                   </span>
-                  <span class="theme-option-text">Indigo</span>
+                  <span class="theme-option-text">Roomie Teal</span>
                 </label>
                 <label class="theme-option-card">
-                  <input type="radio" name="color_theme_preference" value="turquoise" />
+                  <input type="radio" name="color_theme_preference" value="deep-ocean-blue" />
                   <span class="theme-option-swatch" aria-hidden="true">
-                    <span style="background:#14b8a6"></span>
+                    <span style="background:#1D4ED8"></span>
                     <span style="background:#ffffff"></span>
                   </span>
-                  <span class="theme-option-text">Turquoise</span>
+                  <span class="theme-option-text">Deep Ocean Blue</span>
                 </label>
                 <label class="theme-option-card">
                   <input type="radio" name="color_theme_preference" value="warm-mango" />
                   <span class="theme-option-swatch" aria-hidden="true">
-                    <span style="background:#f59e0b"></span>
+                    <span style="background:#FFB000"></span>
                     <span style="background:#fff7ed"></span>
                   </span>
-                  <span class="theme-option-text">Warm mango</span>
+                  <span class="theme-option-text">Warm Mango</span>
                 </label>
                 <label class="theme-option-card">
                   <input type="radio" name="color_theme_preference" value="sunset-orange" />
                   <span class="theme-option-swatch" aria-hidden="true">
-                    <span style="background:#f97316"></span>
+                    <span style="background:#FF5A1F"></span>
                     <span style="background:#fff7ed"></span>
                   </span>
-                  <span class="theme-option-text">Sunset orange</span>
+                  <span class="theme-option-text">Sunset Orange</span>
                 </label>
               </div>
             </fieldset>
             <label class="survey-field">
               <span>Color theme notes</span>
-              <input type="text" name="color_theme_notes" placeholder="Optional notes on what feels trustworthy, modern, or off-target" />
+              <input type="text" name="color_theme_notes" placeholder="Which color feels best for housing, and why?" />
             </label>
             <label class="survey-field">
               <span>Preferred company name</span>
-              <input type="text" name="company_name_preference" placeholder="e.g. Roomie, Rumie, another option" />
+              <input type="text" name="company_name_preference" placeholder="e.g. Roomie, Rumie, Roomily" />
             </label>
             <label class="survey-field">
               <span>Preferred domain name</span>
               <select name="domain_name_preference">
                 <option value="">Select one</option>
                 <option value="roomie.ph">roomie.ph</option>
+                <option value="roomily.ph">roomily.ph</option>
+                <option value="roomily.com">roomily.com</option>
+                <option value="roomily.io">roomily.io</option>
+                <option value="roomily.ai">roomily.ai</option>
                 <option value="rumie.io">rumie.io</option>
                 <option value="rooomie.ai">rooomie.ai</option>
                 <option value="roomie.ai">roomie.ai</option>
-                <option value="other">Other</option>
+                <option value="other">Other (please specify below)</option>
               </select>
             </label>
             <label class="survey-field full-width-field">
               <span>Other naming or domain suggestions</span>
-              <textarea name="brand_notes" rows="4" placeholder="Add other company name ideas, domain options, or brand notes here."></textarea>
+              <textarea class="survey-answer-roomy" name="brand_notes" rows="4" placeholder="Share any naming ideas, words to avoid, pronunciation issues, or domain suggestions."></textarea>
             </label>
           </div>
         </form>
@@ -314,8 +387,7 @@
 
       <section class="survey-section" id="open-ended" data-survey-page="3">
         <div class="survey-header">
-          <p class="eyebrow">Qualitative Follow-up</p>
-          <h2>Open-ended prompts</h2>
+          <p class="eyebrow">Open-ended Follow-up</p>
           <p class="copy">
             Use these to capture trust, friction, and unmet expectations.
           </p>
@@ -323,35 +395,89 @@
         <form class="survey-form">
           <div class="survey-stack">
             <label class="survey-field full-width-field">
+              <span>What platforms, apps, groups, or channels do you currently use to find housing in Metro Manila?</span>
+              <textarea class="survey-answer-roomy" name="current_housing_platforms" rows="4" placeholder="Example: I use Facebook groups, DormyPH, brokers, school groups, or family contacts."></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>Why do you use or prefer those platforms?</span>
+              <textarea class="survey-answer-roomy" name="current_platform_reasons" rows="4" placeholder="What makes those platforms useful or trustworthy? What do you dislike or avoid about them?"></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>When choosing housing in Metro Manila, what matters most to you?</span>
+              <textarea class="survey-answer-roomy" name="metro_manila_housing_priorities" rows="4" placeholder="Example: My biggest priorities are price, commute, safety, location, payment terms, or landlord trust."></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>Did Roomie show enough location and neighborhood context for you to judge whether a listing is realistic?</span>
+              <textarea class="survey-answer-roomy" name="location_context_feedback" rows="4" placeholder="Did the map, area labels, commute, or neighborhood details give enough context? What was missing?"></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>Were you able to find a listing you would consider contacting?</span>
+              <textarea class="survey-answer-roomy" name="task_find_contact_listing" rows="4" placeholder="Could you find a listing you might contact? What helped, or what stopped you?"></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>Were the listing details, host information, and next step clear?</span>
+              <textarea class="survey-answer-roomy" name="task_listing_details_clarity" rows="4" placeholder="Were the photos, price, unit details, host profile, messaging, and buttons clear?"></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>Of the three tenant MVPs, which version felt easiest to use, and why?</span>
+              <textarea class="survey-answer-roomy" name="mvp_easiest_to_use" rows="4" placeholder="After trying the MVPs, which version was easiest to use? What made it easier than the others?"></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>Which MVP felt most trustworthy or most appropriate for Manila renters?</span>
+              <textarea name="mvp_most_trustworthy" rows="4" placeholder="Which version felt most trustworthy or safe for Manila housing, and why?"></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>Which MVP would you be most likely to use again if you were looking for housing?</span>
+              <textarea class="survey-answer-roomy" name="mvp_most_likely_to_reuse" rows="4" placeholder="Which version would you be most likely to use again? Please explain the main reason."></textarea>
+            </label>
+            <label class="survey-field full-width-field">
               <span>What part of the Roomie experience felt most clear or helpful?</span>
-              <textarea name="most_clear" rows="4" placeholder="Capture the participant's strongest positive signal."></textarea>
+              <textarea name="most_clear" rows="4" placeholder="What part of the experience felt clearest, easiest, or most useful?"></textarea>
             </label>
             <label class="survey-field full-width-field">
               <span>What part of the experience felt confusing, frustrating, or slowed you down?</span>
-              <textarea name="most_confusing" rows="4" placeholder="Capture navigation friction, missing information, or unclear actions."></textarea>
+              <textarea name="most_confusing" rows="4" placeholder="What felt confusing, hard to find, missing, or unclear while using the MVP?"></textarea>
             </label>
             <label class="survey-field full-width-field">
               <span>Did anything affect your trust in the listings, host information, or the platform overall?</span>
-              <textarea name="trust_feedback" rows="4" placeholder="Note concerns or signals that increased confidence."></textarea>
+              <textarea name="trust_feedback" rows="4" placeholder="What made you trust or distrust the app, listings, hosts, or rental process?"></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>What information would make you trust a listing enough to contact the host?</span>
+              <textarea class="survey-answer-large" name="listing_trust_requirements" rows="4" placeholder="What would you need before trusting a listing? Verification, reviews, location, price, photos, or documents?"></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>What would make you hesitate or distrust a listing?</span>
+              <textarea class="survey-answer-roomy" name="listing_distrust_triggers" rows="4" placeholder="What would make you suspicious? Unclear price, missing photos, vague location, or payment concerns?"></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>What feature or information did you expect to see but did not find?</span>
+              <textarea class="survey-answer-large" name="missing_feature_expectation" rows="4" placeholder="What did you expect but not find? Filters, commute info, payment details, roommate info, verification, etc."></textarea>
+            </label>
+            <label class="survey-field full-width-field">
+              <span>If you were helping your child choose housing, what information would you need before feeling comfortable?</span>
+              <textarea class="survey-answer-roomy" name="parent_student_housing_comfort" rows="4" placeholder="For parents or guardians: what would make you comfortable with a student using Roomie?"></textarea>
             </label>
             <label class="survey-field full-width-field">
               <span>If you could change one thing before the next round of testing, what would it be?</span>
-              <textarea name="priority_change" rows="4" placeholder="Capture the participant's highest-priority improvement."></textarea>
+              <textarea name="priority_change" rows="4" placeholder="If we could improve only one thing before launch, what should it be and why?"></textarea>
             </label>
           </div>
         </form>
       </section>
 
         <section class="survey-section" id="responses" data-survey-page="4">
-        <div class="survey-header">
-          <p class="eyebrow">Response Logging</p>
-          <h2>Save and export-ready storage</h2>
+        <div class="survey-header survey-save-header">
+          <div class="survey-save-title-row">
+            <p class="eyebrow">Response Logging</p>
+          </div>
+          <div class="survey-save-action-row">
+            <p class="survey-save-note">Thank you for sharing your time and feedback with the Roomie team.</p>
+            <button class="demo-button survey-save-button" type="button" data-save-survey>Save response</button>
+          </div>
           <p class="copy">
             Save the completed packet with participant metadata so it can be exported later for research review.
           </p>
-        </div>
-        <div class="survey-actions">
-          <button class="demo-button" type="button" data-save-survey>Save response</button>
         </div>
         <label class="survey-agreement">
           <input type="checkbox" data-survey-agree />

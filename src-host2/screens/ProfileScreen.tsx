@@ -48,6 +48,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
     avatar: JUAN_AVATAR,
     name: HOST_PROFILE.name,
     contact: 'juan@roomie.ph',
+    birthdate: '1998-01-01',
     role: 'host' as const,
     participantRoleDetail: 'Host',
     mvpRoute: 'Host MVP 2',
@@ -64,15 +65,15 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
 
   const chooserOptions = chooser === 'tenant'
     ? [
-        { label: 'Tenant MVP 1', description: 'Tenant MVP 1', href: '/mvproomie/mvp1/?tab=profile' },
-        { label: 'Tenant MVP 2', description: 'Tenant MVP 2', href: '/mvproomie/mvp2/?tab=profile' },
-        { label: 'Tenant MVP 3', description: 'Tenant MVP 3', href: '/mvproomie/mvp3/?tab=profile' },
+        { label: 'Tenant MVP 1', description: 'Tenant MVP 1', href: 'mvp1/?tab=profile' },
+        { label: 'Tenant MVP 2', description: 'Tenant MVP 2', href: 'mvp2/?tab=profile' },
+        { label: 'Tenant MVP 3', description: 'Tenant MVP 3', href: 'mvp3/?tab=profile' },
       ]
     : chooser === 'host'
       ? [
-        { label: 'Host MVP 1', description: 'Host MVP 1', href: '/mvproomie/host/?tab=profile' },
-        { label: 'Host MVP 2', description: 'Host MVP 2', href: '/mvproomie/host2/?tab=profile' },
-        { label: 'Host MVP 3', description: 'Host MVP 3', href: '/mvproomie/host3/?tab=profile' },
+        { label: 'Host MVP 1', description: 'Host MVP 1', href: 'host/?tab=profile' },
+        { label: 'Host MVP 2', description: 'Host MVP 2', href: 'host2/?tab=profile' },
+        { label: 'Host MVP 3', description: 'Host MVP 3', href: 'host3/?tab=profile' },
         ]
       : [];
 
@@ -149,7 +150,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
                       return;
                     }
                     if (item.key === 'survey') {
-                      window.location.assign(`${import.meta.env.BASE_URL}host-surveys.html?mvp=Host%20MVP%202`);
+                      window.location.assign(`${import.meta.env.BASE_URL}user-testing-survey.html?mvp=Host%20MVP%202`);
                       return;
                     }
                     if (item.key === 'reviews') {
@@ -210,6 +211,10 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
                   <span className="profile-details-value">{displayProfile.contact}</span>
                 </div>
                 <div className="profile-details-item">
+                  <span className="profile-details-label">Birthdate</span>
+                  <span className="profile-details-value">{displayProfile.birthdate || 'Not set'}</span>
+                </div>
+                <div className="profile-details-item">
                   <span className="profile-details-label">Participant ID</span>
                   <span className="profile-details-value">{displayProfile.participantId}</span>
                 </div>
@@ -221,7 +226,7 @@ export default function ProfileScreen({ units, onOpenListings, onOpenTenants, on
                   <span className="profile-details-label">MVP route</span>
                   <span className="profile-details-value">{displayProfile.mvpRoute}</span>
                 </div>
-                <ProfileBioEditor bio={displayProfile.bio} onShowToast={onShowToast} />
+                <ProfileBioEditor bio={displayProfile.bio} birthdate={displayProfile.birthdate} onShowToast={onShowToast} />
               </div>
             </div>
           </ProfileSectionPage>
